@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#16171a">
+  <!-- PWA Setup -->
+  <link rel="manifest" href="manifest.json">
+  <title>Mekan Álex</title>
+
+  <!-- Firebase y Markdown -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    :root {
+      --bg-main: #f7f6f4; --bg-card: #ffffff; --text-dark: #1c1c1e;
+      --lvg-yellow: #c9a54a; --lvg-dark: #16171a; --border-subtle: #eaeaea;
+    }
+    body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, sans-serif; background: var(--bg-main); color: var(--text-dark); display: flex; flex-direction: column; overflow: hidden;}
+    
+    .chat-header { background: var(--lvg-dark); color: white; padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 3px solid var(--lvg-yellow); }
+    .avatar { width: 45px; height: 45px; border-radius: 50%; background: var(--lvg-yellow); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    
+    .chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+    .mensaje { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 15px; line-height: 1.4; animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .msg-usuario { background: var(--lvg-yellow); color: var(--lvg-dark); align-self: flex-end; border-bottom-right-radius: 4px; font-weight: 500; }
+    .msg-mekan { background: white; color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border-subtle); box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
+    
+    .chat-input-area { padding: 10px 15px 20px 15px; background: white; border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; align-items: flex-end;}
+    textarea { flex: 1; padding: 12px 16px; border-radius: 20px; border: 1px solid var(--border-subtle); font-size: 15px; outline: none; background: #fafafa; resize: none; max-height: 100px; font-family: inherit;}
+    textarea:focus { border-color: var(--lvg-yellow); background: white; }
+    
+    .btn-action { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--lvg-dark); color: var(--lvg-yellow); font-size: 18px; display: flex; align-items: center; justify-content: center; transition: 0.2s; cursor: pointer;}
+    
+    .btn-action.grabando { background: #e05353; color: white; animation: latido 1.2s infinite; }
+    @keyframes latido { 0% { transform: scale(1); } 50% { transform: scale(1.15); box-shadow: 0 0 15px rgba(224,83,83,0.6); } 100% { transform: scale(1); } }
+  </style>
+</head>
+<body>
+
+  <div class="chat-header">
+    <div class="avatar">🤖</div>
+    <div>
+      <h1 style="margin: 0; font-size: 18px;">Mekan Álex</h1>
+      <p style="margin: 2px 0 0 0; font-size: 12px; color: #aaa;">🟢 Online - Asignadora</p>
+    </div>
+  </div>
+
+  <div class="chat-box" id="chat-box">
+    <div class="mensaje msg-mekan">Sistemas de la PWA iniciados. Soy Mekan Álex. Manten presionado el micrófono para enviarme una nota de voz. 🎤</div>
+  </div>
+
+  <div class="chat-input-area">
+    <button class="btn-action" id="btn-mic" onpointerdown="iniciarGrabacionAudio()" onpointerup="detenerYEnviarAudio()" onpointerleave="detenerYEnviarAudio()">🎙️</button>
+    <textarea id="input-mensaje" placeholder="Mensaje..." rows="1"></textarea>
+    <button class="btn-action" id="btn-envio" onclick="enviarTexto()">➤</button>
+  </div>
+
+  <script>
+    /// --- 1. CONFIGURACIÓN INICIAL ---
+    const URL_API_GAS = "/api/mekan";
+    
+    firebase.initializeApp({
+        apiKey: "AIzaSyBQUxkjN2SkxHB6sWpKmZGBRZimteUCtM8",
+        projectId: "laboratorio-mekan",
+    });
+    const db = firebase.firestore();
+
+    let baseDeDatosMemoria = [];
+    let historialChat = [];
+    const ROL = "Asignadora";
+    const USUARIO = "Andrea Baca";
+
+    db.collection("eventos").onSnapshot(snapshot => {
+      let temp = [];
+      snapshot.forEach(doc => temp.push(doc.data()));
+      baseDeDatosMemoria = temp;
+    });
+
+    // --- 2. GRABACIÓN DE AUDIO NATIVO ---
+    let mediaRecorder;
+    let audioChunks = [];
+    const btnMic = document.getElementById('btn-mic');
+
+    async function iniciarGrabacionAudio() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) audioChunks.push(event.data);
+            };
+            
+            mediaRecorder.start();
+            btnMic.classList.add('grabando');
+            if (navigator.vibrate) navigator.vibrate([50]);
+        } catch (err) {
+            alert("Necesitas dar permiso al micrófono para enviar audios.");
+            console.error(err);
+        }
+    }
+
+    function detenerYEnviarAudio() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            btnMic.classList.remove('grabando');
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+            
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64String = reader.result.split(',')[1];
+                    transcribirConGemini(base64String);
+                };
+            };
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    // --- 3. TRANSCRIPCIÓN CON GEMINI (MODO DICTADO) ---
+    async function transcribirConGemini(base64String) {
+        const input = document.getElementById('input-mensaje');
+        const valorOriginal = input.value;
+        input.value = "Transcribiendo... (Gemini está escuchando)";
+
+        try {
+            // Reutilizamos el backend que ya habíamos preparado para "solo transcribir"
+            const respuesta = await fetch(URL_API_GAS, {
+                method: "POST",
+                body: JSON.stringify({ modo: "transcripcion", audioBase64: base64String, audioMimeType: 'audio/webm' })
+            });
+            const data = await respuesta.json();
+
+            if (data.status === "success") {
+                const textoTranscrito = data.respuesta.trim();
+                // Pone el texto en la caja para que lo puedas editar
+                input.value = textoTranscrito;
+                // Auto-ajusta la altura de la caja de texto
+                input.style.height = 'auto';
+                input.style.height = (input.scrollHeight) + 'px';
+            } else {
+                input.value = valorOriginal;
+                alert("Error al transcribir: " + data.message);
+            }
+        } catch (err) {
+            input.value = valorOriginal;
+            alert("Error de conexión al transcribir.");
+        }
+    }
+
+    // --- ENVÍO DE TEXTO NORMAL ---
+    function enviarTexto() {
+      const texto = document.getElementById('input-mensaje').value.trim();
+      if (!texto) return;
+      document.getElementById('input-mensaje').value = "";
+      agregarBurbuja(texto, "msg-usuario");
+      procesarConsultaMekan(texto);
+    }
+
+    // --- 4. FILTRO NATIVO (MAGIA MEJORADA) ---
+    function preFiltrarBD(query) {
+        const q = query.toLowerCase();
+        
+        // Mapeo inteligente para entender los apodos de la agencia
+        let editorBuscado = q;
+        if (q.includes("gabo")) editorBuscado += " gabriel hernandez";
+        if (q.includes("alex")) editorBuscado += " alejandro baldivieso";
+        if (q.includes("pablo")) editorBuscado += " pablo gomez";
+
+        let matches = baseDeDatosMemoria.filter(p => {
+            const cliente = (p.cliente || "").toLowerCase();
+            const fecha = (p.fecha_evento || p.fecha || "").toLowerCase();
+            const editor = (p.editor || "").toLowerCase();
+            const estado = (p.estado_actual || p.estado || "").toLowerCase();
+
+            // Verificamos si la consulta menciona al cliente, fecha, editor o estado
+            const coincidenciaCliente = cliente.split(" ").filter(w => w.length > 3).some(w => q.includes(w));
+            const coincidenciaFecha = fecha && q.includes(fecha);
+            const coincidenciaEditor = editor && editor !== "sin asignar" && editorBuscado.includes(editor.split(" ")[0].toLowerCase());
+            const coincidenciaEstado = estado && q.includes(estado.toLowerCase());
+
+            // Si coincide cualquiera de estos criterios, lo seleccionamos
+            return coincidenciaCliente || coincidenciaFecha || coincidenciaEditor || coincidenciaEstado;
+        });
+
+        // Si pregunta por un editor o estado general, ampliamos el límite para que Gemini tenga la foto completa
+        let limite = (q.includes("gabo") || q.includes("gabriel") || q.includes("pablo") || q.includes("alex") || q.includes("corrección") || q.includes("proceso")) ? 50 : 15;
+
+        // Si hay resultados, mandamos esos. Si no, mandamos los últimos 10 para dar contexto.
+        return matches.length > 0 ? matches.slice(0, limite) : baseDeDatosMemoria.slice(0, 10);
+    }
+
+    // --- 5. COMUNICACIÓN CON MEKAN ÁLEX (Ya filtrado) ---
+    async function procesarConsultaMekan(texto) {
+      const idCarga = agregarBurbuja("Analizando datos y procesando...", "msg-mekan", true);
+      const bdFiltrada = preFiltrarBD(texto); 
+      
+      const payloadCompleto = {
+        modo: "mekan",
+        usuarioActual: USUARIO,
+        rolActual: ROL,
+        baseDeDatos: bdFiltrada,
+        historialChat: historialChat,
+        texto: texto
+      };
+
+      try {
+        const respuesta = await fetch(URL_API_GAS, {
+          method: "POST",
+          body: JSON.stringify(payloadCompleto)
+        });
+        
+        const data = await respuesta.json();
+        document.getElementById(idCarga).remove();
+
+        if (data.status === "success") {
+          historialChat.push({ role: "user", parts: [{text: texto}]});
+          historialChat.push({ role: "model", parts: [{text: data.respuesta}]});
+
+          const textoLimpio = procesarYCrearProyectos(data.respuesta);
+          agregarBurbuja(marked.parse(textoLimpio), "msg-mekan", false, true);
+        } else {
+          agregarBurbuja("Error en el núcleo: " + data.message, "msg-mekan");
+        }
+      } catch (err) {
+        document.getElementById(idCarga).remove();
+        agregarBurbuja("No hay conexión con el servidor.", "msg-mekan");
+      }
+    }
+
+    // --- 5. INTERCEPTOR DE ÓRDENES ---
+    function procesarYCrearProyectos(respuestaMekan) {
+      const regexCrear = /\[ACCION:CREAR\s*\|\s*CLIENTE:(.*?)\s*\|\s*FECHA:(.*?)\s*\|\s*EVENTO:(.*?)\s*\|\s*EDITOR:(.*?)\s*\|\s*TAREA:(.*?)\s*\|\s*PRECIO:(.*?)\s*\|\s*MONEDA:(.*?)\]/gi;
+      let match;
+      let textoRenderizado = respuestaMekan;
+      let creacionExitosa = false;
+
+      while ((match = regexCrear.exec(respuestaMekan)) !== null) {
+          creacionExitosa = true;
+          const cliente = match[1].trim(); const fecha = match[2].trim(); const evento = match[3].trim(); const editor = match[4].trim(); const tarea = match[5].trim(); const precio = match[6].trim(); const moneda = match[7].trim();
+          
+          textoRenderizado = textoRenderizado.replace(match[0], '').trim();
+          
+          db.collection("eventos").add({
+              cliente: cliente, fecha: fecha, tipo: evento, editor: editor,
+              estado: editor !== "Sin asignar" ? "Asignado" : "Sin asignar",
+              tareasJSON: JSON.stringify([{ tipo: tarea, precio: precio, moneda: moneda }]),
+              precioTotal: "Pendiente",
+              fechaCreacion: new Date().toISOString()
+          });
+      }
+      
+      if(creacionExitosa) {
+          agregarBurbuja("✅ Proyecto registrado en la plataforma exitosamente.", "msg-mekan");
+      }
+      return textoRenderizado;
+    }
+
+    // --- UTILIDADES UI ---
+    function agregarBurbuja(contenido, clase, esCarga = false, esHTML = false) {
+      const caja = document.getElementById('chat-box');
+      const msg = document.createElement('div');
+      msg.className = "mensaje " + clase;
+      msg.id = "msg-" + Date.now();
+      if(esCarga) { msg.style.color = "#aaa"; msg.style.fontStyle = "italic"; }
+      
+      if(esHTML) msg.innerHTML = contenido;
+      else msg.innerText = contenido;
+
+      caja.appendChild(msg);
+      caja.scrollTop = caja.scrollHeight;
+      return msg.id;
+    }
+
+    document.getElementById('input-mensaje').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+    
+    document.getElementById('input-mensaje').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { 
+        e.preventDefault();
+        enviarTexto();
+        this.style.height = 'auto';
+      }
+    });
+  </script>
+</body>
+</html>
