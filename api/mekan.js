@@ -73,24 +73,27 @@ Si un usuario AUTORIZADO te ordena ejecutar una acción, confirma textualmente y
       };
     }
 
-    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY;
+    // --- SISTEMA DE REDUNDANCIA Y CEREBROS DE RESPALDO ---
+    // Mekan intentará conectarse a estos modelos en orden si el anterior falla.
+    const CEREBROS_DE_RESPALDO = [
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
+        "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + API_KEY,
+        "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" + API_KEY
+    ];
 
-    // Configuración del reintento automático
-    const MAX_INTENTOS = 5;
-    let intentoActual = 0;
     let exito = false;
     let respuestaFinalTexto = "";
     let ultimoError = "";
 
-    // Función auxiliar para pausar la ejecución (2 segundos)
-    const esperar = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+    for (let i = 0; i < CEREBROS_DE_RESPALDO.length; i++) {
+        if (exito) break; // Si ya triunfamos con un modelo, detenemos el ciclo
 
-    while (intentoActual < MAX_INTENTOS && !exito) {
+        const urlActual = CEREBROS_DE_RESPALDO[i];
+        console.log(`Intentando conectar con el cerebro #${i + 1}...`);
+
         try {
-            intentoActual++;
-            console.log(`Intento ${intentoActual} de ${MAX_INTENTOS}...`);
-
-            const response = await fetch(url, {
+            const response = await fetch(urlActual, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
@@ -98,38 +101,33 @@ Si un usuario AUTORIZADO te ordena ejecutar una acción, confirma textualmente y
 
             const respuestaJSON = await response.json();
 
-            // Verificamos si la respuesta fue exitosa
+            // Verificamos si este cerebro respondió con éxito
             if (respuestaJSON.candidates && respuestaJSON.candidates.length > 0) {
                 respuestaFinalTexto = respuestaJSON.candidates[0].content.parts[0].text;
                 exito = true;
             } else {
-                // Si hay error de Google (ej. Alta demanda), lanzamos el error para que el 'catch' lo atrape y reintente
+                // Si este cerebro da error, lo lanzamos para que el catch pase al siguiente
                 if (respuestaJSON.error && respuestaJSON.error.message) {
                     throw new Error(respuestaJSON.error.message);
                 } else {
-                    throw new Error("Gemini no devolvió respuesta ni error claro.");
+                    throw new Error("Este modelo no devolvió una respuesta válida.");
                 }
             }
         } catch (error) {
             ultimoError = error.message;
-            console.log(`Fallo en el intento ${intentoActual}: ${ultimoError}`);
-            
-            // Si no hemos llegado al límite, esperamos 2 segundos antes de volver a intentar
-            if (intentoActual < MAX_INTENTOS) {
-                await esperar(2000); 
-            }
+            console.log(`Fallo en el cerebro #${i + 1}: ${ultimoError}`);
         }
     }
 
-    // Evaluación final: ¿Logró conectarse después de los 5 intentos?
+    // Evaluación final: ¿Fallaron TODOS los cerebros de respaldo?
     if (!exito) {
         return res.status(200).json({
             status: "success", 
-            respuesta: `Lo siento mucho, los servidores de Google están experimentando una demanda extrema. Intenté conectarme 5 veces seguidas sin éxito. Por favor, dame un par de minutos e inténtalo de nuevo.\n\n*(Detalle técnico: ${ultimoError})*`
+            respuesta: `Sistemas críticos saturados. Mis cerebros de respaldo tampoco pudieron procesar la solicitud en este momento.\n\n*(Error final: ${ultimoError})*`
         });
     }
 
-    // Si tuvo éxito, enviamos el texto a tu PWA
+    // Si tuvo éxito con alguno, enviamos el texto a tu PWA
     return res.status(200).json({
         status: "success",
         respuesta: respuestaFinalTexto
