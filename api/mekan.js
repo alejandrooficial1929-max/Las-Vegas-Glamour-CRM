@@ -73,29 +73,70 @@ Si un usuario AUTORIZADO te ordena ejecutar una acción, confirma textualmente y
       };
     }
 
-    const url = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + API_KEY;
-    
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+    const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY;
+
+    // Configuración del reintento automático
+    const MAX_INTENTOS = 5;
+    let intentoActual = 0;
+    let exito = false;
+    let respuestaFinalTexto = "";
+    let ultimoError = "";
+
+    // Función auxiliar para pausar la ejecución (2 segundos)
+    const esperar = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    while (intentoActual < MAX_INTENTOS && !exito) {
+        try {
+            intentoActual++;
+            console.log(`Intento ${intentoActual} de ${MAX_INTENTOS}...`);
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const respuestaJSON = await response.json();
+
+            // Verificamos si la respuesta fue exitosa
+            if (respuestaJSON.candidates && respuestaJSON.candidates.length > 0) {
+                respuestaFinalTexto = respuestaJSON.candidates[0].content.parts[0].text;
+                exito = true;
+            } else {
+                // Si hay error de Google (ej. Alta demanda), lanzamos el error para que el 'catch' lo atrape y reintente
+                if (respuestaJSON.error && respuestaJSON.error.message) {
+                    throw new Error(respuestaJSON.error.message);
+                } else {
+                    throw new Error("Gemini no devolvió respuesta ni error claro.");
+                }
+            }
+        } catch (error) {
+            ultimoError = error.message;
+            console.log(`Fallo en el intento ${intentoActual}: ${ultimoError}`);
+            
+            // Si no hemos llegado al límite, esperamos 2 segundos antes de volver a intentar
+            if (intentoActual < MAX_INTENTOS) {
+                await esperar(2000); 
+            }
+        }
+    }
+
+    // Evaluación final: ¿Logró conectarse después de los 5 intentos?
+    if (!exito) {
+        return res.status(200).json({
+            status: "success", 
+            respuesta: `Lo siento mucho, los servidores de Google están experimentando una demanda extrema. Intenté conectarme 5 veces seguidas sin éxito. Por favor, dame un par de minutos e inténtalo de nuevo.\n\n*(Detalle técnico: ${ultimoError})*`
+        });
+    }
+
+    // Si tuvo éxito, enviamos el texto a tu PWA
+    return res.status(200).json({
+        status: "success",
+        respuesta: respuestaFinalTexto
     });
 
-    const respuestaJSON = await response.json();
-
-    if (respuestaJSON.candidates && respuestaJSON.candidates.length > 0) {
-      return res.status(200).json({ 
-        status: "success", 
-        respuesta: respuestaJSON.candidates[0].content.parts[0].text 
-      });
-    } else {
-      let errorMsg = "Gemini no devolvió respuesta.";
-      if (respuestaJSON.error && respuestaJSON.error.message) {
-        errorMsg = "Error de API: " + respuestaJSON.error.message;
-      }
-      return res.status(200).json({ status: "error", message: errorMsg });
-    }
   } catch (error) {
+    // Este catch cierra el "try" principal
     return res.status(500).json({ status: "error", message: error.toString() });
   }
 }
