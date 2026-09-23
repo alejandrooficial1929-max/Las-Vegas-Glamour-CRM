@@ -42,6 +42,16 @@
 </head>
 <body>
 
+  <!-- Pantalla de Login de Mekan Álex -->
+<div id="login-mekan" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--lvg-dark, #1a1a1a); z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white;">
+    <img src="https://i.imgur.com/3Q95w5A.png" alt="Mekan" style="width:80px; margin-bottom:20px; border-radius:50%;">
+    <h2 style="margin-bottom:20px; font-family:sans-serif;">Acceso Mekan</h2>
+    <input type="text" id="m-user" placeholder="Usuario" style="margin-bottom:15px; padding:12px; width:250px; border-radius:8px; border:none; text-align:center; font-size:16px;">
+    <input type="password" id="m-pass" placeholder="Contraseña" style="margin-bottom:20px; padding:12px; width:250px; border-radius:8px; border:none; text-align:center; font-size:16px;">
+    <button onclick="intentarLoginMekan()" style="padding:12px 30px; background:#d4af37; color:black; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">Conectar</button>
+    <p id="m-error" style="color:#ff6b6b; display:none; margin-top:15px; font-family:sans-serif;">Credenciales incorrectas</p>
+</div>
+
   <div class="chat-header">
     <div class="avatar">🤖</div>
     <div>
@@ -72,8 +82,58 @@
 
     let baseDeDatosMemoria = [];
     let historialChat = [];
-    const ROL = "Asignadora";
-    const USUARIO = "Andrea Baca";
+let ROL = "";
+let USUARIO = "";
+
+// 1. VERIFICAR SESIÓN ACTIVA AL ENTRAR
+window.onload = () => {
+    const sesionUsuario = localStorage.getItem('mekan_user');
+    const sesionRol = localStorage.getItem('mekan_role');
+    
+    if (sesionUsuario && sesionRol) {
+        USUARIO = sesionUsuario;
+        ROL = sesionRol;
+        document.getElementById('login-mekan').style.display = 'none';
+        actualizarCabecera();
+    }
+};
+
+// 2. FUNCIÓN DE INICIO DE SESIÓN
+async function intentarLoginMekan() {
+    const u = document.getElementById('m-user').value.trim();
+    const p = document.getElementById('m-pass').value.trim();
+    if (!u || !p) return;
+
+    try {
+        const snapshot = await db.collection("usuarios").where("user", "==", u).where("pass", "==", p).get();
+        if (!snapshot.empty) {
+            const data = snapshot.docs[0].data();
+            USUARIO = data.user;
+            ROL = data.role;
+            
+            // Guardar en la memoria del celular/navegador
+            localStorage.setItem('mekan_user', USUARIO);
+            localStorage.setItem('mekan_role', ROL);
+            
+            document.getElementById('login-mekan').style.display = 'none';
+            actualizarCabecera();
+        } else {
+            document.getElementById('m-error').style.display = 'block';
+        }
+    } catch (err) {
+        document.getElementById('m-error').innerText = "Error de red.";
+        document.getElementById('m-error').style.display = 'block';
+    }
+}
+
+// 3. ACTUALIZAR INTERFAZ
+function actualizarCabecera() {
+    // Busca el texto que dice "Online - Asignadora" y lo actualiza con el rol real
+    const subtitulo = document.querySelector('p[style*="color: #4ade80"]'); // Asumiendo el estilo del puntito verde
+    if (subtitulo) {
+        subtitulo.innerHTML = `🟢 Online - ${ROL}`;
+    }
+}
 
     db.collection("eventos").onSnapshot(snapshot => {
       let temp = [];
