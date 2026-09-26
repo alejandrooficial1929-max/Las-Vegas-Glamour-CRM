@@ -73,24 +73,43 @@ Si un usuario AUTORIZADO te ordena ejecutar una acción, confirma textualmente y
       };
     }
 
-    // --- SISTEMA DE REDUNDANCIA Y CEREBROS DE RESPALDO ---
-    // Mekan intentará conectarse a estos modelos en orden si el anterior falla.
-    const CEREBROS_DE_RESPALDO = [
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
-        "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + API_KEY,
-        "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" + API_KEY
-    ];
+    // --- 1. DESCUBRIMIENTO DINÁMICO DE CEREBROS (Service Discovery) ---
+    const urlModelos = "https://generativelanguage.googleapis.com/v1beta/models?key=" + API_KEY;
+    let cerebrosDisponibles = [];
 
+    try {
+        const respuestaModelos = await fetch(urlModelos);
+        const datosModelos = await respuestaModelos.json();
+        
+        if (datosModelos.models) {
+            cerebrosDisponibles = datosModelos.models
+                .filter(m => m.name.includes("gemini") && m.supportedGenerationMethods.includes("generateContent"))
+                .map(m => `https://generativelanguage.googleapis.com/v1beta/${m.name}:generateContent?key=${API_KEY}`);
+        }
+    } catch (e) {
+        console.log("Fallo al escanear el catálogo: ", e);
+    }
+
+    if (cerebrosDisponibles.length === 0) {
+        cerebrosDisponibles = ["https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY];
+    } else {
+        cerebrosDisponibles.sort((a, b) => {
+            if (a.includes("flash") && !b.includes("flash")) return -1;
+            if (!a.includes("flash") && b.includes("flash")) return 1;
+            return 0;
+        });
+    }
+
+    // --- 2. CONEXIÓN INTELIGENTE ---
     let exito = false;
     let respuestaFinalTexto = "";
     let ultimoError = "";
 
-    for (let i = 0; i < CEREBROS_DE_RESPALDO.length; i++) {
-        if (exito) break; // Si ya triunfamos con un modelo, detenemos el ciclo
-
-        const urlActual = CEREBROS_DE_RESPALDO[i];
-        console.log(`Intentando conectar con el cerebro #${i + 1}...`);
+    for (let i = 0; i < cerebrosDisponibles.length; i++) {
+        if (exito) break; 
+        
+        const urlActual = cerebrosDisponibles[i];
+        console.log(`Conectando con cerebro autodescubierto #${i + 1}...`);
 
         try {
             const response = await fetch(urlActual, {
@@ -101,40 +120,35 @@ Si un usuario AUTORIZADO te ordena ejecutar una acción, confirma textualmente y
 
             const respuestaJSON = await response.json();
 
-            // Verificamos si este cerebro respondió con éxito
             if (respuestaJSON.candidates && respuestaJSON.candidates.length > 0) {
                 respuestaFinalTexto = respuestaJSON.candidates[0].content.parts[0].text;
                 exito = true;
             } else {
-                // Si este cerebro da error, lo lanzamos para que el catch pase al siguiente
                 if (respuestaJSON.error && respuestaJSON.error.message) {
                     throw new Error(respuestaJSON.error.message);
                 } else {
-                    throw new Error("Este modelo no devolvió una respuesta válida.");
+                    throw new Error("El modelo no devolvió una respuesta de texto válida.");
                 }
             }
         } catch (error) {
             ultimoError = error.message;
-            console.log(`Fallo en el cerebro #${i + 1}: ${ultimoError}`);
+            console.log(`Cerebro #${i + 1} falló: ${ultimoError}`);
         }
     }
 
-    // Evaluación final: ¿Fallaron TODOS los cerebros de respaldo?
     if (!exito) {
         return res.status(200).json({
             status: "success", 
-            respuesta: `Sistemas críticos saturados. Mis cerebros de respaldo tampoco pudieron procesar la solicitud en este momento.\n\n*(Error final: ${ultimoError})*`
+            respuesta: `Sistemas saturados. Analicé el catálogo en vivo de Google, pero ninguno logró procesar la solicitud.\n\n*(Error final: ${ultimoError})*`
         });
     }
 
-    // Si tuvo éxito con alguno, enviamos el texto a tu PWA
     return res.status(200).json({
         status: "success",
         respuesta: respuestaFinalTexto
     });
 
   } catch (error) {
-    // Este catch cierra el "try" principal
     return res.status(500).json({ status: "error", message: error.toString() });
   }
 }
