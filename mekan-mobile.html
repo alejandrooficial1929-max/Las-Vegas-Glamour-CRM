@@ -498,27 +498,46 @@ function actualizarCabecera() {
           }
       }
 
-      // 2. Interceptar Órdenes de Creación
-      const regexCrear = /\[ACCION:CREAR\s*\|\s*CLIENTE:(.*?)\s*\|\s*FECHA:(.*?)\s*\|\s*EVENTO:(.*?)\s*\|\s*EDITOR:(.*?)\s*\|\s*TAREA:(.*?)\s*\|\s*PRECIO:(.*?)\s*\|\s*MONEDA:(.*?)\]/gi;
+      // 2. Interceptar Órdenes de Creación (Ahora con Urgencia)
+      const regexCrear = /\[ACCION:CREAR\s*\|\s*CLIENTE:(.*?)\s*\|\s*FECHA:(.*?)\s*\|\s*EVENTO:(.*?)\s*\|\s*EDITOR:(.*?)\s*\|\s*TAREA:(.*?)\s*\|\s*PRECIO:(.*?)\s*\|\s*MONEDA:(.*?)\s*\|\s*URGENCIA:(.*?)\]/gi;
       let match;
       let textoRenderizado = respuestaMekan;
       let creacionExitosa = false;
 
       while ((match = regexCrear.exec(respuestaMekan)) !== null) {
           creacionExitosa = true;
-          const cliente = match[1].trim(); const fecha = match[2].trim(); const evento = match[3].trim(); const editor = match[4].trim(); const tarea = match[5].trim(); const precio = match[6].trim(); const moneda = match[7].trim();
+          const cliente = match[1].trim(); const fecha = match[2].trim(); const evento = match[3].trim(); const editor = match[4].trim(); const tarea = match[5].trim(); const precio = match[6].trim(); const moneda = match[7].trim(); const urgencia = match[8].trim();
           
           textoRenderizado = textoRenderizado.replace(match[0], '').trim();
           
-          // Solo guarda el proyecto en la base de datos si es un mensaje nuevo
+          // Solo opera si es un mensaje nuevo (no al cargar historial)
           if (!esCargaInicial) {
+              // 1. Guardar en Firebase (Base de Datos)
               db.collection("eventos").add({
                   cliente: cliente, fecha: fecha, tipo: evento, editor: editor,
                   estado: editor !== "Sin asignar" ? "Asignado" : "Sin asignar",
-                  tareasJSON: JSON.stringify([{ tipo: tarea, precio: precio, moneda: moneda }]),
+                  tareasJSON: JSON.stringify([{ tipo: tarea, precio: precio, moneda: moneda, urgencia: urgencia }]),
                   precioTotal: "Pendiente",
                   fechaCreacion: new Date().toISOString()
               });
+
+              // 2. Disparar creación en Google Drive (Motor Vercel)
+              const nombreCarpetaDrive = cliente + " " + fecha; // Ej: "Claudia 07.22.23"
+              
+              fetch('/api/drive', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ nombreCarpeta: nombreCarpetaDrive })
+              })
+              .then(res => res.json())
+              .then(dataDrive => {
+                  if(dataDrive.status === 'success') {
+                      console.log("Éxito total: Carpeta creada en Drive ->", dataDrive.url);
+                  } else {
+                      console.error("Fallo al crear en Drive:", dataDrive.message);
+                  }
+              })
+              .catch(err => console.error("Error de conexión con Drive:", err));
           }
       }
       
