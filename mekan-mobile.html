@@ -530,38 +530,38 @@ function actualizarCabecera() {
       return textoRenderizado;
     }
 
-    // --- 6. GESTOR DE HISTORIAL Y RENDIMIENTO ---
+    // --- 6. GESTOR DE HISTORIAL Y PAGINACIÓN (Estilo ChatGPT) ---
+    let ultimoMensajeCargado = null; // Marca de referencia para saber dónde nos quedamos al subir (scroll)
+
     function guardarMensajeFirebase(rol, contenido) {
-        db.collection("historial_alx").add({
-            usuario: USUARIO,
+        // Guardamos los mensajes en una subcolección única para cada usuario. Esto evita el bloqueo de Firebase.
+        db.collection("chats_alx").doc(USUARIO).collection("mensajes").add({
             rol: rol,
             texto: contenido,
-            timestamp: Date.now() // Usamos el tiempo exacto del celular/PC para evitar bloqueos de Firebase
+            timestamp: Date.now()
         });
     }
 
     function cargarHistorialChatUI() {
-        // Descargamos los mensajes sin filtros complejos para evadir el bloqueo de Índices
-        db.collection("historial_alx")
-          .where("usuario", "==", USUARIO)
+        db.collection("chats_alx").doc(USUARIO).collection("mensajes")
+          .orderBy("timestamp", "desc") // Pedimos de los más recientes a los más viejos
+          .limit(30) // Solo los últimos 30
           .get().then(snapshot => {
-              if (!snapshot.empty) {
-                  const msgBienvenida = document.querySelector('#chat-box .mensaje');
-                  if (msgBienvenida) msgBienvenida.style.display = 'none';
+              if (snapshot.empty) return;
+
+              const msgBienvenida = document.querySelector('#chat-box .mensaje:first-child');
+              if (msgBienvenida && msgBienvenida.innerText.includes("En línea")) {
+                  msgBienvenida.style.display = 'none';
               }
 
-              let todosLosMensajes = [];
-              snapshot.forEach(doc => todosLosMensajes.push(doc.data()));
+              let mensajesLote = [];
+              ultimoMensajeCargado = snapshot.docs[snapshot.docs.length - 1]; // Guardamos la posición del mensaje más viejo cargado
 
-              // Los ordenamos cronológicamente usando la memoria del navegador
-              todosLosMensajes.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+              snapshot.forEach(doc => mensajesLote.push(doc.data()));
+              mensajesLote.reverse(); // Volteamos la lista para dibujarlos cronológicamente
 
-              // Cortamos para mantener solo los últimos 30 y evitar lag
-              const ultimosMensajes = todosLosMensajes.slice(-30);
-
-              ultimosMensajes.forEach(data => {
+              mensajesLote.forEach(data => {
                   const clase = data.rol === "user" ? "msg-usuario" : "msg-mekan";
-                  
                   historialChat.push({ role: data.rol, parts: [{text: data.texto}] });
                   
                   const textoFinal = data.rol === "model" ? procesarYCrearProyectos(data.texto, true) : data.texto;
@@ -569,6 +569,46 @@ function actualizarCabecera() {
               });
           }).catch(error => console.log("Error al cargar historial:", error));
     }
+
+    // --- ACTIVADOR DE SCROLL INFINITO HACIA ARRIBA ---
+    document.getElementById('chat-box').addEventListener('scroll', function() {
+        // Si el usuario toca el techo del chat y hay mensajes viejos por cargar
+        if (this.scrollTop === 0 && ultimoMensajeCargado) {
+            let alturaPrevia = this.scrollHeight; 
+            
+            db.collection("chats_alx").doc(USUARIO).collection("mensajes")
+              .orderBy("timestamp", "desc")
+              .startAfter(ultimoMensajeCargado) // Empezamos a buscar a partir del último cargado
+              .limit(30)
+              .get().then(snapshot => {
+                  if (snapshot.empty) {
+                      ultimoMensajeCargado = null; // Ya no hay historial más antiguo
+                      return;
+                  }
+                  
+                  ultimoMensajeCargado = snapshot.docs[snapshot.docs.length - 1];
+                  let mensajesViejos = [];
+                  snapshot.forEach(doc => mensajesViejos.push(doc.data()));
+                  
+                  // Insertamos los mensajes viejos arriba del todo
+                  mensajesViejos.forEach(data => {
+                      const clase = data.rol === "user" ? "msg-usuario" : "msg-mekan";
+                      const msg = document.createElement('div');
+                      msg.className = "mensaje " + clase;
+                      const textoFinal = data.rol === "model" ? procesarYCrearProyectos(data.texto, true) : data.texto;
+                      msg.innerHTML = data.rol === "model" ? marked.parse(textoFinal) : textoFinal;
+                      
+                      this.insertBefore(msg, this.firstChild);
+                      
+                      // Le alimentamos este recuerdo al cerebro de ALX también
+                      historialChat.unshift({ role: data.rol, parts: [{text: data.texto}] });
+                  });
+                  
+                  // Empujamos el scroll para que la pantalla no salte bruscamente al cargar
+                  this.scrollTop = this.scrollHeight - alturaPrevia;
+              });
+        }
+    });
 
     // --- UTILIDADES UI ---
     function agregarBurbuja(contenido, clase, esCarga = false, esHTML = false) {
