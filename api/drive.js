@@ -11,29 +11,36 @@ export default async function handler(req, res) {
   try {
     const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     
-    // TRUCO ESTRATÉGICO: 
-    // Como conectar Node.js directamente a Google Drive requiere configurar un Service Account complejo en Google Cloud,
-    // usaremos tu servidor experimental de Apps Script como un "Microservicio" oculto SÓLO para crear carpetas.
-    // Vercel recibe la orden de tu web, se la pasa a Google en secreto, y devuelve la respuesta al instante.
+    // 1. Extraemos las llaves maestras de la bóveda de Vercel (Variables de Entorno)
+    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+    const folderRaiz = process.env.DRIVE_FOLDER_ID;
     
-    const URL_MICROSERVICIO_DRIVE = "https://script.google.com/macros/s/AKfycbwDu2SJYzj1I9tTjMJOKzGNAijn9zLxrM52Fc0Nf_ccxTLIIENQTr55pU81DJ5TK9v6UA/exec";
+    // 2. Nos identificamos en Google Drive con la librería oficial
+    const { google } = await import('googleapis');
+    const auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/drive'],
+    });
+    const drive = google.drive({ version: 'v3', auth });
 
-    const response = await fetch(URL_MICROSERVICIO_DRIVE, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        modo: "drive",
-        accion: data.accion,
-        cliente: data.cliente,
-        fecha: data.fecha,
-        categoria: data.categoria,
-        tipo: data.tipo,
-        nombreCarpeta: data.nombreCarpeta
-      })
+    // 3. Creamos la carpeta usando el nombre enviado por ALX
+    const fileMetadata = {
+      name: data.nombreCarpeta,
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [folderRaiz]
+    };
+
+    const folder = await drive.files.create({
+      resource: fileMetadata,
+      fields: 'id, webViewLink',
     });
 
-    const resultado = await response.json();
-    return res.status(200).json(resultado);
+    // 4. Devolvemos el link de éxito a la PWA
+    return res.status(200).json({ 
+        status: 'success', 
+        id: folder.data.id, 
+        url: folder.data.webViewLink 
+    });
 
   } catch (error) {
     return res.status(500).json({ status: "error", message: error.toString() });
