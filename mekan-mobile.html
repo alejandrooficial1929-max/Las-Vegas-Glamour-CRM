@@ -263,14 +263,14 @@
 window.onload = () => {
     const sesionUsuario = localStorage.getItem('mekan_user');
     const sesionRol = localStorage.getItem('mekan_role');
-    
+
     if (sesionUsuario && sesionRol) {
         USUARIO = sesionUsuario;
         ROL = sesionRol;
         document.getElementById('login-mekan').style.display = 'none';
         actualizarCabecera();
         cargarMemorias();
-        
+        cargarHistorialChatUI(); // <-- Esta es la orden para descargar el chat al refrescar
     }
 };
 
@@ -530,24 +530,35 @@ function actualizarCabecera() {
       return textoRenderizado;
     }
 
-    // --- 6. GESTOR DE HISTORIAL Y PAGINACIÓN (Estilo ChatGPT) ---
-    let ultimoMensajeCargado = null; // Marca de referencia para saber dónde nos quedamos al subir (scroll)
+    // --- 6. GESTOR DE HISTORIAL Y PAGINACIÓN (Modo Diagnóstico) ---
+    let ultimoMensajeCargado = null; 
 
     function guardarMensajeFirebase(rol, contenido) {
-        // Guardamos los mensajes en una subcolección única para cada usuario. Esto evita el bloqueo de Firebase.
         db.collection("chats_alx").doc(USUARIO).collection("mensajes").add({
             rol: rol,
             texto: contenido,
             timestamp: Date.now()
+        }).then(() => {
+            console.log("Mensaje guardado correctamente en Firebase.");
+        }).catch(err => {
+            alert("Error al GUARDAR en Firebase: " + err.message);
         });
     }
 
     function cargarHistorialChatUI() {
+        console.log("Intentando descargar historial de:", USUARIO);
+        
         db.collection("chats_alx").doc(USUARIO).collection("mensajes")
-          .orderBy("timestamp", "desc") // Pedimos de los más recientes a los más viejos
-          .limit(30) // Solo los últimos 30
+          .orderBy("timestamp", "desc")
+          .limit(30)
           .get().then(snapshot => {
-              if (snapshot.empty) return;
+              
+              if (snapshot.empty) {
+                  console.log("Firebase dice que no hay mensajes guardados para este usuario.");
+                  return;
+              }
+
+              console.log("Se descargaron " + snapshot.size + " mensajes.");
 
               const msgBienvenida = document.querySelector('#chat-box .mensaje:first-child');
               if (msgBienvenida && msgBienvenida.innerText.includes("En línea")) {
@@ -555,10 +566,10 @@ function actualizarCabecera() {
               }
 
               let mensajesLote = [];
-              ultimoMensajeCargado = snapshot.docs[snapshot.docs.length - 1]; // Guardamos la posición del mensaje más viejo cargado
+              ultimoMensajeCargado = snapshot.docs[snapshot.docs.length - 1]; 
 
               snapshot.forEach(doc => mensajesLote.push(doc.data()));
-              mensajesLote.reverse(); // Volteamos la lista para dibujarlos cronológicamente
+              mensajesLote.reverse(); 
 
               mensajesLote.forEach(data => {
                   const clase = data.rol === "user" ? "msg-usuario" : "msg-mekan";
@@ -567,7 +578,9 @@ function actualizarCabecera() {
                   const textoFinal = data.rol === "model" ? procesarYCrearProyectos(data.texto, true) : data.texto;
                   agregarBurbuja(data.rol === "model" ? marked.parse(textoFinal) : textoFinal, clase, false, data.rol === "model");
               });
-          }).catch(error => console.log("Error al cargar historial:", error));
+          }).catch(err => {
+              alert("Error al DESCARGAR de Firebase: " + err.message);
+          });
     }
 
     // --- ACTIVADOR DE SCROLL INFINITO HACIA ARRIBA ---
