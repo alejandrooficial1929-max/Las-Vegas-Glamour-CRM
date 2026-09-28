@@ -294,6 +294,7 @@ async function intentarLoginMekan() {
             document.getElementById('login-mekan').style.display = 'none';
             actualizarCabecera();
             cargarMemorias();
+            cargarHistorialChatUI(); // Activa la descarga límite de mensajes
         } else {
             document.getElementById('m-error').style.display = 'block';
         }
@@ -398,6 +399,7 @@ function actualizarCabecera() {
       if (!texto) return;
       document.getElementById('input-mensaje').value = "";
       agregarBurbuja(texto, "msg-usuario");
+      guardarMensajeFirebase("user", texto);
       procesarConsultaMekan(texto);
     }
 
@@ -461,6 +463,8 @@ function actualizarCabecera() {
         if (data.status === "success") {
           historialChat.push({ role: "user", parts: [{text: texto}]});
           historialChat.push({ role: "model", parts: [{text: data.respuesta}]});
+          
+          guardarMensajeFirebase("model", data.respuesta);
 
           const textoLimpio = procesarYCrearProyectos(data.respuesta);
           agregarBurbuja(marked.parse(textoLimpio), "msg-mekan", false, true);
@@ -474,20 +478,24 @@ function actualizarCabecera() {
     }
 
     // --- 5. INTERCEPTOR DE ÓRDENES ---
-    function procesarYCrearProyectos(respuestaMekan) {
-      // 1. Interceptar Órdenes de Memoria (Nuevo Módulo)
+    // Añadimos esCargaInicial para saber si ALX está recordando mensajes viejos o procesando uno nuevo
+    function procesarYCrearProyectos(respuestaMekan, esCargaInicial = false) {
+      
+      // 1. Interceptar Órdenes de Memoria
       const regexRecordar = /\[ACCION:RECORDAR\s*\|\s*RECUERDO:(.*?)\]/gi;
       let matchMemoria;
       while ((matchMemoria = regexRecordar.exec(respuestaMekan)) !== null) {
           const recuerdoTexto = matchMemoria[1].trim();
-          respuestaMekan = respuestaMekan.replace(matchMemoria[0], '').trim(); // Oculta la etiqueta del chat
+          respuestaMekan = respuestaMekan.replace(matchMemoria[0], '').trim(); 
           
-          // Guarda el recuerdo en Firebase para siempre
-          db.collection("memorias_alx").add({
-              usuario: USUARIO,
-              recuerdo: recuerdoTexto,
-              fecha: new Date().toISOString()
-          });
+          // Solo guarda en Firebase si es un mensaje nuevo, no si está cargando el historial
+          if (!esCargaInicial) {
+              db.collection("memorias_alx").add({
+                  usuario: USUARIO,
+                  recuerdo: recuerdoTexto,
+                  fecha: new Date().toISOString()
+              });
+          }
       }
 
       // 2. Interceptar Órdenes de Creación
@@ -502,19 +510,61 @@ function actualizarCabecera() {
           
           textoRenderizado = textoRenderizado.replace(match[0], '').trim();
           
-          db.collection("eventos").add({
-              cliente: cliente, fecha: fecha, tipo: evento, editor: editor,
-              estado: editor !== "Sin asignar" ? "Asignado" : "Sin asignar",
-              tareasJSON: JSON.stringify([{ tipo: tarea, precio: precio, moneda: moneda }]),
-              precioTotal: "Pendiente",
-              fechaCreacion: new Date().toISOString()
-          });
+          // Solo guarda el proyecto en la base de datos si es un mensaje nuevo
+          if (!esCargaInicial) {
+              db.collection("eventos").add({
+                  cliente: cliente, fecha: fecha, tipo: evento, editor: editor,
+                  estado: editor !== "Sin asignar" ? "Asignado" : "Sin asignar",
+                  tareasJSON: JSON.stringify([{ tipo: tarea, precio: precio, moneda: moneda }]),
+                  precioTotal: "Pendiente",
+                  fechaCreacion: new Date().toISOString()
+              });
+          }
       }
       
-      if(creacionExitosa) {
+      // Solo muestra la alerta de éxito si es un mensaje nuevo
+      if (creacionExitosa && !esCargaInicial) {
           agregarBurbuja("✅ Proyecto registrado en la plataforma exitosamente.", "msg-mekan");
       }
+      
       return textoRenderizado;
+    }
+
+    // --- 6. GESTOR DE HISTORIAL Y RENDIMIENTO ---
+    function guardarMensajeFirebase(rol, contenido) {
+        db.collection("historial_alx").add({
+            usuario: USUARIO,
+            rol: rol,
+            texto: contenido,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    }
+
+    function cargarHistorialChatUI() {
+        // Paginación Límite: Solo los últimos 30 mensajes para evitar lag (DOM Overload)
+        db.collection("historial_alx")
+          .where("usuario", "==", USUARIO)
+          .orderBy("timestamp", "asc")
+          .limitToLast(30) 
+          .get().then(snapshot => {
+              if (!snapshot.empty) {
+                  // Ocultamos el mensaje inicial estático si ya hay historial en la nube
+                  const msgBienvenida = document.querySelector('#chat-box .mensaje');
+                  if (msgBienvenida) msgBienvenida.style.display = 'none';
+              }
+
+              snapshot.forEach(doc => {
+                  const data = doc.data();
+                  const clase = data.rol === "user" ? "msg-usuario" : "msg-mekan";
+                  
+                  // Reconstruimos la memoria de contexto de ALX silenciosamente
+                  historialChat.push({ role: data.rol, parts: [{text: data.texto}] });
+                  
+                  // Dibujamos la burbuja (procesando etiquetas sin duplicar acciones en BD)
+                  const textoFinal = data.rol === "model" ? procesarYCrearProyectos(data.texto, true) : data.texto;
+                  agregarBurbuja(data.rol === "model" ? marked.parse(textoFinal) : textoFinal, clase, false, data.rol === "model");
+              });
+          });
     }
 
     // --- UTILIDADES UI ---
