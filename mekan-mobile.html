@@ -536,35 +536,38 @@ function actualizarCabecera() {
             usuario: USUARIO,
             rol: rol,
             texto: contenido,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            timestamp: Date.now() // Usamos el tiempo exacto del celular/PC para evitar bloqueos de Firebase
         });
     }
 
     function cargarHistorialChatUI() {
-        // Paginación Límite: Solo los últimos 30 mensajes para evitar lag (DOM Overload)
+        // Descargamos los mensajes sin filtros complejos para evadir el bloqueo de Índices
         db.collection("historial_alx")
           .where("usuario", "==", USUARIO)
-          .orderBy("timestamp", "asc")
-          .limitToLast(30) 
           .get().then(snapshot => {
               if (!snapshot.empty) {
-                  // Ocultamos el mensaje inicial estático si ya hay historial en la nube
                   const msgBienvenida = document.querySelector('#chat-box .mensaje');
                   if (msgBienvenida) msgBienvenida.style.display = 'none';
               }
 
-              snapshot.forEach(doc => {
-                  const data = doc.data();
+              let todosLosMensajes = [];
+              snapshot.forEach(doc => todosLosMensajes.push(doc.data()));
+
+              // Los ordenamos cronológicamente usando la memoria del navegador
+              todosLosMensajes.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+
+              // Cortamos para mantener solo los últimos 30 y evitar lag
+              const ultimosMensajes = todosLosMensajes.slice(-30);
+
+              ultimosMensajes.forEach(data => {
                   const clase = data.rol === "user" ? "msg-usuario" : "msg-mekan";
                   
-                  // Reconstruimos la memoria de contexto de ALX silenciosamente
                   historialChat.push({ role: data.rol, parts: [{text: data.texto}] });
                   
-                  // Dibujamos la burbuja (procesando etiquetas sin duplicar acciones en BD)
                   const textoFinal = data.rol === "model" ? procesarYCrearProyectos(data.texto, true) : data.texto;
                   agregarBurbuja(data.rol === "model" ? marked.parse(textoFinal) : textoFinal, clase, false, data.rol === "model");
               });
-          });
+          }).catch(error => console.log("Error al cargar historial:", error));
     }
 
     // --- UTILIDADES UI ---
