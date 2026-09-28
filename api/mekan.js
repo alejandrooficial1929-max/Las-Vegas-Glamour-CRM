@@ -1,3 +1,5 @@
+import { moduloMemoria } from './modulos.js';
+
 export default async function handler(req, res) {
   // Configuración de encabezados CORS para permitir peticiones desde cualquier origen
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -67,9 +69,12 @@ Si un usuario AUTORIZADO te ordena ejecutar una acción, confirma textualmente y
         contents: [{ role: "user", parts: [{ inlineData: { mimeType: data.audioMimeType || "audio/webm", data: data.audioBase64 } }] }]
       };
     } else {
+      // Aquí ALX fusiona su personalidad base con el módulo externo de memoria importado
       const contextoDinamico = SYSTEM_PROMPT_MEKAN + 
+        "\n\n" + moduloMemoria +
         "\n\nUSUARIO ACTUAL: " + (data.usuarioActual || "Desconocido") + 
         "\nROL ACTUAL: " + (data.rolActual || "Desconocido") + 
+        "\nMEMORIAS DE ESTE USUARIO: " + JSON.stringify(data.memorias || []) +
         "\n\nBASE DE DATOS PRE-FILTRADA:\n" + JSON.stringify(data.baseDeDatos || []);
 
       payload = {
