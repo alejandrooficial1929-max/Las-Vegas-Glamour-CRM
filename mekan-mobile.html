@@ -246,8 +246,18 @@
 
     let baseDeDatosMemoria = [];
     let historialChat = [];
-let ROL = "";
-let USUARIO = "";
+    let memoriasALX = []; // Nuevo arreglo para guardar los recuerdos
+    let ROL = "";
+    let USUARIO = "";
+
+    // Función para descargar los recuerdos del usuario desde Firebase
+    function cargarMemorias() {
+        db.collection("memorias_alx").where("usuario", "==", USUARIO).onSnapshot(snapshot => {
+            let temp = [];
+            snapshot.forEach(doc => temp.push(doc.data().recuerdo));
+            memoriasALX = temp;
+        });
+    }
 
 // 1. VERIFICAR SESIÓN ACTIVA AL ENTRAR
 window.onload = () => {
@@ -259,6 +269,8 @@ window.onload = () => {
         ROL = sesionRol;
         document.getElementById('login-mekan').style.display = 'none';
         actualizarCabecera();
+        cargarMemorias();
+        
     }
 };
 
@@ -281,6 +293,7 @@ async function intentarLoginMekan() {
             
             document.getElementById('login-mekan').style.display = 'none';
             actualizarCabecera();
+            cargarMemorias();
         } else {
             document.getElementById('m-error').style.display = 'block';
         }
@@ -431,6 +444,7 @@ function actualizarCabecera() {
         usuarioActual: USUARIO,
         rolActual: ROL,
         baseDeDatos: bdFiltrada,
+        memorias: memoriasALX, // Le enviamos las memorias a Vercel
         historialChat: historialChat,
         texto: texto
       };
@@ -461,6 +475,22 @@ function actualizarCabecera() {
 
     // --- 5. INTERCEPTOR DE ÓRDENES ---
     function procesarYCrearProyectos(respuestaMekan) {
+      // 1. Interceptar Órdenes de Memoria (Nuevo Módulo)
+      const regexRecordar = /\[ACCION:RECORDAR\s*\|\s*RECUERDO:(.*?)\]/gi;
+      let matchMemoria;
+      while ((matchMemoria = regexRecordar.exec(respuestaMekan)) !== null) {
+          const recuerdoTexto = matchMemoria[1].trim();
+          respuestaMekan = respuestaMekan.replace(matchMemoria[0], '').trim(); // Oculta la etiqueta del chat
+          
+          // Guarda el recuerdo en Firebase para siempre
+          db.collection("memorias_alx").add({
+              usuario: USUARIO,
+              recuerdo: recuerdoTexto,
+              fecha: new Date().toISOString()
+          });
+      }
+
+      // 2. Interceptar Órdenes de Creación
       const regexCrear = /\[ACCION:CREAR\s*\|\s*CLIENTE:(.*?)\s*\|\s*FECHA:(.*?)\s*\|\s*EVENTO:(.*?)\s*\|\s*EDITOR:(.*?)\s*\|\s*TAREA:(.*?)\s*\|\s*PRECIO:(.*?)\s*\|\s*MONEDA:(.*?)\]/gi;
       let match;
       let textoRenderizado = respuestaMekan;
