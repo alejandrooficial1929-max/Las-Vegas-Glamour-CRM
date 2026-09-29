@@ -1,4 +1,4 @@
-import { moduloMemoria, moduloProyectos } from './modulos.js';
+import { moduloMemoria, moduloProyectos } from './modulos.mjs';
 
 export default async function handler(req, res) {
   // Configuración de encabezados CORS para permitir peticiones desde cualquier origen
