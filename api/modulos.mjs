@@ -1,4 +1,4 @@
-// api/modulos.js
+// api/modulos.mjs
 
 // Este archivo almacena las expansiones cognitivas de ALX. 
 // mekan.js lo llamará cuando necesite saber cómo usar nuevas herramientas.
@@ -9,11 +9,6 @@ Tienes un disco duro virtual. Si necesitas recordar algo permanentemente sobre e
 [ACCION:RECORDAR | RECUERDO:escribe aquí el detalle de lo que quieres recordar]
 
 Tus memorias previas con el usuario actual se te proporcionarán en tu contexto bajo la etiqueta "MEMORIAS DE ESTE USUARIO". Úsalas para no repetir acciones o protocolos ya ejecutados.
-`;
-
-export const moduloMemoria = `
-VI. MÓDULO DE MEMORIA A LARGO PLAZO:
-... (tu código anterior queda intacto) ...
 `;
 
 export const moduloProyectos = `
