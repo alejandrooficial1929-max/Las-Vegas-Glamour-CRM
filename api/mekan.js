@@ -1,4 +1,4 @@
-import { moduloMemoria, moduloProyectos } from './modulos.mjs';
+import { moduloMemoria, moduloProyectos, moduloArchivos } from './modulos.mjs';
 
 export default async function handler(req, res) {
   // Configuración de encabezados CORS para permitir peticiones desde cualquier origen
@@ -74,6 +74,7 @@ Si un usuario AUTORIZADO te ordena ejecutar una acción, confirma textualmente y
       const contextoDinamico = SYSTEM_PROMPT_MEKAN + 
         "\n\n" + moduloMemoria +
         "\n\n" + moduloProyectos +
+        "\n\n" + moduloArchivos +
         "\n\nUSUARIO ACTUAL: " + (data.usuarioActual || "Desconocido") + 
         "\nROL ACTUAL: " + (data.rolActual || "Desconocido") + 
         "\nMEMORIAS DE ESTE USUARIO: " + JSON.stringify(data.memorias || []) +
