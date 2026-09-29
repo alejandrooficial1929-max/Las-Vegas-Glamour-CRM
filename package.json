@@ -1,6 +1,7 @@
 {
   "name": "mekan-app",
   "version": "1.0.0",
+  "type": "module",
   "dependencies": {
     "googleapis": "^128.0.0"
   }
