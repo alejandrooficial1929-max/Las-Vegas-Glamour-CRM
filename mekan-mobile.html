@@ -230,6 +230,7 @@
 
   <div class="chat-input-area">
     <button class="btn-action" id="btn-mic" onpointerdown="iniciarGrabacionAudio()" onpointerup="detenerYEnviarAudio()" onpointerleave="detenerYEnviarAudio()">🎙️</button>
+    <button onclick="adjuntarFoto()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: white; padding: 0 5px;">📎</button>
     <textarea id="input-mensaje" placeholder="Mensaje..." rows="1"></textarea>
     <button class="btn-action" id="btn-envio" onclick="enviarTexto()">➤</button>
   </div>
@@ -249,6 +250,8 @@
     let memoriasALX = []; // Nuevo arreglo para guardar los recuerdos
     let ROL = "";
     let USUARIO = "";
+    let imagenPendienteGlobal = null; 
+    let nombreImagenGlobal = null;
 
     // Función para descargar los recuerdos del usuario desde Firebase
     function cargarMemorias() {
@@ -545,6 +548,42 @@ function actualizarCabecera() {
       if (creacionExitosa && !esCargaInicial) {
           agregarBurbuja("✅ Proyecto registrado en la plataforma exitosamente.", "msg-mekan");
       }
+
+      // 3. Interceptar Órdenes de Guardar Fotos
+      const regexFoto = /\[ACCION:GUARDAR_FOTO\s*\|\s*CARPETA:(.*?)\]/gi;
+      let matchFoto;
+      while ((matchFoto = regexFoto.exec(respuestaMekan)) !== null) {
+          const carpetaDestino = matchFoto[1].trim();
+          textoRenderizado = textoRenderizado.replace(matchFoto[0], '').trim();
+
+          if (imagenPendienteGlobal && !esCargaInicial) {
+              agregarBurbuja("⏳ Subiendo imagen a la carpeta " + carpetaDestino + "...", "msg-mekan");
+              
+              fetch('/api/upload', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      nombreCarpeta: carpetaDestino,
+                      imagenBase64: imagenPendienteGlobal,
+                      nombreArchivo: nombreImagenGlobal,
+                      mimeType: 'image/jpeg'
+                  })
+              })
+              .then(res => res.json())
+              .then(data => {
+                  if(data.status === 'success') {
+                      agregarBurbuja("✅ Imagen guardada con éxito en Drive.", "msg-mekan");
+                  } else {
+                      agregarBurbuja("❌ Error al subir a Drive: " + data.message, "msg-mekan");
+                  }
+              })
+              .catch(err => agregarBurbuja("❌ Error de red al subir foto.", "msg-mekan"));
+              
+              // Limpiamos la memoria para la próxima foto
+              imagenPendienteGlobal = null;
+              nombreImagenGlobal = null;
+          }
+      }
       
       return textoRenderizado;
     }
@@ -671,6 +710,31 @@ function actualizarCabecera() {
         this.style.height = 'auto';
       }
     });
-  </script>
+  // --- UTILIDAD PARA ADJUNTAR FOTOS ---
+    function adjuntarFoto() {
+        const inputF = document.createElement('input');
+        inputF.type = 'file';
+        inputF.accept = 'image/*';
+        inputF.onchange = e => {
+            const file = e.target.files[0];
+            if(!file) return;
+            nombreImagenGlobal = file.name;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imagenPendienteGlobal = event.target.result; // Guardamos la foto en la memoria del navegador
+                
+                // Le avisamos a ALX simulando que el usuario habló
+                const textoAviso = "He adjuntado la imagen: " + file.name;
+                agregarBurbuja("📷 [Imagen adjuntada]<br>" + textoAviso, "msg-usuario");
+                
+                // Le inyectamos una orden oculta a ALX para que sepa qué hacer
+                procesarConsultaMekan(textoAviso + " [SISTEMA: El usuario ha cargado una foto en memoria. Activa tu protocolo de archivos y pregúntale a qué carpeta de proyecto debe ir]");
+            };
+            reader.readAsDataURL(file);
+        };
+        inputF.click(); // Abre la galería de fotos
+    }
+</script>
 </body>
 </html>
