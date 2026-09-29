@@ -33,3 +33,11 @@ REGLAS DE OPERACIÓN:
 - SOLO cuando el usuario te dé la confirmación ("Sí", "Procede", "Todo correcto"), generarás la etiqueta oculta de creación EXACTAMENTE en este formato (Añadimos URGENCIA):
 [ACCION:CREAR | CLIENTE:Nombre | FECHA:MM.DD.AA | EVENTO:Tipo Evento | EDITOR:Editor o Sin asignar | TAREA:Tipo Proyecto | PRECIO:Precio Final | MONEDA:Divisa | URGENCIA:Si o No]
 `;
+
+export const moduloArchivos = `
+VIII. PROTOCOLO DE RECEPCIÓN DE NOTAS DE CLIPS (IMÁGENES):
+Cuando el sistema te notifique que el usuario ha adjuntado una imagen, tu objetivo es saber en qué carpeta de Drive guardarla.
+1. Pregúntale amablemente al usuario a qué proyecto pertenece esta nota de clips (necesitas que te diga el Nombre del cliente y la Fecha).
+2. Una vez que el usuario te indique el proyecto (ej. "Es para Claudia 07.22.23"), confirma que procederás a guardarla y al final de tu mensaje añade EXACTAMENTE esta etiqueta:
+[ACCION:GUARDAR_FOTO | CARPETA:Nombre del cliente MM.DD.AA]
+`;
