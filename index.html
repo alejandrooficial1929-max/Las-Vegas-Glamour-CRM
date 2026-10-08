@@ -222,20 +222,20 @@
   /* --- MODALES --- */
   .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(20,20,22,0.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    background: rgba(0,0,0,0.8); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
     display: flex; justify-content: center; align-items: center; z-index: 3000;
   }
   .modal-content {
     background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); width: 400px;
-    box-shadow: 0 30px 70px rgba(0,0,0,0.35); border: 1px solid var(--border-subtle);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.8); border: 1px solid var(--border-subtle);
   }
   .modal-content input[type="text"], .modal-content input[type="date"], .modal-content input[type="time"], .modal-content select, .modal-content textarea {
     width: 100%; padding: 11px 13px; border-radius: 10px; border: 1px solid var(--border-subtle);
     margin-top: 6px; margin-bottom: 15px; font-family: inherit; box-sizing: border-box;
-    background: #fafafa; font-size: 14px; transition: all 0.25s var(--ease);
+    background: var(--bg-main); color: var(--text-dark); font-size: 14px; transition: all 0.25s var(--ease);
   }
   .modal-content input:focus, .modal-content select:focus, .modal-content textarea:focus {
-    outline: none; border-color: var(--lvg-yellow); background: white; box-shadow: 0 0 0 4px var(--lvg-yellow-soft);
+    outline: none; border-color: var(--lvg-yellow); background: var(--bg-card); box-shadow: 0 0 0 4px var(--lvg-yellow-soft);
   }
 
   #modal-factura .modal-content { width: 800px; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; padding: 22px;}
@@ -465,7 +465,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
   width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px;
 }
 .tabla-desglose thead th {
-  background: #fbfaf8; text-align: left; padding: 12px 16px;
+  background: var(--bg-main); text-align: left; padding: 12px 16px;
   font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
   color: var(--text-gray); font-weight: 700; border-bottom: 1px solid var(--border-subtle);
 }
@@ -475,9 +475,9 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
   color: var(--text-dark); font-weight: 500;
 }
 .tabla-desglose tbody td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
-.tabla-desglose tbody td:first-child { font-weight: 700; color: var(--lvg-dark); }
+.tabla-desglose tbody td:first-child { font-weight: 700; color: var(--lvg-yellow); }
 .tabla-desglose tbody tr:last-child td { border-bottom: none; }
-.tabla-desglose tbody tr.fila-total td { font-weight: 700; color: var(--lvg-dark); }
+.tabla-desglose tbody tr.fila-total td { font-weight: 700; color: var(--lvg-yellow); }
 
 /* Fila clickeable: hover elegante + cursor de puntero */
 .tabla-desglose tbody tr {
@@ -488,7 +488,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
   background: var(--lvg-yellow-soft);
   transform: translateX(2px);
 }
-.tabla-desglose tbody tr:hover td:first-child { color: #8a6d1f; }
+.tabla-desglose tbody tr:hover td:first-child { color: var(--text-dark); }
 
 /* ============================================= */
 /* MODAL DE DESGLOSE MENSUAL — blur elegante + tabs */
@@ -1164,12 +1164,12 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
 
     <div id="modal-filtros-busqueda" class="modal-overlay hidden">
       <div class="modal-content" style="width: 450px; max-height: 90vh; overflow-y: auto;">
-        <h2 style="margin-top:0; color:var(--lvg-dark);">Filtros Avanzados ⚲</h2>
+        <h2 style="margin-top:0; color:var(--lvg-yellow);">Filtros Avanzados ⚲</h2>
         <input type="hidden" id="filtro-rol-activo">
 
         <div id="container-filtro-editor">
             <label>Editor Asignado</label>
-            <select id="filtro-busqueda-editor" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:15px;">
+            <select id="filtro-busqueda-editor" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:15px;">
                 <option value="Todos">Cualquier editor</option>
                 <option value="Gabriel Hernandez">Gabriel Hernandez</option>
                 <option value="Alejandro Baldivieso">Alejandro Baldivieso</option>
@@ -1181,7 +1181,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         <div style="display:flex; gap:10px; margin-bottom:15px;">
             <div style="flex:1">
                 <label>Tipo de Evento</label>
-                <select id="filtro-busqueda-tipo" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc;">
+                <select id="filtro-busqueda-tipo" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);">
                     <option value="Todos">Todos</option>
                     <option value="Sweet XV">Sweet XV</option>
                     <option value="Sweet XVI">Sweet XVI</option>
@@ -1195,7 +1195,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
             </div>
             <div style="flex:1">
                 <label>Tipo de Proyecto</label>
-                <select id="filtro-busqueda-proyecto" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc;">
+                <select id="filtro-busqueda-proyecto" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);">
                     <option value="Todos">Todos</option>
                     <option value="Movie + Highlight">Movie + Highlight</option>
                     <option value="Only Movie">Only Movie</option>
@@ -1211,7 +1211,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
 
         <div id="container-filtro-estado">
           <label>Estado del Proyecto</label>
-          <select id="filtro-busqueda-estado" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:15px;">
+          <select id="filtro-busqueda-estado" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:15px;">
              <option value="Todos">Cualquier estado</option>
              <option value="Asignado">Asignados</option>
              <option value="En proceso">En proceso</option>
@@ -1220,16 +1220,16 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
           </select>
         </div>
 
-        <label style="margin-top: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">📅 Fecha del Evento (Rangos)</label>
+        <label style="margin-top: 10px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 5px;">📅 Fecha del Evento (Rangos)</label>
         <div style="display:flex; gap:10px; margin-bottom: 15px;">
-           <div style="flex:1"><label style="font-size:11px;">Desde (mm.dd.aa)</label><input type="text" id="filtro-evento-desde" placeholder="Ej: 01.01.26" maxlength="8" oninput="formatearFecha(this)"></div>
-           <div style="flex:1"><label style="font-size:11px;">Hasta (mm.dd.aa)</label><input type="text" id="filtro-evento-hasta" placeholder="Ej: 12.31.26" maxlength="8" oninput="formatearFecha(this)"></div>
+           <div style="flex:1"><label style="font-size:11px;">Desde (mm.dd.aa)</label><input type="text" id="filtro-evento-desde" placeholder="Ej: 01.01.26" maxlength="8" oninput="formatearFecha(this)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;"></div>
+           <div style="flex:1"><label style="font-size:11px;">Hasta (mm.dd.aa)</label><input type="text" id="filtro-evento-hasta" placeholder="Ej: 12.31.26" maxlength="8" oninput="formatearFecha(this)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;"></div>
         </div>
 
-        <label style="border-bottom: 1px solid #eee; padding-bottom: 5px;">🚀 Fecha de Creación en Sistema</label>
+        <label style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 5px;">🚀 Fecha de Creación en Sistema</label>
         <div style="display:flex; gap:10px; margin-bottom: 5px;">
-           <div style="flex:1"><label style="font-size:11px;">Desde (mm.dd.aa)</label><input type="text" id="filtro-creacion-desde" placeholder="Ej: 01.01.26" maxlength="8" oninput="formatearFecha(this)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;"></div>
-           <div style="flex:1"><label style="font-size:11px;">Hasta (mm.dd.aa)</label><input type="text" id="filtro-creacion-hasta" placeholder="Ej: 12.31.26" maxlength="8" oninput="formatearFecha(this)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box;"></div>
+           <div style="flex:1"><label style="font-size:11px;">Desde (mm.dd.aa)</label><input type="text" id="filtro-creacion-desde" placeholder="Ej: 01.01.26" maxlength="8" oninput="formatearFecha(this)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;"></div>
+           <div style="flex:1"><label style="font-size:11px;">Hasta (mm.dd.aa)</label><input type="text" id="filtro-creacion-hasta" placeholder="Ej: 12.31.26" maxlength="8" oninput="formatearFecha(this)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;"></div>
         </div>
 
         <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;">
@@ -1242,17 +1242,17 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
 
    <div id="modal-editar-proyecto" class="modal-overlay hidden">
       <div class="modal-content" style="width: 650px; max-width: 90vw; max-height: 90vh; overflow-y: auto;">
-        <h2 style="margin-top:0; color:var(--lvg-dark);">Editar Proyecto</h2>
+        <h2 style="margin-top:0; color:var(--lvg-yellow);">Editar Proyecto</h2>
         <input type="hidden" id="edit-id-proyecto">
-        <div style="display:flex; gap:10px; margin-bottom:10px;"><div style="flex:2"><label>Cliente</label><input type="text" id="edit-cliente" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;"></div><div style="flex:1"><label>Fecha (mm.dd.aa)</label><input type="text" id="edit-fecha" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;" maxlength="8" oninput="formatearFecha(this)"></div></div>
-        <div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1"><label>Tipo de Evento</label><select id="edit-tipo" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;"><option value="Sweet XV">Sweet XV</option><option value="Sweet XVI">Sweet XVI</option><option value="Debut 18">Debut 18</option><option value="Wedding">Wedding</option><option value="Graduacion">Graduación</option><option value="Renewal of vows">Renewal of vows</option><option value="Anniversary">Anniversary</option><option value="Birthday">Birthday</option></select></div><div style="flex:1"><label>Editor Asignado</label><select id="edit-editor" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;"><option value="Sin asignar">Sin asignar</option><option value="Gabriel Hernandez">Gabriel Hernandez</option><option value="Alejandro Baldivieso">Alejandro Baldivieso</option><option value="Pablo Gomez">Pablo Gomez</option></select></div></div>
+        <div style="display:flex; gap:10px; margin-bottom:10px;"><div style="flex:2"><label>Cliente</label><input type="text" id="edit-cliente" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);"></div><div style="flex:1"><label>Fecha (mm.dd.aa)</label><input type="text" id="edit-fecha" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);" maxlength="8" oninput="formatearFecha(this)"></div></div>
+        <div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1"><label>Tipo de Evento</label><select id="edit-tipo" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);"><option value="Sweet XV">Sweet XV</option><option value="Sweet XVI">Sweet XVI</option><option value="Debut 18">Debut 18</option><option value="Wedding">Wedding</option><option value="Graduacion">Graduación</option><option value="Renewal of vows">Renewal of vows</option><option value="Anniversary">Anniversary</option><option value="Birthday">Birthday</option></select></div><div style="flex:1"><label>Editor Asignado</label><select id="edit-editor" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);"><option value="Sin asignar">Sin asignar</option><option value="Gabriel Hernandez">Gabriel Hernandez</option><option value="Alejandro Baldivieso">Alejandro Baldivieso</option><option value="Pablo Gomez">Pablo Gomez</option></select></div></div>
         
         <div style="margin-bottom:15px;">
             <label>Link de Carpeta de Clips 📁 (Opcional - Drive Externo)</label>
-            <input type="url" id="edit-link-clips" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;" placeholder="Ej. https://drive.google.com/drive/folders/...">
+            <input type="url" id="edit-link-clips" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);" placeholder="Ej. https://drive.google.com/drive/folders/...">
         </div>
         
-        <div style="display:flex; align-items:center; gap:12px; color:#1d4ed8; font-weight:bold; font-size:14px; margin-top:10px; margin-bottom: 10px; background: #eff6ff; padding: 12px 15px; border-radius: 8px; border: 1px solid #bfdbfe;">
+        <div style="display:flex; align-items:center; gap:12px; color:#38bdf8; font-weight:bold; font-size:14px; margin-top:10px; margin-bottom: 10px; background: rgba(2,132,199,0.1); padding: 12px 15px; border-radius: 8px; border: 1px solid #0284c7;">
           <label class="switch">
             <input type="checkbox" id="edit-chk-permiso">
             <span class="slider"></span>
@@ -1260,13 +1260,13 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
           <span>Permitir al editor tomar este proyecto como trabajo extra</span>
         </div>
 
-        <label style="margin-top: 15px; color: var(--lvg-dark); font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px;">Tareas y Precios</label>
+        <label style="margin-top: 15px; color: var(--lvg-yellow); font-weight: bold; border-bottom: 1px solid var(--border-subtle); padding-bottom: 5px;">Tareas y Precios</label>
         <div id="edit-contenedor-tareas"></div>
-        <button class="btn-outline" style="width:100%; margin-top:10px; margin-bottom: 15px; border-style: dashed; color: #666;" onclick="agregarFilaEdicion()">+ Agregar otra tarea</button>
-        <label style="margin-top: 15px; color: var(--lvg-dark); font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px;">Cámaras y Rangos de Clips</label>
+        <button class="btn-outline" style="width:100%; margin-top:10px; margin-bottom: 15px; border-style: dashed; color: var(--text-gray);" onclick="agregarFilaEdicion()">+ Agregar otra tarea</button>
+        <label style="margin-top: 15px; color: var(--lvg-yellow); font-weight: bold; border-bottom: 1px solid var(--border-subtle); padding-bottom: 5px;">Cámaras y Rangos de Clips</label>
         <div id="edit-contenedor-camaras"></div>
-        <button class="btn-outline" style="width:100%; margin-top:10px; margin-bottom: 15px; border-style: dashed; color: #666;" onclick="agregarFilaCamara()">+ Agregar nueva cámara</button>
-        <label style="display:flex; align-items:center; gap:8px; color:#ef4444; font-weight:bold; font-size:14px; cursor:pointer;"><input type="checkbox" id="edit-chk-drive" style="width:auto; margin:0;"> Cambiar también el nombre de la carpeta en Drive</label>
+        <button class="btn-outline" style="width:100%; margin-top:10px; margin-bottom: 15px; border-style: dashed; color: var(--text-gray);" onclick="agregarFilaCamara()">+ Agregar nueva cámara</button>
+        <label style="display:flex; align-items:center; gap:8px; color:#ef4444; font-weight:bold; font-size:14px; cursor:pointer;"><input type="checkbox" id="edit-chk-drive" style="width:auto; margin:0;"> CAMBIAR TAMBIÉN EL NOMBRE DE LA CARPETA EN DRIVE</label>
         <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;"><button class="btn-outline" onclick="document.getElementById('modal-editar-proyecto').classList.add('hidden')">Cancelar</button><button class="btn-yellow" id="btn-guardar-edicion" onclick="guardarEdicion()">Guardar Cambios ✔</button></div>
       </div>
     </div>
@@ -2140,18 +2140,18 @@ function renderizarGraficaLinea(idContenedor, timeline) {
     ],
     xaxis: {
       categories: timeline.etiquetas,
-      labels: { style: { colors: "#6e6e73", fontSize: "12px" } },
+      labels: { style: { colors: "#a0a0a0", fontSize: "12px" } },
       axisBorder: { show: false }, axisTicks: { show: false }
     },
-    yaxis: { labels: { style: { colors: "#6e6e73" }, formatter: v => "$" + Math.round(v).toLocaleString() } },
+    yaxis: { labels: { style: { colors: "#a0a0a0" }, formatter: v => "$" + Math.round(v).toLocaleString() } },
     colors: ["#c9a54a", "#e05353"],
     stroke: { curve: "smooth", width: 3 },
     fill: { type: "gradient", gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.02, stops: [0, 90, 100] } },
     dataLabels: { enabled: false },
-    grid: { borderColor: "#eaeaea", strokeDashArray: 4 },
-    tooltip: { theme: "light", y: { formatter: v => "$" + Math.round(v).toLocaleString() } },
-    legend: { position: "top", horizontalAlign: "right", labels: { colors: "#1c1c1e" } },
-    noData: { text: "Sin datos en este periodo" }
+    grid: { borderColor: "#333333", strokeDashArray: 4 },
+    tooltip: { theme: "dark", y: { formatter: v => "$" + Math.round(v).toLocaleString() } },
+    legend: { position: "top", horizontalAlign: "right", labels: { colors: "#f0f0f0" } },
+    noData: { text: "Sin datos en este periodo", style: { color: "#a0a0a0" } }
   };
   _renderizarOActualizar(idContenedor, opciones);
 }
@@ -2164,11 +2164,11 @@ function renderizarGraficaTipos(idContenedor, conteoPorTipo) {
     series: valores,
     labels: etiquetas,
     colors: PALETA_CHARTS,
-    legend: { position: "bottom", labels: { colors: "#1c1c1e" } },
+    legend: { position: "bottom", labels: { colors: "#f0f0f0" } },
     dataLabels: { enabled: true, style: { fontSize: "12px" } },
-    stroke: { width: 2, colors: ["#ffffff"] },
-    tooltip: { theme: "light" },
-    noData: { text: "Sin datos en este periodo" }
+    stroke: { width: 2, colors: ["#16171a"] },
+    tooltip: { theme: "dark" },
+    noData: { text: "Sin datos en este periodo", style: { color: "#a0a0a0" } }
   };
   _renderizarOActualizar(idContenedor, opciones);
 }
@@ -2179,14 +2179,14 @@ function renderizarGraficaEntrega(idContenedor, promediosPorTipo) {
   const opciones = {
     chart: { type: "bar", height: 300, toolbar: { show: false }, fontFamily: "inherit" },
     series: [{ name: "Días promedio", data: valores }],
-    xaxis: { categories: etiquetas, labels: { style: { colors: "#6e6e73" } } },
-    yaxis: { labels: { style: { colors: "#6e6e73" }, formatter: v => Math.round(v) + " d" } },
+    xaxis: { categories: etiquetas, labels: { style: { colors: "#a0a0a0" } } },
+    yaxis: { labels: { style: { colors: "#a0a0a0" }, formatter: v => Math.round(v) + " d" } },
     colors: ["#3d7fd1"],
     plotOptions: { bar: { borderRadius: 6, columnWidth: "45%" } },
-    dataLabels: { enabled: true, formatter: v => Math.round(v) + "d", offsetY: -20, style: { colors: ["#16171a"] } },
-    grid: { borderColor: "#eaeaea", strokeDashArray: 4 },
-    tooltip: { theme: "light", y: { formatter: v => v + " días" } },
-    noData: { text: "Sin datos en este periodo" }
+    dataLabels: { enabled: true, formatter: v => Math.round(v) + "d", offsetY: -20, style: { colors: ["#f0f0f0"] } },
+    grid: { borderColor: "#333333", strokeDashArray: 4 },
+    tooltip: { theme: "dark", y: { formatter: v => v + " días" } },
+    noData: { text: "Sin datos en este periodo", style: { color: "#a0a0a0" } }
   };
   _renderizarOActualizar(idContenedor, opciones);
 }
@@ -2228,8 +2228,8 @@ function _renderizarOActualizar(idContenedor, opciones) {
       // ===== NUEVO: Estado de las gráficas ApexCharts (para poder actualizarlas sin recrearlas) =====
 let instanciasCharts = {};
 
-// Paleta coherente con el CSS: dorado, azul corporativo, antracita, y acentos de apoyo
-const PALETA_CHARTS = ["#c9a54a", "#3d7fd1", "#16171a", "#9a6fd0", "#34a869", "#e05353"];
+// Paleta coherente con el CSS: dorado, azul corporativo, MORADO (en vez de negro), y acentos
+const PALETA_CHARTS = ["#c9a54a", "#3d7fd1", "#a855f7", "#2ba7bd", "#34a869", "#e05353"];
 
 // Punto de partida del historial solicitado para la línea de tiempo
 const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
