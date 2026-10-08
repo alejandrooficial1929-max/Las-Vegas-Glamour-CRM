@@ -4662,7 +4662,7 @@ async function cargarFeedbackManager() {
                       </div>
                   </div>
                   <div style="background:rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding:15px; border-radius:4px; font-size:14px; color:var(--text-gray);">
-                      Recibirás en tu cuenta:<br>
+                      Equivalente estimado en moneda local:<br>
                       <strong id="calc-total-local" style="font-size:20px; color:#3b82f6;">0.00</strong>
                   </div>
               </div>
@@ -4782,6 +4782,7 @@ async function cargarFeedbackManager() {
               document.getElementById('sim-total').innerText = "$0.00 USD";
               document.getElementById('sim-equiv').innerText = "0 Movies";
               document.getElementById('sim-dias').innerText = "0 días";
+              calcularDivisaALX(); // Para que ponga en cero la calculadora de al lado
               return;
           }
           let totalDevolver = monto * (1 + tasa);
@@ -4791,6 +4792,9 @@ async function cargarFeedbackManager() {
           document.getElementById('sim-total').innerText = `$${totalDevolver.toLocaleString('en-US', {minimumFractionDigits: 2})} USD`;
           document.getElementById('sim-equiv').innerText = `${equivProy} Proyectos (Ref: Movie $50)`;
           document.getElementById('sim-dias').innerText = `${diasPlazo} días de plazo (Penalización: 0.5% diario en mora)`;
+          
+          // Disparamos la actualización de la calculadora de divisas en tiempo real
+          calcularDivisaALX();
       }
 
       function enviarSolicitudPrestamo(tasa) {
