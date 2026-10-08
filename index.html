@@ -194,9 +194,9 @@
   border-top-color: var(--border-subtle);
 }
   .info-group { margin-bottom: 10px;} .info-group strong { color: var(--text-gray); font-weight: 600; letter-spacing: 0.01em; }
-  .ticket-factura { background: #fbfaf8; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; margin-top: 10px; box-shadow: var(--shadow-soft);}
-  .ticket-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border-subtle);}
-  .ticket-total { display: flex; justify-content: space-between; padding-top: 12px; margin-top: 6px; font-weight: 700; font-size: 17px; color: var(--lvg-dark); letter-spacing: 0.01em;}
+  .ticket-factura { background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; margin-top: 10px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);}
+  .ticket-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border-subtle); color: var(--text-gray);}
+  .ticket-total { display: flex; justify-content: space-between; padding-top: 12px; margin-top: 6px; font-weight: 700; font-size: 17px; color: var(--text-dark); letter-spacing: 0.01em;}
 
   #panel-creacion {
     background: var(--bg-card); border-radius: var(--radius-lg); padding: 34px;
@@ -818,18 +818,18 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
   <button class="btn-yellow" style="margin-bottom: 20px;" onclick="volverDesdeCreacion()">🡄 Volver al Panel</button>
   
   <div id="panel-creacion">
-    <h2 style="margin-top:0; color:var(--lvg-dark);">Nuevo Proyecto</h2>
+    <h2 style="margin-top:0; color:var(--lvg-yellow);">Nuevo Proyecto</h2>
     
     <label>Nombre del Cliente(s)</label>
-    <input type="text" id="cliente-nombre" placeholder="Ej. Ricardo & Pina" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-bottom:15px; box-sizing:border-box;">
+    <input type="text" id="cliente-nombre" placeholder="Ej. Ricardo & Pina" style="width:100%; padding:12px; border-radius:8px; margin-bottom:15px; box-sizing:border-box;">
     
     <label>Fecha del Evento (mm.dd.aa)</label>
-    <input type="text" id="cliente-fecha" placeholder="Ej. 05.24.26" maxlength="8" oninput="formatearFecha(this)" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-bottom:20px; box-sizing:border-box;">
+    <input type="text" id="cliente-fecha" placeholder="Ej. 05.24.26" maxlength="8" oninput="formatearFecha(this)" style="width:100%; padding:12px; border-radius:8px; margin-bottom:20px; box-sizing:border-box;">
     
     <div style="display:flex; gap:15px; margin-bottom: 20px;">
         <div style="flex:1;">
-            <label style="color:#666; font-size:14px; font-weight:bold;">Categoría (Drive 📂)</label>
-            <select id="create-categoria" style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size:14px; margin-top:5px;">
+            <label style="font-size:14px; font-weight:bold;">Categoría (Drive 📂)</label>
+            <select id="create-categoria" style="width:100%; padding: 12px; border-radius: 8px; font-size:14px; margin-top:5px;">
                 <option value="Screen">Screen</option>
                 <option value="Only Highlights">Only Highlights</option>
                 <option value="Movies + Highlights">Movies + Highlights</option>
@@ -840,8 +840,8 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         </div>
         
         <div style="flex:1;">
-            <label style="color:#666; font-size:14px; font-weight:bold;">Tipo Evento (Subcarpeta 📂)</label>
-            <select id="cliente-tipo" style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size:14px; margin-top:5px;">
+            <label style="font-size:14px; font-weight:bold;">Tipo Evento (Subcarpeta 📂)</label>
+            <select id="cliente-tipo" style="width:100%; padding: 12px; border-radius: 8px; font-size:14px; margin-top:5px;">
                 <option value="Sweet XV">Sweet XV</option>
                 <option value="Sweet XVI">Sweet XVI</option>
                 <option value="Debut 18">Debut 18</option>
@@ -855,8 +855,8 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         </div>
 
         <div style="flex:1;">
-            <label style="color:#666; font-size:14px; font-weight:bold;">Asignar Editor 🧑‍💻</label>
-            <select id="editor-asignado" style="width:100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size:14px; margin-top:5px;">
+            <label style="font-size:14px; font-weight:bold;">Asignar Editor 🧑‍💻</label>
+            <select id="editor-asignado" style="width:100%; padding: 12px; border-radius: 8px; font-size:14px; margin-top:5px;">
                 <option value="Sin asignar">Sin asignar</option>
                 <option value="Gabriel Hernandez">Gabriel Hernandez</option>
                 <option value="Alejandro Baldivieso">Alejandro Baldivieso</option>
@@ -867,19 +867,19 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
     
     <div style="display:flex; gap:15px; margin-bottom: 20px;">
         <div style="flex:1;">
-            <label style="color:#666; font-size:14px; font-weight:bold;">Número de Caja 📦</label>
-            <input type="text" id="caja-backup" placeholder="Ej. Caja 5 o Disco 2" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box; background: #f9f9f9;">
+            <label style="font-size:14px; font-weight:bold;">Número de Caja 📦</label>
+            <input type="text" id="caja-backup" placeholder="Ej. Caja 5 o Disco 2" style="width:100%; padding:12px; border-radius:8px; box-sizing:border-box;">
         </div>
         <div style="flex:1;">
-            <label style="color:#666; font-size:14px; font-weight:bold;">Drive (Respaldo) ☁️</label>
-            <input type="text" id="drive-backup" placeholder="Ej. Drive MKT" style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; box-sizing:border-box; background: #f9f9f9;">
+            <label style="font-size:14px; font-weight:bold;">Drive (Respaldo) ☁️</label>
+            <input type="text" id="drive-backup" placeholder="Ej. Drive MKT" style="width:100%; padding:12px; border-radius:8px; box-sizing:border-box;">
         </div>
     </div>
 
-    <label style="color:#666; font-size:14px; font-weight:bold;">Link de Carpeta de Clips 📁 (Opcional - Si ya la creaste)</label>
-    <input type="url" id="link-clips-existente" placeholder="Pega el link aquí para evitar crear una carpeta duplicada..." style="width:100%; padding:12px; border-radius:8px; border:1px solid #ddd; margin-bottom:20px; box-sizing:border-box; background: #eff6ff;">
+    <label style="font-size:14px; font-weight:bold;">Link de Carpeta de Clips 📁 (Opcional - Si ya la creaste)</label>
+    <input type="url" id="link-clips-existente" placeholder="Pega el link aquí para evitar crear una carpeta duplicada..." style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-subtle); margin-bottom:20px; box-sizing:border-box; background: var(--bg-main); color: var(--text-dark);">
 
-    <label style="margin-top: 15px; color: var(--lvg-dark); font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 5px; display:block;">Tareas y Facturación</label>
+    <label style="margin-top: 15px; color: var(--lvg-yellow); font-weight: bold; border-bottom: 1px solid var(--border-subtle); padding-bottom: 5px; display:block;">Tareas y Facturación</label>
     <div id="factura-container"></div>
     
     <button class="btn-outline" id="btn-add-task" style="width:100%; margin-top:10px; border-style: dashed; color: #666;" onclick="agregarFilaFactura()">+ Agregar otra tarea</button>
@@ -2598,7 +2598,7 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
              ticketHTML += `<div style="margin-top:8px; font-size:13px; font-weight:bold; color:${colorEstadoFactura};">${textoEstadoFactura}</div>`;
          } 
          
-         let feedbackHTML = p.feedback ? `<div style="background: #fdf4ff; border-left: 4px solid #a855f7; padding: 10px; margin-top: 15px; border-radius: 4px; max-height: 150px; overflow-y: auto;"><strong style="color: #a855f7;">Historial de Revisiones:</strong><br><span style="font-size: 14px; display:block; margin-top:5px; line-height: 1.5;">${p.feedback.replace(/\n/g, '<br>')}</span></div>` : ""; 
+         let feedbackHTML = p.feedback ? `<div style="background: rgba(168, 85, 247, 0.1); border-left: 4px solid #a855f7; padding: 10px; margin-top: 15px; border-radius: 4px; max-height: 150px; overflow-y: auto;"><strong style="color: #c084fc;">Historial de Revisiones:</strong><br><span style="font-size: 14px; color: var(--text-gray); display:block; margin-top:5px; line-height: 1.5;">${p.feedback.replace(/\n/g, '<br>')}</span></div>` : ""; 
          let camarasHTML = p.camaras && p.camaras.length > 0 ? `<ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 14px;">${p.camaras.map(cam => `<li>${cam}</li>`).join('')}</ul>` : `<span style="color:#999; font-style:italic;">(Pendiente)</span>`; 
          
          let infoBackups = (p.caja || p.driveBackup) ? `<div class="info-group" style="margin-top: 10px; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;"><strong>Respaldos:</strong><br> <span style="font-size:14px; color:#475569;">${p.caja ? '📦 ' + p.caja : ''} ${p.caja && p.driveBackup ? ' | ' : ''} ${p.driveBackup ? '☁️ ' + p.driveBackup : ''}</span></div>` : '';
@@ -2669,7 +2669,7 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
             ticketHTML += `<div style="margin-top:8px; font-size:13px; font-weight:bold; color:${colorEstadoFacturaEditor};">${textoEstadoFacturaEditor}</div>`;
         } 
         
-        let feedbackHTML = p.feedback ? `<div style="background: #fdf4ff; border-left: 4px solid #a855f7; padding: 10px; margin-top: 15px; border-radius: 4px; max-height: 150px; overflow-y: auto;"><strong style="color: #a855f7;">Historial de Revisiones:</strong><br><span style="font-size: 14px; display:block; margin-top:5px; line-height: 1.5;">${p.feedback.replace(/\n/g, '<br>')}</span></div>` : ""; 
+        let feedbackHTML = p.feedback ? `<div style="background: rgba(168, 85, 247, 0.1); border-left: 4px solid #a855f7; padding: 10px; margin-top: 15px; border-radius: 4px; max-height: 150px; overflow-y: auto;"><strong style="color: #c084fc;">Historial de Revisiones:</strong><br><span style="font-size: 14px; color: var(--text-gray); display:block; margin-top:5px; line-height: 1.5;">${p.feedback.replace(/\n/g, '<br>')}</span></div>` : ""; 
         let camarasHTML = p.camaras && p.camaras.length > 0 ? `<ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 14px;">${p.camaras.map(cam => `<li>${cam}</li>`).join('')}</ul>` : `<span style="color:#999; font-style:italic;">(Pendiente de registrar)</span>`; 
         
         let botonesHTML = ""; 
@@ -3663,7 +3663,7 @@ function cargarMetricasEditor() {
         // --- DIBUJAR EXTRAS PARA EL MANAGER ---
         if(f.extras && f.extras.length > 0) {
             f.extras.forEach(ext => {
-                subTarjetasHTML += `<div class="tarjeta" style="margin-bottom:15px; border:1px solid #0284c7; background:#eff6ff; box-shadow:none;"><div class="tarjeta-header" style="background:transparent; cursor:default;"><div class="col-cliente" style="color:#0284c7; flex:2;">[EXTRA] ${ext.detalle}</div><div class="col-fecha" style="flex:1; text-align:center;">${ext.concepto}</div><div class="col-tipo" style="flex:1;"></div><div class="col-estado" style="display:flex; align-items:center; justify-content:center;"><span style="font-weight:bold; color:#10b981; font-size:14px; margin-right:15px;">${Number(ext.precio).toLocaleString('es-CO')} ${ext.moneda}</span><span class="pill" style="visibility:hidden;">TERMINADO</span></div></div></div>`;
+                subTarjetasHTML += `<div class="tarjeta" style="margin-bottom:15px; border:1px solid #0284c7; background:rgba(2,132,199,0.1); box-shadow:none;"><div class="tarjeta-header" style="background:transparent; cursor:default;"><div class="col-cliente" style="color:#38bdf8; flex:2;">[EXTRA] ${ext.detalle}</div><div class="col-fecha" style="flex:1; text-align:center; color:var(--text-gray);">${ext.concepto}</div><div class="col-tipo" style="flex:1;"></div><div class="col-estado" style="display:flex; align-items:center; justify-content:center;"><span style="font-weight:bold; color:#10b981; font-size:14px; margin-right:15px;">${Number(ext.precio).toLocaleString('es-CO')} ${ext.moneda}</span><span class="pill" style="visibility:hidden;">TERMINADO</span></div></div></div>`;
                 if(!totalesCalculados[ext.moneda]) totalesCalculados[ext.moneda] = 0;
                 totalesCalculados[ext.moneda] += Number(ext.precio);
             });
@@ -3693,26 +3693,26 @@ function cargarMetricasEditor() {
         let stringTotalFinal = arrTotales.length > 0 ? arrTotales.join(' + ') : '0 USD';
         subTarjetasHTML += `<div style="display:flex; justify-content:flex-end; align-items:center; padding: 15px 20px 5px 20px; border-top: 2px dashed #cbd5e1; margin-top: 10px;"><span style="font-size:14px; color:var(--text-gray); margin-right:15px; text-transform:uppercase; font-weight:bold;">Total Factura:</span><span style="font-size:18px; font-weight:bold; color:#10b981;">${stringTotalFinal}</span></div>`;
 
-        let colorFondoEstado = f.estado === 'Pagado' ? '#dcfce7' : '#fef08a'; 
-        let colorTextoEstado = f.estado === 'Pagado' ? '#166534' : '#854d0e'; 
+        let colorFondoEstado = f.estado === 'Pagado' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(234, 179, 8, 0.2)'; 
+        let colorTextoEstado = f.estado === 'Pagado' ? '#10b981' : '#eab308'; 
         let estadoSelect = `<select onchange="cambiarEstadoFacturaManager('${idFactura}', this.value)" style="padding:5px 10px; border-radius:20px; font-weight:bold; font-size:14px; background: ${colorFondoEstado}; color: ${colorTextoEstado}; border:none; cursor:pointer;" onclick="event.stopPropagation()"><option value="En proceso" ${f.estado==='En proceso'?'selected':''}>En proceso</option><option value="Pagado" ${f.estado==='Pagado'?'selected':''}>Pagado</option></select>`; 
         
         // SE AÑADIÓ EL ATRIBUTO DRAGGABLE Y LOS EVENTOS DE ARRASTRE
         htmlFinal += `
         <div class="tarjeta" draggable="true" data-id-factura="${idFactura}" ondragstart="dragStartFactura(event)" ondragover="dragOverFactura(event)" ondrop="dropFactura(event)" ondragenter="dragEnterFactura(event)" ondragleave="dragLeaveFactura(event)" ondragend="dragEndFactura(event)" style="border: 2px solid #ccc; margin-bottom: 20px; transition: transform 0.2s, box-shadow 0.2s;">
-            <div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')" style="background: #f1f5f9;">
-                <div class="drag-handle" style="cursor: grab; padding-right: 15px; color: #94a3b8; font-size: 20px; font-weight: bold; display: flex; align-items: center;" onclick="event.stopPropagation()" title="Arrastrar para ordenar">⋮⋮</div>
-                <div style="flex:1;">📄 ${idFactura}</div>
-                <div style="flex:1; text-align:center; font-size:14px; color:#666;">${f.fecha}</div>
-                <div style="flex:1; text-align:center; color:var(--lvg-dark);">🧑‍💻 ${f.editor}</div>
+            <div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')" style="background: var(--bg-main);">
+                <div class="drag-handle" style="cursor: grab; padding-right: 15px; color: var(--text-muted); font-size: 20px; font-weight: bold; display: flex; align-items: center;" onclick="event.stopPropagation()" title="Arrastrar para ordenar">⋮⋮</div>
+                <div style="flex:1; color: var(--text-dark);">📄 ${idFactura}</div>
+                <div style="flex:1; text-align:center; font-size:14px; color:var(--text-gray);">${f.fecha}</div>
+                <div style="flex:1; text-align:center; color:var(--lvg-yellow);">🧑‍💻 ${f.editor}</div>
                 <div style="flex:1; text-align:center;">${estadoSelect} <button class="btn-icon-circle" style="width:30px; height:30px; display:inline-flex; vertical-align:middle; margin-left:6px;" onclick="event.stopPropagation(); abrirModalEdicionFactura('${idFactura}')" title="Editar factura">✏️</button></div>
             </div>
             <div class="tarjeta-body" style="flex-direction:column; gap:15px; padding-top:15px;">
                 <div style="display:flex; justify-content: flex-end; gap: 10px;">
-                    <button class="btn-outline" style="border-color:#0284c7; color:#0284c7;" onclick="event.stopPropagation(); window.open('${f.linkCarpeta}')">📁 Abrir carpeta de comprobantes</button>
+                    <button class="btn-outline" style="border-color:#38bdf8; color:#38bdf8;" onclick="event.stopPropagation(); window.open('${f.linkCarpeta}')">📁 Abrir carpeta de comprobantes</button>
                 </div>
-                <div style="background: #e2e8f0; padding: 15px; border-radius: 10px;">
-                    <h4 style="margin-top:0; color:#333;">Proyectos en esta factura:</h4>${subTarjetasHTML}
+                <div style="background: var(--bg-main); border: 1px solid var(--border-subtle); padding: 15px; border-radius: 10px;">
+                    <h4 style="margin-top:0; color:var(--text-gray);">Proyectos en esta factura:</h4>${subTarjetasHTML}
                 </div>
             </div>
         </div>`; 
@@ -4555,10 +4555,10 @@ async function cargarFeedbackManager() {
 
            if(f.estado === "En proceso") {
                hayPendientes = true;
-               htmlCubrir += `<div class="tarjeta" style="border: 2px solid #eab308; margin-bottom: 20px;"><div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')" style="background: #fefce8;"><div style="flex:1; color:#a16207;">📄 ${idFactura}</div><div style="flex:1; text-align:center; font-size:14px; color:#666;">${f.fecha}</div><div style="flex:1; text-align:center; color:var(--lvg-dark);">🧑‍💻 ${f.editor}</div><div style="flex:1; text-align:center; font-weight:bold; color:#eab308;">${stringDeuda}</div></div><div class="tarjeta-body" style="flex-direction:column; gap:15px; padding-top:15px;"><div style="display:flex; justify-content: flex-end; gap: 10px;"><button class="btn-outline" onclick="event.stopPropagation(); mostrarVistaPreviewFacturaGestion('${idFactura}')">👁️ Ver Factura</button><button class="btn-yellow" onclick="event.stopPropagation(); abrirModalPagoGestion('${idFactura}', '${f.linkCarpeta}')">Pagar Factura 💳</button></div><div style="background: #f8fafc; padding: 15px; border-radius: 10px;"><h4 style="margin-top:0; color:#333;">Proyectos incluidos:</h4>${subTarjetasHTML}</div></div></div>`;
+               htmlCubrir += `<div class="tarjeta" style="border: 2px solid #eab308; margin-bottom: 20px;"><div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')" style="background: rgba(234, 179, 8, 0.1);"><div style="flex:1; color:#fde047;">📄 ${idFactura}</div><div style="flex:1; text-align:center; font-size:14px; color:var(--text-gray);">${f.fecha}</div><div style="flex:1; text-align:center; color:var(--lvg-yellow);">🧑‍💻 ${f.editor}</div><div style="flex:1; text-align:center; font-weight:bold; color:#eab308;">${stringDeuda}</div></div><div class="tarjeta-body" style="flex-direction:column; gap:15px; padding-top:15px;"><div style="display:flex; justify-content: flex-end; gap: 10px;"><button class="btn-outline" onclick="event.stopPropagation(); mostrarVistaPreviewFacturaGestion('${idFactura}')">👁️ Ver Factura</button><button class="btn-yellow" onclick="event.stopPropagation(); abrirModalPagoGestion('${idFactura}', '${f.linkCarpeta}')">Pagar Factura 💳</button></div><div style="background: var(--bg-main); border: 1px solid var(--border-subtle); padding: 15px; border-radius: 10px;"><h4 style="margin-top:0; color:var(--text-gray);">Proyectos incluidos:</h4>${subTarjetasHTML}</div></div></div>`;
            } else {
                hayHistorial = true;
-               htmlHistorial += `<div class="tarjeta" style="border: 1px solid #ccc; margin-bottom: 20px;"><div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')" style="background: #f1f5f9;"><div style="flex:1;">📄 ${idFactura}</div><div style="flex:1; text-align:center; font-size:14px; color:#666;">${f.fecha}</div><div style="flex:1; text-align:center; color:var(--lvg-dark);">🧑‍💻 ${f.editor}</div><div style="flex:1; text-align:center; color:#10b981;">Pagado ✅</div></div><div class="tarjeta-body" style="flex-direction:column; gap:15px; padding-top:15px;"><div style="display:flex; justify-content: flex-end; gap: 10px;"><button class="btn-outline" onclick="event.stopPropagation(); mostrarVistaPreviewFacturaGestion('${idFactura}')">👁️ Ver Factura</button><button class="btn-outline" style="border-color:#10b981; color:#10b981;" onclick="event.stopPropagation(); window.open('${f.linkCarpeta}')">📁 Ver Comprobantes</button></div><div style="background: #e2e8f0; padding: 15px; border-radius: 10px;"><h4 style="margin-top:0; color:#333;">Proyectos incluidos:</h4>${subTarjetasHTML}</div></div></div>`;
+               htmlHistorial += `<div class="tarjeta" style="border: 1px solid var(--border-subtle); margin-bottom: 20px;"><div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')" style="background: var(--bg-main);"><div style="flex:1; color:var(--text-dark);">📄 ${idFactura}</div><div style="flex:1; text-align:center; font-size:14px; color:var(--text-gray);">${f.fecha}</div><div style="flex:1; text-align:center; color:var(--lvg-yellow);">🧑‍💻 ${f.editor}</div><div style="flex:1; text-align:center; color:#10b981;">Pagado ✅</div></div><div class="tarjeta-body" style="flex-direction:column; gap:15px; padding-top:15px;"><div style="display:flex; justify-content: flex-end; gap: 10px;"><button class="btn-outline" onclick="event.stopPropagation(); mostrarVistaPreviewFacturaGestion('${idFactura}')">👁️ Ver Factura</button><button class="btn-outline" style="border-color:#10b981; color:#10b981;" onclick="event.stopPropagation(); window.open('${f.linkCarpeta}')">📁 Ver Comprobantes</button></div><div style="background: var(--bg-main); border: 1px solid var(--border-subtle); padding: 15px; border-radius: 10px;"><h4 style="margin-top:0; color:var(--text-gray);">Proyectos incluidos:</h4>${subTarjetasHTML}</div></div></div>`;
            }
         }
         
