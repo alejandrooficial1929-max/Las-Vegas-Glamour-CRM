@@ -271,7 +271,7 @@
 
   .fb-item { background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); margin-bottom: 15px; border-left: 3px solid var(--lvg-yellow); box-shadow: var(--shadow-soft); }
   .bloque-editor { background: var(--bg-card); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 20px; border: 1px solid var(--border-subtle); box-shadow: var(--shadow-soft); }
-  .header-editor { margin-top: 0; color: var(--lvg-dark); border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; display:flex; justify-content:space-between; align-items:center; font-size:17px; font-weight:700; letter-spacing: 0.01em; }
+  .header-editor { margin-top: 0; color: var(--lvg-yellow); border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; display:flex; justify-content:space-between; align-items:center; font-size:17px; font-weight:700; letter-spacing: 0.01em; }
   .fila-deuda { display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px dashed var(--border-subtle); }
   .filtro-editores { display: flex; gap: 15px; margin-bottom: 20px; padding: 12px; background: var(--bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-soft); flex-wrap: wrap; border: 1px solid var(--border-subtle);}
 
@@ -1279,29 +1279,29 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
     <div id="modal-factura" class="modal-overlay hidden">
         <div class="modal-content" style="width: 1400px; max-width: 98vw; height: 90vh; display: flex; flex-direction: row; gap: 20px; padding: 20px; overflow: hidden;">
             
-            <!-- COLUMNA 1: CANVAS (Se lleva casi la mitad de la pantalla) -->
+            <!-- COLUMNA 1: CANVAS -->
             <div style="flex: 1.8; display: flex; flex-direction: column; min-width: 0;">
                 <div style="display:flex; justify-content: space-between; align-items:flex-start;">
-                    <h2 style="margin-top:0; color:var(--lvg-dark);">Vista Previa Factura</h2>
+                    <h2 style="margin-top:0; color:var(--lvg-yellow);">Vista Previa Factura</h2>
                     <div style="display:flex; gap:15px; text-align:right;">
                         <div>
-                            <label style="font-weight:bold; color:var(--lvg-dark); font-size:12px;">↔️ Mover Texto:</label><br>
-                            <input type="number" id="offset-x-concepto" value="0" oninput="actualizarCanvasFactura()" style="margin-top:2px; padding:8px; width:80px;" title="Ej. -30 para mover a la izquierda">
+                            <label style="font-weight:bold; color:var(--text-gray); font-size:12px;">↔️ Mover Texto:</label><br>
+                            <input type="number" id="offset-x-concepto" value="0" oninput="actualizarCanvasFactura()" style="margin-top:2px; padding:8px; width:80px; background:var(--bg-main); color:var(--text-dark); border:1px solid var(--border-subtle); border-radius:6px;" title="Ej. -30 para mover a la izquierda">
                         </div>
                         <div>
-                            <label style="font-weight:bold; color:var(--lvg-dark); font-size:12px;">N° de Factura:</label><br>
-                            <input type="text" id="input-n-factura" placeholder="Ej. LVG-001" oninput="actualizarCanvasFactura()" style="margin-top:2px; padding:8px; width:130px;">
+                            <label style="font-weight:bold; color:var(--text-gray); font-size:12px;">N° de Factura:</label><br>
+                            <input type="text" id="input-n-factura" placeholder="Ej. LVG-001" oninput="actualizarCanvasFactura()" style="margin-top:2px; padding:8px; width:130px; background:var(--bg-main); color:var(--text-dark); border:1px solid var(--border-subtle); border-radius:6px;">
                         </div>
                     </div>
                 </div>
-                <div id="canvas-container" style="flex: 1; overflow-y: auto; background: #f1f0ed; padding: 12px; border-radius: 12px; margin-top: 10px; display: flex; justify-content: center;">
-                    <canvas id="canvas-factura" style="max-width: 100%; height: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 6px;"></canvas>
+                <div id="canvas-container" style="flex: 1; overflow: hidden; background: transparent; padding: 0; margin-top: 10px; display: flex; justify-content: center; align-items: flex-start;">
+                    <canvas id="canvas-factura" style="max-width: 100%; height: auto; border-radius: 6px;"></canvas>
                 </div>
             </div>
 
             <!-- COLUMNA 2: BUSCADOR DE PROYECTOS -->
-            <div style="flex: 1; display: flex; flex-direction: column; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; min-width: 280px;">
-                <h3 style="margin:0 0 10px 0; font-size: 14px; color:var(--lvg-dark); flex-shrink: 0;">🔍 Añadir proyectos a la factura</h3>
+            <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 15px; min-width: 280px;">
+                <h3 style="margin:0 0 10px 0; font-size: 14px; color:var(--lvg-yellow); flex-shrink: 0;">🔍 Añadir proyectos a la factura</h3>
                 <input type="text" id="buscador-agregar-afactura-preview" class="search-bar" placeholder="Buscar por cliente, fecha o tipo..." style="width: 100%; margin-bottom: 10px; padding: 8px 15px; height: 42px; flex: 0 0 42px; box-sizing: border-box;" oninput="filtrarBuscadorFacturaPreview()">
                 
                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
@@ -1325,27 +1325,27 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
                 </div>
                 
                 <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom: 2px solid var(--border-subtle);">
-                    <button id="tab-buscador-preview-pendientes" class="btn-outline" style="border:none; border-radius:0; border-bottom:3px solid var(--lvg-yellow); color:var(--lvg-dark); padding:5px 10px; font-size:12px;" onclick="cambiarTabBuscadorPreview('pendientes')">Pendientes</button>
+                    <button id="tab-buscador-preview-pendientes" class="btn-outline" style="border:none; border-radius:0; border-bottom:3px solid var(--lvg-yellow); color:var(--text-dark); padding:5px 10px; font-size:12px;" onclick="cambiarTabBuscadorPreview('pendientes')">Pendientes</button>
                     <button id="tab-buscador-preview-general" class="btn-outline" style="border:none; border-radius:0; border-bottom:3px solid transparent; color:var(--text-gray); padding:5px 10px; font-size:12px;" onclick="cambiarTabBuscadorPreview('general')">General (Todos)</button>
                 </div>
                 
-                <div id="lista-agregar-afactura-preview" style="flex:1; overflow-y:auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px; background: #f8fafc;">
+                <div id="lista-agregar-afactura-preview" style="flex:1; overflow-y:auto; border: 1px solid var(--border-subtle); border-radius: 6px; padding: 5px; background: var(--bg-main);">
                     <!-- JS inyectará los resultados de búsqueda aquí -->
                 </div>
             </div>
 
             <!-- COLUMNA 3: PANEL DE EDICIÓN Y BOTONES -->
-            <div style="flex: 1; display: flex; flex-direction: column; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 15px; min-width: 320px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px;">
-                    <h3 style="margin:0; font-size: 14px; color:var(--lvg-dark);">✏️ Panel de Edición</h3>
-                    <button class="btn-outline" style="border-color:#0284c7; color:#0284c7; padding:4px 10px; font-size:12px; background:#f0f9ff;" onclick="abrirModalExtraFactura(datosFacturaActiva.editor)">➕ Extra</button>
+            <div style="flex: 1; display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 15px; min-width: 320px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 10px;">
+                    <h3 style="margin:0; font-size: 14px; color:var(--lvg-yellow);">✏️ Panel de Edición</h3>
+                    <button class="btn-outline" style="border-color:#0284c7; color:#38bdf8; padding:4px 10px; font-size:12px; background:rgba(2,132,199,0.1);" onclick="abrirModalExtraFactura(datosFacturaActiva.editor)">➕ Extra</button>
                 </div>
                 
                 <div id="editor-textos-factura" style="flex: 1; overflow-y: auto; padding-right: 5px;">
                     <!-- JS inyectará los inputs del proyecto y extras con sus botones arriba/abajo/quitar -->
                 </div>
                 
-                <div style="display:flex; flex-direction: column; gap:10px; margin-top:15px; border-top: 2px solid #e2e8f0; padding-top: 15px;">
+                <div style="display:flex; flex-direction: column; gap:10px; margin-top:15px; border-top: 2px solid var(--border-subtle); padding-top: 15px;">
                     <button class="btn-outline" id="btn-cerrar-factura" onclick="document.getElementById('modal-factura').classList.add('hidden')">Cerrar</button>
                     <button class="btn-outline" id="btn-solo-descargar" onclick="descargarFacturaLocal()">Solo Descargar</button>
                     <button class="btn-yellow" id="btn-crear-pago" onclick="crearPagoEnDrive()">Aprobar y Crear Carpeta 🚀</button>
@@ -3738,14 +3738,14 @@ function cambiarTabBuscadorProyectos(tab) {
     
     if (tab === 'pendientes') {
         tabPendientes.style.borderBottomColor = 'var(--lvg-yellow)';
-        tabPendientes.style.color = 'var(--lvg-dark)';
+        tabGeneral.style.color = 'var(--text-dark)';
         tabGeneral.style.borderBottomColor = 'transparent';
         tabGeneral.style.color = 'var(--text-gray)';
     } else {
         tabGeneral.style.borderBottomColor = 'var(--lvg-yellow)';
         tabGeneral.style.color = 'var(--lvg-dark)';
         tabPendientes.style.borderBottomColor = 'transparent';
-        tabPendientes.style.color = 'var(--text-gray)';
+        tabPendientes.style.color = 'var(--text-dark)';
     }
     
     // Refrescamos la lista de proyectos con la nueva configuración
@@ -4148,7 +4148,7 @@ function eliminarFacturaCompleta(idFactura) {
                   // LA MAGIA DE LA MEMORIA: Si estaba guardado en el carrito, lo marcamos checked
                   let isChecked = window.seleccionFacturas.includes(p.id) ? "checked" : "";
 
-                  let htmlCard = `<div class="fila-deuda"><div style="display:flex; align-items:center; gap:15px;"><input type="checkbox" class="chk-factura-${editor.replace(/\s+/g, '')}" value='${j}' onchange="toggleSeleccionFactura('${p.id}', this.checked)" ${isChecked} style="transform: scale(1.5);"><div><strong style="color:var(--lvg-dark);">${p.cliente}</strong> <span style="color:#666; font-size:14px;">- ${p.fecha}</span> ${alertaCobro}<br><span style="color:#10b981; font-weight:bold; font-size:14px;">${p.precioTotal}</span></div></div></div>`; 
+                  let htmlCard = `<div class="fila-deuda"><div style="display:flex; align-items:center; gap:15px;"><input type="checkbox" class="chk-factura-${editor.replace(/\s+/g, '')}" value='${j}' onchange="toggleSeleccionFactura('${p.id}', this.checked)" ${isChecked} style="transform: scale(1.5);"><div><strong style="color:var(--text-dark);">${p.cliente}</strong> <span style="color:var(--text-gray); font-size:14px;">- ${p.fecha}</span> ${alertaCobro}<br><span style="color:#10b981; font-weight:bold; font-size:14px;">${p.precioTotal}</span></div></div></div>`; 
                   divLista.innerHTML += htmlCard; 
               }); 
           } 
@@ -4252,7 +4252,7 @@ function confirmarEliminacion() {
           if (divLista && document.getElementById('modal-agregar-afactura').classList.contains('hidden')) {
               if(!window.extrasFacturaActiva) window.extrasFacturaActiva = [];
               window.extrasFacturaActiva.push(nuevoExtra);
-              let htmlCard = `<div class="fila-deuda" style="background:#eff6ff; border-left:4px solid #0284c7; padding-left:10px;"><div style="display:flex; align-items:center; gap:15px;"><input type="checkbox" checked disabled style="transform: scale(1.5);"><div><strong style="color:var(--lvg-dark);">[EXTRA] ${d}</strong> <span style="color:#666; font-size:14px;">- ${c}</span><br><span style="color:#0284c7; font-weight:bold; font-size:14px;">${p} ${m}</span></div></div></div>`;
+              let htmlCard = `<div class="fila-deuda" style="background:rgba(2,132,199,0.1); border-left:4px solid #38bdf8; padding-left:10px;"><div style="display:flex; align-items:center; gap:15px;"><input type="checkbox" checked disabled style="transform: scale(1.5);"><div><strong style="color:#38bdf8;">[EXTRA] ${d}</strong> <span style="color:var(--text-gray); font-size:14px;">- ${c}</span><br><span style="color:#10b981; font-weight:bold; font-size:14px;">${p} ${m}</span></div></div></div>`;
               divLista.innerHTML += htmlCard;
           } 
           // CASO 2: Estamos en "Historial de Pagos" editando una factura
@@ -5090,16 +5090,16 @@ async function cargarFeedbackManager() {
               tareas.forEach(t => {
                   let conceptoDefecto = `${p.cliente} - ${p.fecha}`;
                   editorHtml += `
-                  <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                  <div style="background: var(--bg-main); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 8px; margin-bottom: 8px;">
                       <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                          <span style="font-size:11px; font-weight:bold; color:#64748b;" title="${p.tipo}: ${t.tipo}">${p.tipo}: ${t.tipo}</span>
+                          <span style="font-size:11px; font-weight:bold; color:var(--text-gray);" title="${p.tipo}: ${t.tipo}">${p.tipo}: ${t.tipo}</span>
                           <div style="display:flex; gap: 4px;">
-                              <button onclick="moverItemFactura('proyecto', ${arrayIndex}, 'arriba')" style="border:none; background:#f1f5f9; cursor:pointer; border-radius:4px; padding:2px 6px;" title="Mover arriba">▲</button>
-                              <button onclick="moverItemFactura('proyecto', ${arrayIndex}, 'abajo')" style="border:none; background:#f1f5f9; cursor:pointer; border-radius:4px; padding:2px 6px;" title="Mover abajo">▼</button>
-                              <button onclick="quitarItemFacturaPreview('proyecto', ${arrayIndex})" style="border:none; background:#fee2e2; color:#ef4444; cursor:pointer; border-radius:4px; padding:2px 6px; font-weight:bold;" title="Quitar">✕</button>
+                              <button onclick="moverItemFactura('proyecto', ${arrayIndex}, 'arriba')" style="border:none; background:var(--border-subtle); color:var(--text-dark); cursor:pointer; border-radius:4px; padding:2px 6px;" title="Mover arriba">▲</button>
+                              <button onclick="moverItemFactura('proyecto', ${arrayIndex}, 'abajo')" style="border:none; background:var(--border-subtle); color:var(--text-dark); cursor:pointer; border-radius:4px; padding:2px 6px;" title="Mover abajo">▼</button>
+                              <button onclick="quitarItemFacturaPreview('proyecto', ${arrayIndex})" style="border:none; background:rgba(239, 68, 68, 0.15); color:#ef4444; cursor:pointer; border-radius:4px; padding:2px 6px; font-weight:bold;" title="Quitar">✕</button>
                           </div>
                       </div>
-                      <input type="text" id="edit-txt-fac-${globalIndex}" value="${conceptoDefecto}" oninput="actualizarCanvasFactura()" style="width: 100%; padding:6px 8px; border-radius:4px; border:1px solid #cbd5e1; font-size:12px; font-family:inherit; box-sizing:border-box;">
+                      <input type="text" id="edit-txt-fac-${globalIndex}" value="${conceptoDefecto}" oninput="actualizarCanvasFactura()" style="width: 100%; padding:6px 8px; border-radius:4px; border:1px solid var(--border-subtle); background:var(--bg-card); color:var(--text-dark); font-size:12px; font-family:inherit; box-sizing:border-box;">
                   </div>`;
                   globalIndex++;
               });
@@ -5109,16 +5109,16 @@ async function cargarFeedbackManager() {
           if(datosFacturaActiva.extras && datosFacturaActiva.extras.length > 0) {
               datosFacturaActiva.extras.forEach((ext, arrayIndex) => {
                   editorHtml += `
-                  <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 8px; margin-bottom: 8px;">
+                  <div style="background: rgba(2,132,199,0.1); border: 1px solid #0284c7; border-radius: 8px; padding: 8px; margin-bottom: 8px;">
                       <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                          <span style="font-size:11px; font-weight:bold; color:#0284c7;" title="[EXTRA] ${ext.detalle}">[EXTRA] ${ext.detalle}</span>
+                          <span style="font-size:11px; font-weight:bold; color:#38bdf8;" title="[EXTRA] ${ext.detalle}">[EXTRA] ${ext.detalle}</span>
                           <div style="display:flex; gap: 4px;">
-                              <button onclick="moverItemFactura('extra', ${arrayIndex}, 'arriba')" style="border:none; background:#e0f2fe; color:#0284c7; cursor:pointer; border-radius:4px; padding:2px 6px;">▲</button>
-                              <button onclick="moverItemFactura('extra', ${arrayIndex}, 'abajo')" style="border:none; background:#e0f2fe; color:#0284c7; cursor:pointer; border-radius:4px; padding:2px 6px;">▼</button>
-                              <button onclick="quitarItemFacturaPreview('extra', ${arrayIndex})" style="border:none; background:#fee2e2; color:#ef4444; cursor:pointer; border-radius:4px; padding:2px 6px; font-weight:bold;">✕</button>
+                              <button onclick="moverItemFactura('extra', ${arrayIndex}, 'arriba')" style="border:none; background:rgba(2,132,199,0.2); color:#38bdf8; cursor:pointer; border-radius:4px; padding:2px 6px;">▲</button>
+                              <button onclick="moverItemFactura('extra', ${arrayIndex}, 'abajo')" style="border:none; background:rgba(2,132,199,0.2); color:#38bdf8; cursor:pointer; border-radius:4px; padding:2px 6px;">▼</button>
+                              <button onclick="quitarItemFacturaPreview('extra', ${arrayIndex})" style="border:none; background:rgba(239, 68, 68, 0.15); color:#ef4444; cursor:pointer; border-radius:4px; padding:2px 6px; font-weight:bold;">✕</button>
                           </div>
                       </div>
-                      <input type="text" id="edit-txt-fac-${globalIndex}" value="${ext.concepto}" oninput="actualizarCanvasFactura()" style="width: 100%; padding:6px 8px; border-radius:4px; border:1px solid #7dd3fc; font-size:12px; font-family:inherit; box-sizing:border-box;">
+                      <input type="text" id="edit-txt-fac-${globalIndex}" value="${ext.concepto}" oninput="actualizarCanvasFactura()" style="width: 100%; padding:6px 8px; border-radius:4px; border:1px solid #0284c7; background:var(--bg-main); color:var(--text-dark); font-size:12px; font-family:inherit; box-sizing:border-box;">
                   </div>`;
                   globalIndex++;
               });
@@ -5167,14 +5167,14 @@ async function cargarFeedbackManager() {
           
           if (tab === 'pendientes') {
               tabPendientes.style.borderBottomColor = 'var(--lvg-yellow)';
-              tabPendientes.style.color = 'var(--lvg-dark)';
+              tabPendientes.style.color = 'var(--text-dark)';
               tabGeneral.style.borderBottomColor = 'transparent';
               tabGeneral.style.color = 'var(--text-gray)';
           } else {
               tabGeneral.style.borderBottomColor = 'var(--lvg-yellow)';
               tabGeneral.style.color = 'var(--lvg-dark)';
               tabPendientes.style.borderBottomColor = 'transparent';
-              tabPendientes.style.color = 'var(--text-gray)';
+              tabPendientes.style.color = 'var(--text-dark)';
           }
           filtrarBuscadorFacturaPreview();
       }
@@ -5232,15 +5232,15 @@ async function cargarFeedbackManager() {
               }
 
               html += `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #eee; background: #fff; margin-bottom: 5px; border-radius: 6px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid var(--border-subtle); background: var(--bg-main); margin-bottom: 5px; border-radius: 6px;">
                   <div style="flex:1; min-width:0;">
-                      <strong style="color:var(--lvg-dark); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">${p.cliente}</strong>
-                      <span style="font-size:11px; color:#666;">${p.fecha} | ${p.editor || 'Sin Editor'}</span>
+                      <strong style="color:var(--text-dark); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;">${p.cliente}</strong>
+                      <span style="font-size:11px; color:var(--text-gray);">${p.fecha} | ${p.editor || 'Sin Editor'}</span>
                       ${estadoPagoHtml}
                   </div>
                   <div style="display:flex; align-items:center; gap:8px;">
                       <span style="font-size:12px; color:#10b981; font-weight:bold;">${totalDisplay}</span>
-                      <button class="btn-outline" style="width:28px; height:28px; padding:0; display:flex; align-items:center; justify-content:center; border-color:#cbd5e1; color:#0284c7; font-weight:bold;" onclick="agregarProyectoFacturaPreview('${p.id}')">➕</button>
+                      <button class="btn-outline" style="width:28px; height:28px; padding:0; display:flex; align-items:center; justify-content:center; border-color:var(--border-subtle); color:var(--lvg-yellow); font-weight:bold;" onclick="agregarProyectoFacturaPreview('${p.id}')">➕</button>
                   </div>
               </div>`;
           });
