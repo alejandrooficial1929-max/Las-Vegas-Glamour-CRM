@@ -688,7 +688,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         <div id="vista-manager-alertas" class="hidden" style="flex:1;"><div style="display:flex; justify-content: space-between; align-items: center;"><div><h2 style="margin-top:0;">🔔 Alertas del Manager</h2><p style="color:#666; margin-top:-10px;">Avisos de pagos solicitados.</p></div><div style="display:flex; gap:10px;"><button class="btn-outline" onclick="marcarAlertasManagerLeidas()">Ocultar globo rojo</button><button class="btn-outline" style="color: #ef4444; border-color: #ef4444;" onclick="limpiarBandejaAlertasManager()">Limpiar bandeja 🗑️</button></div></div><div id="contenedor-alertas-manager"><div style="text-align:center; padding: 20px; color: #666;">Cargando...</div></div></div>
         <div id="vista-manager-metricas" class="hidden" style="flex:1;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:10px;">
-             <h2 style="margin:0; color: var(--lvg-dark); letter-spacing:0.01em;">📉 Métricas Globales</h2>
+             <h2 style="margin:0; color: var(--lvg-yellow); letter-spacing:0.01em;">📉 Métricas Globales</h2>
          <div style="display:flex; gap:12px; flex-wrap:wrap; background:var(--bg-card); padding:10px 16px; border-radius:14px; box-shadow:var(--shadow-soft); border:1px solid var(--border-subtle);">
           <select id="filtro-periodo-manager" class="task-input" style="width:auto; height:auto !important; padding:8px 14px !important;">
         <option value="mensual">Mensual</option>
@@ -891,7 +891,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         <div id="vista-alertas-asig" class="hidden" style="flex:1;"><div style="display:flex; justify-content: space-between; align-items: center;"><div><h2 style="margin-top:0;">🔔 Alertas de la Asignadora</h2><p style="color:#666; margin-top:-10px;">Avisos de proyectos entregados y permisos de editores.</p></div><div style="display:flex; gap:10px;"><button class="btn-outline" onclick="marcarAlertasAsigLeidas()">Ocultar globos</button><button class="btn-outline" style="color: #ef4444; border-color: #ef4444;" onclick="limpiarBandejaAlertasAsig()">Limpiar bandeja 🗑️</button></div></div><div id="contenedor-alertas-asig"><div style="text-align:center; padding: 20px; color: #666;">Cargando...</div></div></div>
         <div id="vista-metricas-asig" class="hidden" style="flex:1;">
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:10px;">
-    <h2 style="margin:0; color: var(--lvg-dark); letter-spacing:0.01em;">📉 Métricas de Asignación</h2>
+    <h2 style="margin:0; color: var(--lvg-yellow); letter-spacing:0.01em;">📉 Métricas de Asignación</h2>
     <div style="display:flex; gap:12px; flex-wrap:wrap; background:var(--bg-card); padding:10px 16px; border-radius:14px; box-shadow:var(--shadow-soft); border:1px solid var(--border-subtle);">
       <select id="filtro-periodo-asig" class="task-input" style="width:auto; height:auto !important; padding:8px 14px !important;">
         <option value="mensual">Mensual</option>
@@ -1045,7 +1045,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
 
         <div id="vista-gestion-metricas" class="hidden" style="flex:1;">
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:10px;">
-    <h2 style="margin:0; color: var(--lvg-dark); letter-spacing:0.01em;">📉 Métricas Globales</h2>
+    <h2 style="margin:0; color: var(--lvg-yellow); letter-spacing:0.01em;">📉 Métricas Globales</h2>
     <div style="display:flex; gap:12px; flex-wrap:wrap; background:var(--bg-card); padding:10px 16px; border-radius:14px; box-shadow:var(--shadow-soft); border:1px solid var(--border-subtle);">
       <select id="filtro-periodo-gestion" class="task-input" style="width:auto; height:auto !important; padding:8px 14px !important;">
         <option value="mensual">Mensual</option>
@@ -1108,7 +1108,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         <div id="vista-alertas-editor" class="hidden" style="flex:1;"><div style="display:flex; justify-content: space-between; align-items: center;"><div><h2 style="margin-top:0; color: var(--lvg-dark);">🔔 Centro de Alertas</h2></div><div style="display:flex; gap:10px;"><button class="btn-outline" onclick="marcarAlertasLeidas()">Ocultar globo rojo</button><button class="btn-outline" style="color: #ef4444; border-color: #ef4444;" onclick="limpiarBandejaAlertas()">Limpiar bandeja 🗑️</button></div></div><div id="contenedor-alertas-editor"></div></div>
         <div id="vista-metricas-editor" class="hidden" style="flex:1;">
   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; margin-bottom:10px;">
-    <h2 style="margin:0; color: var(--lvg-dark); letter-spacing:0.01em;">📊 Mi Rendimiento</h2>
+    <h2 style="margin:0; color: var(--lvg-yellow); letter-spacing:0.01em;">📊 Mi Rendimiento</h2>
     <div style="display:flex; gap:12px; flex-wrap:wrap; background:var(--bg-card); padding:10px 16px; border-radius:14px; box-shadow:var(--shadow-soft); border:1px solid var(--border-subtle);">
       <select id="filtro-periodo-editor" class="task-input" style="width:auto; height:auto !important; padding:8px 14px !important;">
         <option value="mensual">Mensual</option>
@@ -3082,23 +3082,32 @@ function actualizarDashboardMetricas(prefijoRol, editorSeleccionado, periodo) {
 // =================================================================
 let instanciaChartVolumen = null;
 
-function generarDatosMockVolumenProyectos() {
-  // Genera un punto por semana desde Enero 2022 hasta hoy, con una tendencia
-  // suave + ruido aleatorio, simulando el volumen de proyectos activos.
-  const datos = [];
-  const fechaInicio = Date.UTC(2022, 0, 1);
-  const fechaFin = Date.now();
-  const semanaMs = 7 * 24 * 60 * 60 * 1000;
-
-  let valorBase = 8;
-  for (let t = fechaInicio; t <= fechaFin; t += semanaMs) {
-    // Tendencia ascendente lenta + variación aleatoria + un ciclo estacional simple
-    valorBase += (Math.random() - 0.42) * 1.5;
-    if (valorBase < 2) valorBase = 2;
-    const estacional = Math.sin((t / semanaMs) / 8) * 3;
-    const valor = Math.max(0, Math.round(valorBase + estacional));
-    datos.push([t, valor]);
+function generarDatosRealesVolumenProyectos(editorFiltro) {
+  const proyectos = filtrarProyectosParaMetricas(editorFiltro);
+  const agrupados = {};
+  
+  // Inicializamos los últimos 12 meses en 0 para mantener la estructura de la gráfica
+  const hoy = new Date();
+  for(let i = 11; i >= 0; i--) {
+      let mesRef = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+      agrupados[Date.UTC(mesRef.getFullYear(), mesRef.getMonth(), 1)] = 0;
   }
+
+  // Llenamos con los proyectos reales
+  proyectos.forEach(p => {
+      if(!p.fechaCreacion) return;
+      let d = new Date(p.fechaCreacion);
+      if(isNaN(d)) return;
+      
+      let ts = Date.UTC(d.getFullYear(), d.getMonth(), 1);
+      if(agrupados[ts] !== undefined) agrupados[ts] += 1;
+      else agrupados[ts] = 1;
+  });
+
+  const timestamps = Object.keys(agrupados).map(Number).sort((a,b) => a - b);
+  const datos = timestamps.map(ts => [ts, agrupados[ts]]);
+  
+  if(datos.length === 0) return [[Date.now(), 0]]; // Respaldo de seguridad
   return datos;
 }
 
@@ -3123,54 +3132,57 @@ const PRECIOS_MOCK_CATEGORIA = {
   extras: 25
 };
 
-function generarDatosMockDesglose(editorFiltro) {
+function generarDatosRealesDesglose(editorFiltro) {
+  const proyectos = filtrarProyectosParaMetricas(editorFiltro);
   const filas = [];
   const hoy = new Date();
 
-  // Últimos 12 meses, del más reciente al más antiguo
+  // Últimos 12 meses
   for (let i = 0; i < 12; i++) {
     const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
     const etiqueta = `${NOMBRES_MES_DESGLOSE[fecha.getMonth()]} ${fecha.getFullYear()}`;
 
-    // Semilla simple para que el mismo editor+mes siempre dé el mismo mock (no salta al re-renderizar)
-    const semilla = fecha.getFullYear() * 100 + fecha.getMonth() + (editorFiltro === 'Todos' ? 0 : editorFiltro.length * 7);
-    const pseudoRandom = (n) => Math.abs(Math.sin(semilla * (n + 1)) * 10000) % 1;
+    let m_movies = 0, m_highlights = 0, m_slideshows = 0, m_screens = 0, m_extras = 0;
+    let totalDinero = 0;
 
-    const factorEditor = editorFiltro === 'Todos' ? 1 : 0.4; // "Todos" suma más volumen que un editor individual
+    let proyMes = proyectos.filter(p => {
+        if(!p.fechaCreacion) return false;
+        let d = new Date(p.fechaCreacion);
+        return !isNaN(d) && d.getMonth() === fecha.getMonth() && d.getFullYear() === fecha.getFullYear();
+    });
 
-    const movies = Math.round(pseudoRandom(1) * 6 * factorEditor) + (editorFiltro === 'Todos' ? 2 : 0);
-    const highlights = Math.round(pseudoRandom(2) * 8 * factorEditor) + (editorFiltro === 'Todos' ? 3 : 1);
-    const slideshows = Math.round(pseudoRandom(3) * 4 * factorEditor);
-    const screens = Math.round(pseudoRandom(4) * 5 * factorEditor);
-    const bonos = Math.round(pseudoRandom(5) * 3 * factorEditor);
-    const extras = Math.round(pseudoRandom(6) * 3 * factorEditor);
-
-    // NUEVA LÓGICA: el "Total" ya no cuenta unidades, suma el dinero generado por
-    // cada categoría (cantidad × precio de referencia), con sufijo "USD".
-    const totalDinero =
-      (movies * PRECIOS_MOCK_CATEGORIA.movies) +
-      (highlights * PRECIOS_MOCK_CATEGORIA.highlights) +
-      (slideshows * PRECIOS_MOCK_CATEGORIA.slideshows) +
-      (screens * PRECIOS_MOCK_CATEGORIA.screens) +
-      (bonos * PRECIOS_MOCK_CATEGORIA.bonos) +
-      (extras * PRECIOS_MOCK_CATEGORIA.extras);
+    proyMes.forEach(p => {
+        try {
+            let tareas = JSON.parse(p.tareasJSON || "[]");
+            tareas.forEach(t => {
+                let tipoL = t.tipo.toLowerCase();
+                if(tipoL.includes("movie")) m_movies++;
+                if(tipoL.includes("highlight") && !tipoL.includes("movie")) m_highlights++;
+                if(tipoL.includes("slideshow")) m_slideshows++;
+                if(tipoL.includes("screen")) m_screens++;
+                
+                // Sumamos solo USD para el balance global principal
+                if(t.moneda === "USD") {
+                    totalDinero += Number(t.precio) || 0;
+                }
+            });
+        } catch(e){}
+    });
 
     filas.push({
       etiqueta, mesIndex: fecha.getMonth(), anio: fecha.getFullYear(),
-      movies, highlights, slideshows, screens, bonos, extras,
-      total: `${totalDinero} USD`
+      movies: m_movies, highlights: m_highlights, slideshows: m_slideshows, screens: m_screens, bonos: 0, extras: m_extras,
+      total: `${totalDinero.toLocaleString('en-US')} USD`
     });
   }
   return filas;
 }
 
-
-
 function renderizarTablaDesglose(editorFiltro) {
   const tbody = document.getElementById('tbody-desglose-mensual');
   if (!tbody) return;
 
-  const filas = generarDatosMockDesglose(editorFiltro);
+  const filas = generarDatosRealesDesglose(editorFiltro);
 
   if (filas.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-gray); padding:20px;">Sin datos para este filtro.</td></tr>';
@@ -3250,38 +3262,31 @@ function filtrarCategoriaDesglose(categoria, btnEl) {
 
 // Genera una lista de proyectos mock cuya cantidad por categoría coincide
 // exactamente con los totales que ya se ven en la fila de la tabla mensual.
-function generarProyectosMockParaMes(mesIndex, anio, editorFiltro) {
-  const semilla = anio * 100 + mesIndex + (editorFiltro === 'Todos' ? 0 : editorFiltro.length * 7);
-  const pseudoRandom = (n) => Math.abs(Math.sin(semilla * (n + 1)) * 10000) % 1;
-  const factorEditor = editorFiltro === 'Todos' ? 1 : 0.4;
-
-  const cantidades = {
-    Movies: Math.round(pseudoRandom(1) * 6 * factorEditor) + (editorFiltro === 'Todos' ? 2 : 0),
-    Highlights: Math.round(pseudoRandom(2) * 8 * factorEditor) + (editorFiltro === 'Todos' ? 3 : 1),
-    Slideshows: Math.round(pseudoRandom(3) * 4 * factorEditor),
-    Screens: Math.round(pseudoRandom(4) * 5 * factorEditor)
-  };
-
-  const editoresPosibles = editorFiltro === 'Todos' ? EDITORES_DESGLOSE : [editorFiltro];
-  const proyectos = [];
-  let contador = 0;
-
-  Object.keys(cantidades).forEach(categoria => {
-    for (let i = 0; i < cantidades[categoria]; i++) {
-      contador++;
-      const idxCliente = Math.floor(Math.abs(Math.sin(semilla + contador * 3.1)) * NOMBRES_CLIENTES_MOCK.length);
-      const idxEditor = Math.floor(Math.abs(Math.cos(semilla + contador * 1.7)) * editoresPosibles.length);
-      const dia = 1 + Math.floor(Math.abs(Math.sin(semilla + contador * 5.3)) * 27);
-      proyectos.push({
-        cliente: NOMBRES_CLIENTES_MOCK[idxCliente],
-        categoria,
-        editor: editoresPosibles[idxEditor],
-        fecha: `${String(dia).padStart(2,'0')}.${String(mesIndex+1).padStart(2,'0')}.${String(anio).slice(-2)}`
-      });
-    }
+function generarProyectosRealesParaMes(mesIndex, anio, editorFiltro) {
+  const proyectos = filtrarProyectosParaMetricas(editorFiltro);
+  return proyectos.filter(p => {
+        if(!p.fechaCreacion) return false;
+        let d = new Date(p.fechaCreacion);
+        return !isNaN(d) && d.getMonth() === mesIndex && d.getFullYear() === anio;
+  }).map(p => {
+      // Determinamos la categoría visual a partir de su primera tarea
+      let cat = "Movies"; 
+      try {
+          let t = JSON.parse(p.tareasJSON);
+          if(t.length > 0) {
+              let f = t[0].tipo.toLowerCase();
+              if(f.includes("highlight") && !f.includes("movie")) cat = "Highlights";
+              else if(f.includes("slideshow")) cat = "Slideshows";
+              else if(f.includes("screen")) cat = "Screens";
+          }
+      }catch(e){}
+      return {
+          cliente: p.cliente,
+          categoria: cat,
+          editor: p.editor || 'Sin asignar',
+          fecha: p.fecha
+      };
   });
-
-  return proyectos;
 }
 
 // =================================================================
@@ -3295,30 +3300,26 @@ let editorComparadoActivo = null;
 // Misma fórmula que usa generarDatosMockDesglose() para la tabla, pero calculada
 // para CUALQUIER mes/año directamente (no solo los últimos 12 ya listados),
 // así las comparaciones "1/2/3 meses atrás" nunca quedan en cero por accidente.
-function calcularTotalesMesMock(mesIndex, anio, editorFiltro) {
-  const semilla = anio * 100 + mesIndex + (editorFiltro === 'Todos' ? 0 : editorFiltro.length * 7);
-  const pseudoRandom = (n) => Math.abs(Math.sin(semilla * (n + 1)) * 10000) % 1;
-  const factorEditor = editorFiltro === 'Todos' ? 1 : 0.4;
-
-  const movies = Math.round(pseudoRandom(1) * 6 * factorEditor) + (editorFiltro === 'Todos' ? 2 : 0);
-  const highlights = Math.round(pseudoRandom(2) * 8 * factorEditor) + (editorFiltro === 'Todos' ? 3 : 1);
-  const slideshows = Math.round(pseudoRandom(3) * 4 * factorEditor);
-  const screens = Math.round(pseudoRandom(4) * 5 * factorEditor);
-
-  return { movies, highlights, slideshows, screens, total: movies + highlights + slideshows + screens };
-}
-
-function calcularIngresosMesMock(cantidadProyectos, mesIndex, anio, editorFiltro) {
-  const semilla = anio * 137 + mesIndex * 13 + (editorFiltro === 'Todos' ? 0 : editorFiltro.length * 19);
-  const pseudoRandom = Math.abs(Math.sin(semilla * 4.2) * 10000) % 1;
-  const ticketPromedioUSD = 300 + pseudoRandom * 200; // 300–500 USD promedio por proyecto (mock)
-  return Math.round(cantidadProyectos * ticketPromedioUSD);
-}
-
 function obtenerMetricasMes(mesIndex, anio, editorFiltro) {
-  const totales = calcularTotalesMesMock(mesIndex, anio, editorFiltro);
-  const ingresos = calcularIngresosMesMock(totales.total, mesIndex, anio, editorFiltro);
-  return { cantidadProyectos: totales.total, ingresos };
+  const proyectos = filtrarProyectosParaMetricas(editorFiltro);
+  
+  let proyMes = proyectos.filter(p => {
+        if(!p.fechaCreacion) return false;
+        let d = new Date(p.fechaCreacion);
+        return !isNaN(d) && d.getMonth() === mesIndex && d.getFullYear() === anio;
+  });
+
+  let ingresos = 0;
+  proyMes.forEach(p => {
+      try {
+          let tareas = JSON.parse(p.tareasJSON || "[]");
+          tareas.forEach(t => {
+              if(t.moneda === "USD") ingresos += Number(t.precio) || 0;
+          });
+      } catch(e){}
+  });
+
+  return { cantidadProyectos: proyMes.length, ingresos };
 }
 
 function restarMeses(mesIndex, anio, n) {
@@ -3460,7 +3461,7 @@ function renderizarListaProyectosDesglose() {
   if (!contenedor || ultimoDesgloseAbierto.mesIndex === null) return;
 
   const { mesIndex, anio, editor } = ultimoDesgloseAbierto;
-  let proyectos = generarProyectosMockParaMes(mesIndex, anio, editor);
+  let proyectos = generarProyectosRealesParaMes(mesIndex, anio, editor);
 
   if (categoriaActivaDesglose !== 'Todos') {
     proyectos = proyectos.filter(p => p.categoria === categoriaActivaDesglose);
@@ -3489,14 +3490,14 @@ function inicializarFiltroDesgloseMensual() {
   select.addEventListener('change', () => renderizarTablaDesglose(select.value));
 }
 
-function renderizarGraficoVolumenProyectos() {
+function renderizarGraficoVolumenProyectos(editorFiltro = 'Todos') {
   const contenedor = document.getElementById('chart-volumen-proyectos');
   if (!contenedor || typeof Highcharts === 'undefined') return;
 
-  const datosMock = generarDatosMockVolumenProyectos();
+  const datosReales = generarDatosRealesVolumenProyectos(editorFiltro);
 
   if (instanciaChartVolumen) {
-    instanciaChartVolumen.series[0].setData(datosMock, true);
+    instanciaChartVolumen.series[0].setData(datosReales, true);
     return;
   }
 
@@ -3521,8 +3522,8 @@ function renderizarGraficoVolumenProyectos() {
     yAxis: { title: { text: 'Proyectos activos' }, opposite: false },
     tooltip: { valueDecimals: 0, valueSuffix: ' proyectos' },
     series: [{
-      name: 'Volumen de Proyectos (mock)',
-      data: datosMock,
+      name: 'Nuevos Proyectos',
+      data: datosReales,
       type: 'area',
       color: '#c9a54a',
       fillColor: {
