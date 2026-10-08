@@ -1979,31 +1979,40 @@ const contextoDinamico = SYSTEM_PROMPT_BASE +
           });
           
           proyectosGlobalesDeAgencia = datosTemporal;
-          // --- MAGIA: MAPEO DE NOMBRES PARA EL FILTRO DEL EDITOR ---
+          // --- MAGIA: MAPEO DE NOMBRES PARA EL FILTRO DEL EDITOR (Mejorado contra espacios en blanco y mayúsculas) ---
           if(usuarioActual) {
-              let nombreFiltro = usuarioActual;
+              let nombreFiltro = String(usuarioActual).toLowerCase().trim();
               let uLower = String(usuarioActual).toLowerCase();
               
               // Traducimos los apodos a los nombres oficiales de la base de datos
-              if (uLower.includes("gabo") || uLower.includes("gabriel")) nombreFiltro = "Gabriel Hernandez";
-              else if (uLower.includes("pablo")) nombreFiltro = "Pablo Gomez";
-              else if (uLower.includes("alex") || uLower.includes("alejandro")) nombreFiltro = "Alejandro Baldivieso";
+              if (uLower.includes("gabo") || uLower.includes("gabriel")) nombreFiltro = "gabriel hernandez";
+              else if (uLower.includes("pablo")) nombreFiltro = "pablo gomez";
+              else if (uLower.includes("alex") || uLower.includes("alejandro")) nombreFiltro = "alejandro baldivieso";
 
-              // Filtramos para que vea tanto su apodo como su nombre oficial
-              misProyectosGlobales = datosTemporal.filter(p => p.editor === nombreFiltro || p.editor === usuarioActual);
+              // Filtramos para que vea tanto su apodo como su nombre oficial (Case Insensitive y con Trim)
+              misProyectosGlobales = datosTemporal.filter(p => {
+                  let ed = String(p.editor || "").toLowerCase().trim();
+                  return ed === nombreFiltro || ed === uLower || ed.includes(uLower);
+              });
           }
           
           // Si alguien ya está logueado, redibujamos la pantalla
           if(rolActual) {
             const rNorm = String(rolActual).toLowerCase();
+            const uNorm = String(usuarioActual).toLowerCase();
+            
             if(rNorm.includes("manager") || rNorm.includes("admin")) { 
               dibujarTarjetasManager(); 
               verificarAlertasManagerSilencioso(); 
-              // AÑADIR ESTA LÍNEA PARA QUE REDIBUJE LAS FACTURAS CUANDO HAYA CAMBIOS EN FIREBASE
               if(typeof dibujarHistorialPagosManager === 'function') dibujarHistorialPagosManager();
             }
-            else if(rNorm.includes("asignador")) { dibujarTarjetasAsig(); verificarAlertasAsigSilencioso(); }
-            else if(rNorm.includes("gestion") || rNorm.includes("citas")) { dibujarTarjetasGestion(); verificarAlertasGestionSilencioso(); }
+            else if(rNorm.includes("boss") || rNorm.includes("asignador") || rNorm.includes("gestion") || rNorm.includes("citas")) { 
+                if(uNorm.includes("josefina") || uNorm.includes("milan") || rNorm.includes("gestion") || rNorm.includes("citas")) {
+                    dibujarTarjetasGestion(); verificarAlertasGestionSilencioso(); 
+                } else {
+                    dibujarTarjetasAsig(); verificarAlertasAsigSilencioso(); 
+                }
+            }
             else if (rNorm.includes("editor")) { dibujarTarjetasEditor(); verificarAlertasEditorSilencioso(); }
           }
         }, (error) => {
@@ -2016,13 +2025,13 @@ const contextoDinamico = SYSTEM_PROMPT_BASE +
       db.collection("usuarios").onSnapshot((snapshot) => {
           usuariosGlobales = [];
           snapshot.forEach(doc => { let d = doc.data(); d.id = doc.id; usuariosGlobales.push(d); });
-          if(rolActual && (rolActual.toLowerCase().includes("manager") || rolActual.toLowerCase().includes("gestion"))) dibujarPrestamosManager();
+          if(rolActual && (rolActual.toLowerCase().includes("manager") || rolActual.toLowerCase().includes("boss") || rolActual.toLowerCase().includes("gestion") || rolActual.toLowerCase().includes("asignador"))) dibujarPrestamosManager();
           if(rolActual && rolActual.toLowerCase().includes("editor")) dibujarPrestamosEditor();
       });
       db.collection("prestamos").onSnapshot((snapshot) => {
           prestamosGlobales = [];
           snapshot.forEach(doc => { let d = doc.data(); d.id = doc.id; prestamosGlobales.push(recalcularMoraPrestamo(d)); });
-          if(rolActual && (rolActual.toLowerCase().includes("manager") || rolActual.toLowerCase().includes("gestion"))) dibujarPrestamosManager();
+          if(rolActual && (rolActual.toLowerCase().includes("manager") || rolActual.toLowerCase().includes("boss") || rolActual.toLowerCase().includes("gestion") || rolActual.toLowerCase().includes("asignador"))) dibujarPrestamosManager();
           if(rolActual && rolActual.toLowerCase().includes("editor")) dibujarPrestamosEditor();
       });
 
@@ -2393,18 +2402,21 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
                   if(loginPantalla) loginPantalla.style.display = 'none';
 
                   const r = String(rolActual).toLowerCase();
+                  const u = String(usuarioActual).toLowerCase();
                   
-                  // Encender el panel correcto
-                  if(r.includes("asignador")) {
-                  const panel = document.getElementById('panel-asignadora'); // <--- ID CORREGIDO
-                  if(panel) panel.classList.remove('hidden');
-                  if(typeof mostrarVistaPrincipalAsig === 'function') mostrarVistaPrincipalAsig('proyectos'); 
-                      
-                  } else if(r.includes("gestion") || r.includes("citas")) {
-                      const panel = document.getElementById('panel-gestion');
-                      if(panel) panel.classList.remove('hidden');
-                      if(typeof mostrarVistaPrincipalGestion === 'function') mostrarVistaPrincipalGestion('finanzas');
-                      
+                  // Encender el panel correcto (Soporte para rol 'boss', 'asignador' y 'gestion')
+                  if(r.includes("boss") || r.includes("asignador") || r.includes("gestion") || r.includes("citas")) {
+                      // Si el usuario es Josefina o tiene rol de gestión explícito, va a su panel
+                      if(u.includes("josefina") || u.includes("milan") || r.includes("gestion") || r.includes("citas")) {
+                          const panel = document.getElementById('panel-gestion');
+                          if(panel) panel.classList.remove('hidden');
+                          if(typeof mostrarVistaPrincipalGestion === 'function') mostrarVistaPrincipalGestion('finanzas');
+                      } else {
+                          // Si es Andrea Vaca o rol boss por defecto, va al de Asignadora
+                          const panel = document.getElementById('panel-asignadora'); 
+                          if(panel) panel.classList.remove('hidden');
+                          if(typeof mostrarVistaPrincipalAsig === 'function') mostrarVistaPrincipalAsig('proyectos'); 
+                      }
                   } else if(r.includes("manager") || r.includes("admin")) {
                       const panel = document.getElementById('panel-manager');
                       if(panel) panel.classList.remove('hidden');
