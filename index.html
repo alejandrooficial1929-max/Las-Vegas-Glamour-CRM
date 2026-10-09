@@ -4692,7 +4692,7 @@ async function cargarFeedbackManager() {
               <div style="flex:1; background:var(--bg-main); border:1px solid var(--lvg-yellow); padding:20px; border-radius:12px;">
                   <h3 style="margin:0 0 15px 0; color:var(--lvg-yellow);">Solicitar Préstamo Estándar</h3>
                   <label>Monto a solicitar (USD):</label>
-                  <input type="number" id="input-monto-prestamo" oninput="calcularSimulacionPrestamo(${tasa})" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-card); color:var(--text-dark); margin-bottom:15px; font-size:16px;">
+                  <input type="text" id="input-monto-prestamo" oninput="formatearMoneda(this); calcularSimulacionPrestamo(${tasa})" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-card); color:var(--text-dark); margin-bottom:15px; font-size:16px;">
                   <div id="simulador-prestamo" style="background:rgba(212, 175, 55, 0.1); padding:15px; border-radius:8px; margin-bottom:15px; font-size:14px; color:var(--text-gray);">
                       Total a devolver: <strong id="sim-total" style="color:var(--text-dark);">$0.00 USD</strong><br>
                       Equivalente aprox: <strong id="sim-equiv" style="color:var(--text-dark);">0 Movies</strong><br>
@@ -4715,14 +4715,14 @@ async function cargarFeedbackManager() {
                       </div>
                       <div style="flex:1;">
                           <label>Cotización Actual</label>
-                          <input type="number" id="calc-tasa" oninput="calcularDivisaALX()" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-main); color:var(--text-dark); font-size:14px;">
+                          <input type="text" id="calc-tasa" oninput="formatearMoneda(this); calcularDivisaALX()" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-main); color:var(--text-dark); font-size:14px;">
                       </div>
                   </div>
                   <div style="background:rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding:15px; border-radius:4px; font-size:14px; color:var(--text-gray);">
                       Equivalente estimado en moneda local:<br>
                       <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
                           <span style="font-size:20px; color:#3b82f6; font-weight:bold;">$</span>
-                          <input type="number" id="calc-total-local" oninput="calcularDesdeLocalALX(${tasa})" placeholder="0.00" style="width:100%; padding:8px; border-radius:6px; border:1px solid #3b82f6; background:var(--bg-main); color:#3b82f6; font-size:20px; font-weight:bold; box-sizing:border-box;">
+                          <input type="text" id="calc-total-local" oninput="formatearMoneda(this); calcularDesdeLocalALX(${tasa})" placeholder="0.00" style="width:100%; padding:8px; border-radius:6px; border:1px solid #3b82f6; background:var(--bg-main); color:#3b82f6; font-size:20px; font-weight:bold; box-sizing:border-box;">
                       </div>
                   </div>
               </div>
@@ -4745,32 +4745,34 @@ async function cargarFeedbackManager() {
           if (moneda === "ARS") {
               fetch('https://dolarapi.com/v1/dolares/blue')
                 .then(res => res.json())
-                .then(data => { inputTasa.value = data.venta; calcularDivisaALX(); })
+                .then(data => { inputTasa.value = Number(data.venta).toLocaleString('en-US', {maximumFractionDigits: 2}); calcularDivisaALX(); })
                 .catch(() => inputTasa.value = 0);
           } else {
               fetch('https://open.er-api.com/v6/latest/USD')
                 .then(res => res.json())
-                .then(data => { inputTasa.value = data.rates[moneda]; calcularDivisaALX(); })
+                .then(data => { inputTasa.value = Number(data.rates[moneda]).toLocaleString('en-US', {maximumFractionDigits: 2}); calcularDivisaALX(); })
                 .catch(() => inputTasa.value = 0);
           }
       }
 
       function calcularDivisaALX() {
-          let usd = Number(document.getElementById('input-monto-prestamo').value) || 0;
-          let tasaCambio = Number(document.getElementById('calc-tasa').value) || 0;
+          let usdStr = document.getElementById('input-monto-prestamo').value.replace(/,/g, '');
+          let tasaStr = document.getElementById('calc-tasa').value.replace(/,/g, '');
+          let usd = Number(usdStr) || 0;
+          let tasaCambio = Number(tasaStr) || 0;
           let total = usd * tasaCambio;
-          // Actualizamos el value del input limitando a 2 decimales para estética
-          document.getElementById('calc-total-local').value = total > 0 ? total.toFixed(2) : "";
+          document.getElementById('calc-total-local').value = total > 0 ? total.toLocaleString('en-US', {maximumFractionDigits: 2}) : "";
       }
 
       function calcularDesdeLocalALX(tasaInteres) {
-          let local = Number(document.getElementById('calc-total-local').value) || 0;
-          let tasaCambio = Number(document.getElementById('calc-tasa').value) || 0;
+          let localStr = document.getElementById('calc-total-local').value.replace(/,/g, '');
+          let tasaStr = document.getElementById('calc-tasa').value.replace(/,/g, '');
+          let local = Number(localStr) || 0;
+          let tasaCambio = Number(tasaStr) || 0;
           
           if (tasaCambio > 0) {
               let usd = local / tasaCambio;
-              document.getElementById('input-monto-prestamo').value = usd > 0 ? usd.toFixed(2) : "";
-              // Simulamos el préstamo pero con la bandera "true" para no sobreescribir el campo de moneda local
+              document.getElementById('input-monto-prestamo').value = usd > 0 ? usd.toLocaleString('en-US', {maximumFractionDigits: 2}) : "";
               calcularSimulacionPrestamo(tasaInteres, true);
           }
       }
@@ -4919,7 +4921,8 @@ async function cargarFeedbackManager() {
       }
 
       function calcularSimulacionPrestamo(tasa, origenLocal = false) {
-          let monto = Number(document.getElementById('input-monto-prestamo').value) || 0;
+          let montoStr = document.getElementById('input-monto-prestamo').value.replace(/,/g, '');
+          let monto = Number(montoStr) || 0;
           if (monto <= 0) {
               document.getElementById('sim-total').innerText = "$0.00 USD";
               document.getElementById('sim-equiv').innerText = "0 Movies";
@@ -4931,17 +4934,16 @@ async function cargarFeedbackManager() {
           let equivProy = Math.ceil(monto / 50); // Base Movie $50
           let diasPlazo = (equivProy * 7) + 3; // 7 días prom + 3 gracia
           
-          document.getElementById('sim-total').innerText = `$${totalDevolver.toLocaleString('en-US', {minimumFractionDigits: 2})} USD`;
+          document.getElementById('sim-total').innerText = `$${totalDevolver.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD`;
           document.getElementById('sim-equiv').innerText = `${equivProy} Proyectos (Ref: Movie $50)`;
           document.getElementById('sim-dias').innerText = `${diasPlazo} días de plazo (Penalización: 0.5% diario en mora)`;
           
-          // Solo actualizamos la divisa si escribimos en el lado de USD
-          // (Evita borrar los decimales mientras el usuario teclea en el lado de moneda local)
           if (!origenLocal) calcularDivisaALX();
       }
 
       function enviarSolicitudPrestamo(tasa) {
-          let monto = Number(document.getElementById('input-monto-prestamo').value) || 0;
+          let montoStr = document.getElementById('input-monto-prestamo').value.replace(/,/g, '');
+          let monto = Number(montoStr) || 0;
           if (monto <= 0) return alert("Ingresa un monto válido.");
           
           let activosPendientes = prestamosGlobales.filter(p => p.idEditor === usuarioActual && (p.estado === 'Activo' || p.estado === 'Pendiente' || p.estado === 'Vencido'));
