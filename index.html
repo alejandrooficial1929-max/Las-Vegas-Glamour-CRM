@@ -4720,7 +4720,10 @@ async function cargarFeedbackManager() {
                   </div>
                   <div style="background:rgba(59, 130, 246, 0.1); border-left: 4px solid #3b82f6; padding:15px; border-radius:4px; font-size:14px; color:var(--text-gray);">
                       Equivalente estimado en moneda local:<br>
-                      <strong id="calc-total-local" style="font-size:20px; color:#3b82f6;">0.00</strong>
+                      <div style="display:flex; align-items:center; gap:5px; margin-top:5px;">
+                          <span style="font-size:20px; color:#3b82f6; font-weight:bold;">$</span>
+                          <input type="number" id="calc-total-local" oninput="calcularDesdeLocalALX(${tasa})" placeholder="0.00" style="width:100%; padding:8px; border-radius:6px; border:1px solid #3b82f6; background:var(--bg-main); color:#3b82f6; font-size:20px; font-weight:bold; box-sizing:border-box;">
+                      </div>
                   </div>
               </div>
           </div>
@@ -4754,10 +4757,22 @@ async function cargarFeedbackManager() {
 
       function calcularDivisaALX() {
           let usd = Number(document.getElementById('input-monto-prestamo').value) || 0;
-          let tasa = Number(document.getElementById('calc-tasa').value) || 0;
-          let total = usd * tasa;
-          const moneda = document.getElementById('calc-moneda').value;
-          document.getElementById('calc-total-local').innerText = `$${total.toLocaleString('es-AR', {minimumFractionDigits: 2})} ${moneda}`;
+          let tasaCambio = Number(document.getElementById('calc-tasa').value) || 0;
+          let total = usd * tasaCambio;
+          // Actualizamos el value del input limitando a 2 decimales para estética
+          document.getElementById('calc-total-local').value = total > 0 ? total.toFixed(2) : "";
+      }
+
+      function calcularDesdeLocalALX(tasaInteres) {
+          let local = Number(document.getElementById('calc-total-local').value) || 0;
+          let tasaCambio = Number(document.getElementById('calc-tasa').value) || 0;
+          
+          if (tasaCambio > 0) {
+              let usd = local / tasaCambio;
+              document.getElementById('input-monto-prestamo').value = usd > 0 ? usd.toFixed(2) : "";
+              // Simulamos el préstamo pero con la bandera "true" para no sobreescribir el campo de moneda local
+              calcularSimulacionPrestamo(tasaInteres, true);
+          }
       }
 
       function abrirModalPrestamoEspecial() {
@@ -4903,13 +4918,13 @@ async function cargarFeedbackManager() {
           });
       }
 
-      function calcularSimulacionPrestamo(tasa) {
+      function calcularSimulacionPrestamo(tasa, origenLocal = false) {
           let monto = Number(document.getElementById('input-monto-prestamo').value) || 0;
           if (monto <= 0) {
               document.getElementById('sim-total').innerText = "$0.00 USD";
               document.getElementById('sim-equiv').innerText = "0 Movies";
               document.getElementById('sim-dias').innerText = "0 días";
-              calcularDivisaALX(); // Para que ponga en cero la calculadora de al lado
+              if (!origenLocal) calcularDivisaALX(); 
               return;
           }
           let totalDevolver = monto * (1 + tasa);
@@ -4920,8 +4935,9 @@ async function cargarFeedbackManager() {
           document.getElementById('sim-equiv').innerText = `${equivProy} Proyectos (Ref: Movie $50)`;
           document.getElementById('sim-dias').innerText = `${diasPlazo} días de plazo (Penalización: 0.5% diario en mora)`;
           
-          // Disparamos la actualización de la calculadora de divisas en tiempo real
-          calcularDivisaALX();
+          // Solo actualizamos la divisa si escribimos en el lado de USD
+          // (Evita borrar los decimales mientras el usuario teclea en el lado de moneda local)
+          if (!origenLocal) calcularDivisaALX();
       }
 
       function enviarSolicitudPrestamo(tasa) {
