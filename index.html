@@ -1325,23 +1325,26 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         <select id="esp-editor" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:15px;"></select>
         
         <label>Monto Total (USD)</label>
-        <input type="number" id="esp-monto" placeholder="Ej. 1500" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:15px;">
+        <input type="number" id="esp-monto" placeholder="Ej. 1500" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:15px; box-sizing: border-box;">
         
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <div style="flex:1;">
+        <div style="display:flex; gap:10px; margin-bottom:15px; align-items: flex-end;">
+            <div style="flex:1; display:flex; flex-direction:column;">
                 <label>Recargo por Mora (%)</label>
-                <input type="number" id="esp-tasa" placeholder="Ej. 5" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);">
+                <input type="number" id="esp-tasa" placeholder="Ej. 5" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:0; box-sizing: border-box;">
             </div>
-            <div style="flex:1;">
+            <div style="flex:1; display:flex; flex-direction:column;">
                 <label>Frecuencia de Aporte (Días)</label>
-                <input type="number" id="esp-dias" placeholder="Ej. 30" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);">
+                <input type="number" id="esp-dias" placeholder="Ej. 30" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:0; box-sizing: border-box;">
             </div>
         </div>
         
         <label>Aporte Mínimo Requerido por periodo (USD)</label>
-        <input type="number" id="esp-minimo" placeholder="Ej. 50 (Equivale a 1 Movie)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:15px;">
+        <input type="number" id="esp-minimo" placeholder="Ej. 50 (Equivale a 1 Movie)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:15px; box-sizing: border-box;">
         
-        <p style="font-size:12px; color:var(--text-gray);">Si el editor falla el aporte mínimo en la fecha límite, el sistema aplicará automáticamente la tasa de mora y penalizará -40 puntos su Credit Score.</p>
+        <label>Concepto / Detalle del Préstamo</label>
+        <input type="text" id="esp-concepto" placeholder="Ej. Laptop ASUS ROG Strix para edición" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:15px; box-sizing: border-box;">
+
+        <p style="font-size:12px; color:var(--text-gray); margin-top:0;">Si el editor falla el aporte mínimo en la fecha límite, el sistema aplicará automáticamente la tasa de mora y penalizará -40 puntos su Credit Score.</p>
         
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
           <button class="btn-outline" onclick="document.getElementById('modal-prestamo-especial').classList.add('hidden')">Cancelar</button>
@@ -4612,6 +4615,7 @@ async function cargarFeedbackManager() {
                           <span style="color:${p.estado==='Vencido'?'#ef4444':'var(--lvg-yellow)'}; font-weight:bold;">Estado: ${p.estado}</span>
                       </div>
                       <div style="color:var(--text-gray); font-size:14px; margin-bottom:15px;">
+                          ${p.concepto ? `<div style="color:#38bdf8; font-weight:bold; margin-bottom:5px;">[ ${p.concepto} ]</div>` : ''}
                           ${p.tipo==='especial' ? `Aporte Mínimo: <strong>$${p.aporteMinimoRequerido} USD</strong> / periodo` : ''}<br>
                           Fecha Límite (Siguiente corte): ${p.fechaLimite || 'Por definir'} | Deuda Actual: <span style="color:#ef4444; font-weight:bold;">$${p.deudaActualizada.toLocaleString('en-US', {minimumFractionDigits: 2})} USD</span>
                       </div>
@@ -4715,8 +4719,9 @@ async function cargarFeedbackManager() {
           let tasaMora = Number(document.getElementById('esp-tasa').value) / 100;
           let diasPlazo = Number(document.getElementById('esp-dias').value);
           let aporteMinimo = Number(document.getElementById('esp-minimo').value);
+          let concepto = document.getElementById('esp-concepto').value.trim();
 
-          if(!monto || !tasaMora || !diasPlazo || !aporteMinimo) return alert("Completa todos los campos.");
+          if(!monto || !tasaMora || !diasPlazo || !aporteMinimo || !concepto) return alert("Completa todos los campos, incluyendo el concepto.");
 
           let limite = new Date();
           limite.setDate(limite.getDate() + diasPlazo);
@@ -4725,6 +4730,7 @@ async function cargarFeedbackManager() {
           db.collection("prestamos").add({
               idEditor: editor,
               tipo: "especial",
+              concepto: concepto,
               montoSolicitado: monto,
               tasaAplicada: 0, 
               tasaMoraPersonalizada: tasaMora,
@@ -4741,6 +4747,11 @@ async function cargarFeedbackManager() {
           }).then(() => {
               alert("✅ Préstamo Especial de Equipamiento Creado y Fondeado.");
               document.getElementById('modal-prestamo-especial').classList.add('hidden');
+              document.getElementById('esp-monto').value = "";
+              document.getElementById('esp-tasa').value = "";
+              document.getElementById('esp-dias').value = "";
+              document.getElementById('esp-minimo').value = "";
+              document.getElementById('esp-concepto').value = "";
           });
       }
 
@@ -4862,6 +4873,7 @@ async function cargarFeedbackManager() {
                           <span style="color:${p.estado==='Vencido'?'#ef4444':'#10b981'}; font-weight:bold;">${p.estado}</span>
                       </div>
                       <div style="margin-bottom:10px; font-size:14px; color:var(--text-gray);">
+                          ${p.concepto ? `<div style="color:#38bdf8; font-weight:bold; margin-bottom:5px;">[ ${p.concepto} ]</div>` : ''}
                           Deuda Actual: <span style="color:#ef4444; font-weight:bold;">$${p.deudaActualizada.toLocaleString('en-US', {minimumFractionDigits: 2})} USD</span> / $${p.totalADevolver.toLocaleString('en-US', {minimumFractionDigits: 2})} USD
                           <br>Límite: ${p.fechaLimite} ${p.diasMora > 0 ? `(Mora: ${p.diasMora} días)` : ''}
                           ${p.tipo==='especial' ? `<br>Aporte Mínimo: $${p.aporteMinimoRequerido} USD / periodo` : ''}
