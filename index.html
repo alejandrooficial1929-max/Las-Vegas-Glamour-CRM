@@ -1376,8 +1376,8 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
                 <input type="text" id="edit-prestamo-limite" placeholder="Ej. 05.24.26" maxlength="8" oninput="formatearFecha(this)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
             </div>
             <div style="flex:1;">
-                <label>Saldo Pendiente (USD)</label>
-                <input type="number" id="edit-prestamo-saldo" step="0.01" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
+                <label>Fecha Inicio (MM.DD.AA)</label>
+                <input type="text" id="edit-prestamo-inicio" placeholder="Ej. 05.24.26" maxlength="8" oninput="formatearFecha(this)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
             </div>
         </div>
 
@@ -1386,10 +1386,20 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
                 <label id="label-prestamo-tasa">Tasa de Interés / Mora</label>
                 <input type="number" id="edit-prestamo-tasa" step="0.01" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
             </div>
-            <div style="flex:1;" id="box-prestamo-minimo">
-                <label>Aporte Mínimo (Especial)</label>
-                <input type="number" id="edit-prestamo-minimo" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
+            <div style="flex:1;">
+                <label>Saldo Pendiente (USD)</label>
+                <input type="number" id="edit-prestamo-saldo" step="0.01" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
             </div>
+        </div>
+
+        <div id="box-prestamo-minimo" style="margin-bottom:15px;">
+            <label>Aporte Mínimo (Especial)</label>
+            <input type="number" id="edit-prestamo-minimo" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
+        </div>
+
+        <div id="box-prestamo-concepto" style="margin-bottom:15px;">
+            <label>Concepto / Identificador (Estándar)</label>
+            <input type="text" id="edit-prestamo-concepto" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
         </div>
 
         <div style="display:flex; align-items:center; gap:12px; color:#fde047; font-weight:bold; font-size:14px; margin-top:10px; margin-bottom: 10px; background: rgba(234, 179, 8, 0.1); padding: 12px 15px; border-radius: 8px; border: 1px solid #eab308;">
@@ -4669,8 +4679,10 @@ async function cargarFeedbackManager() {
                       </div>
                       <div style="color:var(--text-gray); font-size:14px; margin-bottom:15px;">
                           ${p.concepto ? `<div style="color:#38bdf8; font-weight:bold; margin-bottom:5px;">[ ${p.concepto} ]</div>` : ''}
-                          ${p.tipo==='especial' ? `Aporte Mínimo: <strong>$${p.aporteMinimoRequerido} USD</strong> / periodo` : ''}<br>
-                          Fecha Límite (Siguiente corte): ${p.fechaLimite || 'Por definir'} | Deuda Actual: <span style="color:#ef4444; font-weight:bold;">$${p.deudaActualizada.toLocaleString('en-US', {minimumFractionDigits: 2})} USD</span>
+                          Creación: <strong>${new Date(p.fechaInicio).toLocaleDateString('en-US', {timeZone: 'America/Los_Angeles', month:'2-digit', day:'2-digit', year:'2-digit'}).replace(/\//g, '.')}</strong> | 
+                          Fecha Límite: ${p.fechaLimite || 'Por definir'}<br>
+                          ${p.tipo==='especial' ? `Aporte Mínimo: <strong>$${p.aporteMinimoRequerido} USD</strong> / periodo<br>` : ''}
+                          Deuda Actual: <span style="color:#ef4444; font-weight:bold;">$${p.deudaActualizada.toLocaleString('en-US', {minimumFractionDigits: 2})} USD</span>
                       </div>
                       <div style="display:flex; justify-content:flex-end;">${btnAmortizar}</div>
                   </div>`;
@@ -4692,7 +4704,11 @@ async function cargarFeedbackManager() {
               <div style="flex:1; background:var(--bg-main); border:1px solid var(--lvg-yellow); padding:20px; border-radius:12px;">
                   <h3 style="margin:0 0 15px 0; color:var(--lvg-yellow);">Solicitar Préstamo Estándar</h3>
                   <label>Monto a solicitar (USD):</label>
-                  <input type="text" id="input-monto-prestamo" oninput="formatearMoneda(this); calcularSimulacionPrestamo(${tasa})" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-card); color:var(--text-dark); margin-bottom:15px; font-size:16px;">
+                  <input type="text" id="input-monto-prestamo" oninput="formatearMoneda(this); calcularSimulacionPrestamo(${tasa})" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-card); color:var(--text-dark); margin-bottom:15px; font-size:16px; box-sizing:border-box;">
+                  
+                  <label>Etiqueta / Concepto (Opcional):</label>
+                  <input type="text" id="input-concepto-prestamo" placeholder="Breve nota para identificar esta solicitud (Ej. Adelanto 1era quincena, Renta, etc.)" style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-card); color:var(--text-dark); margin-bottom:15px; font-size:13px; box-sizing:border-box;">
+
                   <div id="simulador-prestamo" style="background:rgba(212, 175, 55, 0.1); padding:15px; border-radius:8px; margin-bottom:15px; font-size:14px; color:var(--text-gray);">
                       Total a devolver: <strong id="sim-total" style="color:var(--text-dark);">$0.00 USD</strong><br>
                       Equivalente aprox: <strong id="sim-equiv" style="color:var(--text-dark);">0 Movies</strong><br>
@@ -4848,12 +4864,25 @@ async function cargarFeedbackManager() {
           document.getElementById('modal-revertir-abono').classList.remove('hidden');
       }
 
+      // Helper para leer y guardar fechas formato LVG a ISO
+      function parseFechaLVGToISO(f) {
+          if(!f || f.length !== 8) return new Date().toISOString();
+          let parts = f.split('.');
+          if(parts.length !== 3) return new Date().toISOString();
+          let d = new Date("20" + parts[2], parseInt(parts[0]) - 1, parts[1]);
+          return d.toISOString();
+      }
+
       function abrirModalEditarPrestamo(id) {
           let p = prestamosGlobales.find(x => x.id === id);
           if(!p) return;
 
           document.getElementById('edit-prestamo-id').value = p.id;
           document.getElementById('edit-prestamo-tipo').value = p.tipo || 'estandar';
+          
+          let fechaStr = new Date(p.fechaInicio).toLocaleDateString('en-US', {timeZone: 'America/Los_Angeles', month:'2-digit', day:'2-digit', year:'2-digit'}).replace(/\//g, '.');
+          document.getElementById('edit-prestamo-inicio').value = fechaStr;
+          
           document.getElementById('edit-prestamo-limite').value = p.fechaLimite || '';
           document.getElementById('edit-prestamo-saldo').value = p.saldoPendiente;
           document.getElementById('edit-prestamo-pausado').checked = (p.pausado === true);
@@ -4863,10 +4892,13 @@ async function cargarFeedbackManager() {
               document.getElementById('edit-prestamo-tasa').value = (Number(p.tasaMoraPersonalizada) || 0) * 100;
               document.getElementById('edit-prestamo-minimo').value = p.aporteMinimoRequerido || 0;
               document.getElementById('box-prestamo-minimo').style.display = 'block';
+              document.getElementById('box-prestamo-concepto').style.display = 'none'; // Equipamiento no cambia concepto
           } else {
               document.getElementById('label-prestamo-tasa').innerText = "Tasa de Interés (%)";
               document.getElementById('edit-prestamo-tasa').value = (Number(p.tasaAplicada) || 0) * 100;
               document.getElementById('box-prestamo-minimo').style.display = 'none';
+              document.getElementById('edit-prestamo-concepto').value = p.concepto || "";
+              document.getElementById('box-prestamo-concepto').style.display = 'block';
           }
 
           document.getElementById('modal-editar-prestamo').classList.remove('hidden');
@@ -4879,12 +4911,14 @@ async function cargarFeedbackManager() {
 
           let tipo = document.getElementById('edit-prestamo-tipo').value;
           let limite = document.getElementById('edit-prestamo-limite').value.trim();
+          let inicio = document.getElementById('edit-prestamo-inicio').value.trim();
           let saldo = Number(document.getElementById('edit-prestamo-saldo').value);
           let tasa = Number(document.getElementById('edit-prestamo-tasa').value) / 100;
           let pausado = document.getElementById('edit-prestamo-pausado').checked;
 
           let updateData = {
               fechaLimite: limite,
+              fechaInicio: parseFechaLVGToISO(inicio),
               saldoPendiente: saldo,
               pausado: pausado
           };
@@ -4944,6 +4978,8 @@ async function cargarFeedbackManager() {
       function enviarSolicitudPrestamo(tasa) {
           let montoStr = document.getElementById('input-monto-prestamo').value.replace(/,/g, '');
           let monto = Number(montoStr) || 0;
+          let concepto = document.getElementById('input-concepto-prestamo').value.trim();
+
           if (monto <= 0) return alert("Ingresa un monto válido.");
           
           let activosPendientes = prestamosGlobales.filter(p => p.idEditor === usuarioActual && (p.estado === 'Activo' || p.estado === 'Pendiente' || p.estado === 'Vencido'));
@@ -4955,6 +4991,8 @@ async function cargarFeedbackManager() {
 
           db.collection("prestamos").add({
               idEditor: usuarioActual,
+              tipo: "estandar",
+              concepto: concepto,
               montoSolicitado: monto,
               tasaAplicada: tasa,
               totalADevolver: totalDevolver,
@@ -4967,6 +5005,7 @@ async function cargarFeedbackManager() {
           }).then(() => {
               alert("Solicitud enviada al Manager.");
               document.getElementById('input-monto-prestamo').value = "";
+              document.getElementById('input-concepto-prestamo').value = "";
               calcularSimulacionPrestamo(tasa);
           });
       }
@@ -5013,9 +5052,10 @@ async function cargarFeedbackManager() {
                       </div>
                       <div style="margin-bottom:10px; font-size:14px; color:var(--text-gray);">
                           ${p.concepto ? `<div style="color:#38bdf8; font-weight:bold; margin-bottom:5px;">[ ${p.concepto} ]</div>` : ''}
+                          Creación: <strong>${new Date(p.fechaInicio).toLocaleDateString('en-US', {timeZone: 'America/Los_Angeles', month:'2-digit', day:'2-digit', year:'2-digit'}).replace(/\//g, '.')}</strong> | 
+                          Límite: ${p.fechaLimite || 'No definida'} ${p.diasMora > 0 ? `<span style="color:#ef4444;">(Mora: ${p.diasMora} días)</span>` : ''}<br>
+                          ${p.tipo==='especial' ? `Aporte Mínimo: $${p.aporteMinimoRequerido} USD / periodo<br>` : ''}
                           Deuda Actual: <span style="color:#ef4444; font-weight:bold;">$${p.deudaActualizada.toLocaleString('en-US', {minimumFractionDigits: 2})} USD</span> / $${p.totalADevolver.toLocaleString('en-US', {minimumFractionDigits: 2})} USD
-                          <br>Límite: ${p.fechaLimite || 'No definida'} ${p.diasMora > 0 ? `(Mora: ${p.diasMora} días)` : ''}
-                          ${p.tipo==='especial' ? `<br>Aporte Mínimo: $${p.aporteMinimoRequerido} USD / periodo` : ''}
                       </div>
                       <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">${btnEditar}</div>
                       <div style="width:100%; background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;">
