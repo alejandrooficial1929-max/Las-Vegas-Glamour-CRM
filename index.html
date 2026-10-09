@@ -1363,6 +1363,50 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         </div>
       </div>
     </div>
+
+    <div id="modal-editar-prestamo" class="modal-overlay hidden">
+      <div class="modal-content" style="width: 500px; background: var(--bg-card); color: var(--text-dark);">
+        <h2 style="margin-top:0; color:var(--lvg-yellow);">✏️ Editar Préstamo</h2>
+        <input type="hidden" id="edit-prestamo-id">
+        <input type="hidden" id="edit-prestamo-tipo">
+
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <div style="flex:1;">
+                <label>Fecha Límite (MM.DD.AA)</label>
+                <input type="text" id="edit-prestamo-limite" placeholder="Ej. 05.24.26" maxlength="8" oninput="formatearFecha(this)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
+            </div>
+            <div style="flex:1;">
+                <label>Saldo Pendiente (USD)</label>
+                <input type="number" id="edit-prestamo-saldo" step="0.01" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <div style="flex:1;">
+                <label id="label-prestamo-tasa">Tasa de Interés / Mora</label>
+                <input type="number" id="edit-prestamo-tasa" step="0.01" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
+            </div>
+            <div style="flex:1;" id="box-prestamo-minimo">
+                <label>Aporte Mínimo (Especial)</label>
+                <input type="number" id="edit-prestamo-minimo" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px; color:#fde047; font-weight:bold; font-size:14px; margin-top:10px; margin-bottom: 10px; background: rgba(234, 179, 8, 0.1); padding: 12px 15px; border-radius: 8px; border: 1px solid #eab308;">
+          <label class="switch">
+            <input type="checkbox" id="edit-prestamo-pausado">
+            <span class="slider"></span>
+          </label>
+          <span>PAUSAR contabilización de días y mora</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-gray); margin-top:0;">Activa esta opción si el editor no tiene proyectos asignados para que los días no corran en su contra.</p>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+          <button class="btn-outline" onclick="document.getElementById('modal-editar-prestamo').classList.add('hidden')">Cancelar</button>
+          <button class="btn-yellow" onclick="guardarEdicionPrestamo()">Guardar Cambios ✔</button>
+        </div>
+      </div>
+    </div>
     <div id="modal-estado-cita" class="modal-overlay hidden"><div class="modal-content"><h2 style="margin-top:0; color:var(--lvg-dark);">Estado de Cita</h2><input type="hidden" id="estado-cita-id"><select id="select-estado-cita" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; font-weight:bold;"><option value="Sin cita">Sin cita</option><option value="Con cita">Con cita</option><option value="Entregado">Entregado</option></select><div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;"><button class="btn-outline" onclick="document.getElementById('modal-estado-cita').classList.add('hidden')">Cancelar</button><button class="btn-yellow" id="btn-guardar-estado-cita" onclick="guardarEstadoCita()">Guardar</button></div></div></div>
     <div id="modal-asignar-cita" class="modal-overlay hidden"><div class="modal-content"><h2 style="margin-top:0; color:var(--lvg-dark);">Asignar Cita 📅</h2><input type="hidden" id="cita-id-proyecto"><div style="display:flex; gap:10px;"><div style="flex:1"><label>Fecha (mm.dd.aa)</label><input type="text" id="cita-fecha" placeholder="Ej. 05.24.26" maxlength="8" oninput="formatearFecha(this)"></div><div style="flex:1"><label>Hora</label><input type="time" id="cita-hora"></div></div><label>Notas Adicionales</label><textarea id="cita-notas" rows="3" placeholder="Ej. El cliente quiere que sea en su casa..."></textarea><div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;"><button class="btn-outline" onclick="document.getElementById('modal-asignar-cita').classList.add('hidden')">Cancelar</button><button class="btn-yellow" id="btn-guardar-cita" onclick="guardarCita()">Agendar ✔</button></div></div></div>
     <div id="modal-pago-gestion" class="modal-overlay hidden"><div class="modal-content"><h2 style="color:var(--lvg-dark); margin-top:0;">Confirmar Pago</h2><p>Has seleccionado cubrir la factura <strong id="pago-gestion-id"></strong>. ¿Cómo prefieres gestionar el comprobante de pago?</p><input type="hidden" id="pago-gestion-link"><div style="display:flex; flex-direction:column; gap:10px; margin-top:20px;"><button class="btn-yellow" onclick="procesarPagoGestion('yo')">Lo adjuntaré yo misma (Ir a Drive)</button><button class="btn-outline" style="border-color:#0284c7; color:#0284c7;" onclick="procesarPagoGestion('alex')">Encargárselo a Álex</button><button class="btn-outline" style="border:none; color:#666;" onclick="document.getElementById('modal-pago-gestion').classList.add('hidden')">Cancelar</button></div></div></div>
@@ -4535,10 +4579,19 @@ async function cargarFeedbackManager() {
       }
 
       function recalcularMoraPrestamo(p) {
-          if (p.estado !== 'Activo' && p.estado !== 'Vencido') {
+          if (p.estado !== 'Activo' && p.estado !== 'Vencido' && p.estado !== 'Pausado') {
               p.deudaActualizada = Number(p.saldoPendiente) || 0;
               return p;
           }
+
+          // REGLA DE PAUSA: Si está pausado, se congela la deuda y no entra en mora
+          if (p.pausado === true) {
+              p.diasMora = 0;
+              p.estado = 'Pausado';
+              p.deudaActualizada = Number(p.saldoPendiente);
+              return p;
+          }
+
           // Usar zona horaria de LVG para evitar saltos falsos de día
           let strHoy = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"});
           let hoy = new Date(strHoy); hoy.setHours(0,0,0,0);
@@ -4778,12 +4831,75 @@ async function cargarFeedbackManager() {
           document.getElementById('modal-revertir-abono').classList.remove('hidden');
       }
 
-      function revertirAbonoProyecto(idProyecto, montoAbonado) {
-          if(!confirm(`⚠️ ATENCIÓN: Estás a punto de devolver $${montoAbonado} USD al editor y liberar este proyecto.\nDebes ir a la tabla de préstamos activos y sumar MANUALMENTE este dinero al saldo de la deuda del editor.\n¿Continuar?`)) return;
-          db.collection("eventos").doc(idProyecto).update({ abonoPrestamo: 0, abonoBloqueado: false })
-          .then(() => {
-              alert("Abono revertido y proyecto liberado. No olvides ajustar el saldo de la deuda.");
-              abrirModalRevertirAbonos(); // Refresca lista
+      function abrirModalEditarPrestamo(id) {
+          let p = prestamosGlobales.find(x => x.id === id);
+          if(!p) return;
+
+          document.getElementById('edit-prestamo-id').value = p.id;
+          document.getElementById('edit-prestamo-tipo').value = p.tipo || 'estandar';
+          document.getElementById('edit-prestamo-limite').value = p.fechaLimite || '';
+          document.getElementById('edit-prestamo-saldo').value = p.saldoPendiente;
+          document.getElementById('edit-prestamo-pausado').checked = (p.pausado === true);
+
+          if (p.tipo === 'especial') {
+              document.getElementById('label-prestamo-tasa').innerText = "Recargo por Mora (%)";
+              document.getElementById('edit-prestamo-tasa').value = (Number(p.tasaMoraPersonalizada) || 0) * 100;
+              document.getElementById('edit-prestamo-minimo').value = p.aporteMinimoRequerido || 0;
+              document.getElementById('box-prestamo-minimo').style.display = 'block';
+          } else {
+              document.getElementById('label-prestamo-tasa').innerText = "Tasa de Interés (%)";
+              document.getElementById('edit-prestamo-tasa').value = (Number(p.tasaAplicada) || 0) * 100;
+              document.getElementById('box-prestamo-minimo').style.display = 'none';
+          }
+
+          document.getElementById('modal-editar-prestamo').classList.remove('hidden');
+      }
+
+      function guardarEdicionPrestamo() {
+          let id = document.getElementById('edit-prestamo-id').value;
+          let p = prestamosGlobales.find(x => x.id === id);
+          if(!p) return;
+
+          let tipo = document.getElementById('edit-prestamo-tipo').value;
+          let limite = document.getElementById('edit-prestamo-limite').value.trim();
+          let saldo = Number(document.getElementById('edit-prestamo-saldo').value);
+          let tasa = Number(document.getElementById('edit-prestamo-tasa').value) / 100;
+          let pausado = document.getElementById('edit-prestamo-pausado').checked;
+
+          let updateData = {
+              fechaLimite: limite,
+              saldoPendiente: saldo,
+              pausado: pausado
+          };
+
+          if (pausado) {
+              updateData.estado = "Pausado";
+              updateData.diasMora = 0; // Detiene el castigo visual/matemático
+          } else {
+              // Si se despausa, el estado debe regresar a lo que calcule el sistema (Activo o Vencido)
+              // Se re-calculará en la próxima descarga de Firestore, pero lo forzamos a Activo temporalmente.
+              if (p.estado === "Pausado") updateData.estado = "Activo";
+          }
+
+          if (tipo === 'especial') {
+              updateData.tasaMoraPersonalizada = tasa;
+              updateData.aporteMinimoRequerido = Number(document.getElementById('edit-prestamo-minimo').value);
+          } else {
+              updateData.tasaAplicada = tasa;
+              // Si editas la tasa de interés de un préstamo estándar, ajustamos el total a devolver asumiendo que el capital base no cambió
+              let montoOriginal = Number(p.montoSolicitado);
+              let nuevoTotal = montoOriginal * (1 + tasa);
+              // Proporción del saldo pendiente: Si debía 50% de la deuda, debe seguir debiendo 50% de la nueva deuda
+              if(Number(p.totalADevolver) > 0) {
+                 let proporcion = saldo / Number(p.totalADevolver);
+                 updateData.saldoPendiente = nuevoTotal * proporcion;
+              }
+              updateData.totalADevolver = nuevoTotal;
+          }
+
+          db.collection("prestamos").doc(id).update(updateData).then(() => {
+              alert("✅ Préstamo actualizado con éxito.");
+              document.getElementById('modal-editar-prestamo').classList.add('hidden');
           });
       }
 
@@ -4838,6 +4954,7 @@ async function cargarFeedbackManager() {
       }
 
       // --- VISTA MANAGER / GESTIÓN ---
+      // --- VISTA MANAGER / GESTIÓN ---
       function dibujarPrestamosManager() {
           let contenedor = document.getElementById('contenedor-prestamos-manager');
           if(!contenedor) contenedor = document.getElementById('contenedor-prestamos-gestion');
@@ -4849,6 +4966,8 @@ async function cargarFeedbackManager() {
           
           prestamosGlobales.forEach(p => {
               let score = getCreditScore(p.idEditor);
+              let btnEditar = `<button class="btn-outline" style="border-color:var(--border-subtle); color:var(--text-gray); padding:4px 10px; font-size:12px;" onclick="abrirModalEditarPrestamo('${p.id}')">Editar ✏️</button>`;
+
               if (p.estado === 'Pendiente') {
                   htmlPendientes += `
                   <div style="background:var(--bg-main); border:1px solid var(--lvg-yellow); padding:15px; border-radius:10px; margin-bottom:10px;">
@@ -4859,25 +4978,28 @@ async function cargarFeedbackManager() {
                       <div style="margin-bottom:10px; color:var(--text-dark);">
                           Monto Solicitado: <strong>$${p.montoSolicitado} USD</strong> | Retorno: <strong>$${p.totalADevolver.toLocaleString('en-US', {minimumFractionDigits: 2})} USD</strong> (${(p.tasaAplicada*100).toFixed(1)}%)
                       </div>
-                      <div style="display:flex; justify-content:flex-end; gap:10px;">
-                          <button class="btn-outline" style="border-color:#ef4444; color:#ef4444;" onclick="rechazarPrestamo('${p.id}')">Rechazar</button>
-                          <button class="btn-yellow" onclick="aprobarPrestamo('${p.id}', ${p.diasPlazoCalc})">Aprobar y Fondeo</button>
+                      <div style="display:flex; justify-content:flex-end; gap:10px; align-items:center;">
+                          ${btnEditar}
+                          <button class="btn-outline" style="border-color:#ef4444; color:#ef4444; padding:6px 12px; font-size:13px;" onclick="rechazarPrestamo('${p.id}')">Rechazar</button>
+                          <button class="btn-yellow" style="padding:6px 12px; font-size:13px;" onclick="aprobarPrestamo('${p.id}', ${p.diasPlazoCalc})">Aprobar y Fondeo</button>
                       </div>
                   </div>`;
-              } else if (p.estado === 'Activo' || p.estado === 'Vencido') {
+              } else if (p.estado === 'Activo' || p.estado === 'Vencido' || p.estado === 'Pausado') {
                   let progress = ((p.totalADevolver - p.saldoPendiente) / p.totalADevolver) * 100;
+                  let colorEstado = p.estado === 'Vencido' ? '#ef4444' : (p.estado === 'Pausado' ? '#eab308' : '#10b981');
                   let cardHTML = `
                   <div style="background:var(--bg-main); border:1px solid var(--border-subtle); padding:15px; border-radius:10px; margin-bottom:10px;">
                       <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                           <strong style="color:var(--text-dark);">${p.idEditor} (Score: ${score})</strong>
-                          <span style="color:${p.estado==='Vencido'?'#ef4444':'#10b981'}; font-weight:bold;">${p.estado}</span>
+                          <span style="color:${colorEstado}; font-weight:bold;">${p.estado}</span>
                       </div>
                       <div style="margin-bottom:10px; font-size:14px; color:var(--text-gray);">
                           ${p.concepto ? `<div style="color:#38bdf8; font-weight:bold; margin-bottom:5px;">[ ${p.concepto} ]</div>` : ''}
                           Deuda Actual: <span style="color:#ef4444; font-weight:bold;">$${p.deudaActualizada.toLocaleString('en-US', {minimumFractionDigits: 2})} USD</span> / $${p.totalADevolver.toLocaleString('en-US', {minimumFractionDigits: 2})} USD
-                          <br>Límite: ${p.fechaLimite} ${p.diasMora > 0 ? `(Mora: ${p.diasMora} días)` : ''}
+                          <br>Límite: ${p.fechaLimite || 'No definida'} ${p.diasMora > 0 ? `(Mora: ${p.diasMora} días)` : ''}
                           ${p.tipo==='especial' ? `<br>Aporte Mínimo: $${p.aporteMinimoRequerido} USD / periodo` : ''}
                       </div>
+                      <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">${btnEditar}</div>
                       <div style="width:100%; background:var(--bg-card); height:8px; border-radius:4px; overflow:hidden;">
                           <div style="width:${progress}%; background:var(--lvg-yellow); height:100%;"></div>
                       </div>
