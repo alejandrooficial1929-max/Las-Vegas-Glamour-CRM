@@ -1513,7 +1513,25 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
             </div>
         </div>
     </div>
-    <div id="modal-entregar" class="modal-overlay hidden"><div class="modal-content"><h2 style="margin-top:0; color:var(--lvg-dark);">Entregar Proyecto</h2><input type="url" id="link-entregable" placeholder="https://drive..."><div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;"><button class="btn-outline" onclick="document.getElementById('modal-entregar').classList.add('hidden')">Cancelar</button><button class="btn-yellow" id="btn-confirmar-entrega" onclick="confirmarEntrega()">Confirmar ✔</button></div></div></div>
+    <div id="modal-entregar" class="modal-overlay hidden"><div class="modal-content" style="background:var(--bg-card);"><h2 style="margin-top:0; color:var(--lvg-yellow);">Entregar Proyecto</h2><input type="url" id="link-entregable" placeholder="Pegar enlace de Drive aquí..." style="width:100%; padding:12px; border-radius:8px; border:1px solid var(--border-subtle); background:var(--bg-main); color:var(--text-dark); margin-top:10px;"><p style="font-size:12px; color:var(--text-gray); margin-top:10px;">⚠️ ALX auditará esta carpeta automáticamente. Asegúrate de incluir los .mp4, el archivo .drp/.prproj y el video Proxy.</p><div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;"><button class="btn-outline" onclick="document.getElementById('modal-entregar').classList.add('hidden')">Cancelar</button><button class="btn-yellow" id="btn-confirmar-entrega" onclick="confirmarEntrega()">Auditar y Entregar 🚀</button></div></div></div>
+
+    <div id="modal-explorador-archivos" class="modal-overlay hidden">
+      <div class="modal-content" style="width: 750px; max-width: 95vw; background: var(--bg-card); color: var(--text-dark); padding: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:10px; margin-bottom:15px;">
+            <h2 style="margin:0; color:#38bdf8;">📁 Explorador de Entregables</h2>
+            <button class="btn-outline" style="border:none; padding:4px 10px;" onclick="document.getElementById('modal-explorador-archivos').classList.add('hidden')">✕ Cerrar</button>
+        </div>
+        
+        <div style="display:flex; align-items:center; background:var(--bg-main); padding:8px 15px; border-radius:6px; border:1px solid var(--border-subtle); margin-bottom:15px;">
+            <button class="btn-outline" style="border:none; color:var(--lvg-yellow); padding:0 10px 0 0;" onclick="exploradorIrAtras()">◀ Atrás</button>
+            <span id="ruta-explorador" style="font-family:monospace; font-size:13px; color:var(--text-gray); margin-left:10px;">/</span>
+        </div>
+
+        <div id="grid-explorador-archivos" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:15px; max-height:400px; overflow-y:auto; padding:10px; background:var(--bg-main); border-radius:8px; border:1px solid var(--border-subtle);">
+            <!-- Js inyecta aquí las carpetas y archivos -->
+        </div>
+      </div>
+    </div>
     
     <div id="modal-ver-dia" class="modal-overlay hidden">
     <div class="modal-content" style="width: 500px; max-height: 85vh; display: flex; flex-direction: column; background: #f8fafc;">
@@ -2782,8 +2800,8 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
          
          let infoBackups = (p.caja || p.driveBackup) ? `<div class="info-group" style="margin-top: 10px; background: #f8fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;"><strong>Respaldos:</strong><br> <span style="font-size:14px; color:#475569;">${p.caja ? '📦 ' + p.caja : ''} ${p.caja && p.driveBackup ? ' | ' : ''} ${p.driveBackup ? '☁️ ' + p.driveBackup : ''}</span></div>` : '';
          let botonesHTML = ""; let pildoraCita = ""; let extraCitaInfo = "";
-         let btnClips = p.linkClips ? `<button class="btn-outline" style="border-color:#3b82f6; color:#3b82f6; background:#eff6ff; font-weight:bold;" onclick="event.stopPropagation(); window.open('${p.linkClips}')">📁 Abrir Clips</button>` : `<button class="btn-outline" style="border-color:#ccc; color:#999;" onclick="event.stopPropagation(); alert('⚠️ Aún no hay link de clips. Ve a Editar ✏️ para agregarlo.')">📁 Sin Clips</button>`;
-         let btnEditor = p.linkEditor ? `<button class="btn-outline" style="border-color:#a855f7; color:#a855f7; background:#faf5ff; font-weight:bold;" onclick="event.stopPropagation(); window.open('${p.linkEditor}')">📂 Entregables</button>` : '';
+         let btnClips = p.linkClips ? `<button class="btn-outline" style="border-color:#3b82f6; color:#3b82f6; background:rgba(59,130,246,0.1); font-weight:bold;" onclick="event.stopPropagation(); window.open('${p.linkClips}')">📁 Abrir Clips</button>` : `<button class="btn-outline" style="border-color:var(--border-subtle); color:var(--text-gray);" onclick="event.stopPropagation(); alert('⚠️ Aún no hay link de clips. Ve a Editar ✏️ para agregarlo.')">📁 Sin Clips</button>`;
+         let btnEditor = p.linkEditor ? `<button class="btn-outline" style="border-color:#a855f7; color:#c084fc; background:rgba(168,85,247,0.1); font-weight:bold;" onclick="event.stopPropagation(); ${p.arbolArchivos ? `abrirExploradorArchivos('${p.id}')` : `window.open('${p.linkEditor}')`}">${p.arbolArchivos ? '💻 Explorar Entregables' : '📂 Abrir en Drive (Clásico)'}</button>` : '';
          let btnEliminar = (typeof rolActual !== 'undefined' && rolActual.toLowerCase().includes('manager'))
             ? `<button class="btn-outline" style="border-color:#ef4444; color:#ef4444;" onclick="event.stopPropagation(); abrirModalEliminar('${p.id}')">Eliminar 🗑️</button>`
             : '';
@@ -2863,8 +2881,8 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
         
         let botonesHTML = ""; 
         
-        let btnClips = p.linkClips ? `<button class="btn-outline" style="border-color:#3b82f6; color:#3b82f6; background:#eff6ff; font-weight:bold;" onclick="event.stopPropagation(); window.open('${p.linkClips}')">📁 Abrir Clips</button>` : `<button class="btn-outline" style="border-color:#ccc; color:#999;" onclick="event.stopPropagation(); alert('⚠️ El Asignador aún no ha subido el link de los clips. Por favor espera.')">📁 Clips pendientes</button>`;
-        let btnComprobante = p.linkComprobante ? `<button class="btn-outline" style="border-color:#10b981; color:#10b981; background:#ecfdf5; font-weight:bold;" onclick="event.stopPropagation(); window.open('${p.linkComprobante}')">🧾 Ver comprobante</button>` : '';
+        let btnClips = p.linkClips ? `<button class="btn-outline" style="border-color:#3b82f6; color:#3b82f6; background:rgba(59,130,246,0.1); font-weight:bold;" onclick="event.stopPropagation(); window.open('${p.linkClips}')">📁 Abrir Clips</button>` : `<button class="btn-outline" style="border-color:var(--border-subtle); color:var(--text-gray);" onclick="event.stopPropagation(); alert('⚠️ El Asignador aún no ha subido el link de los clips. Por favor espera.')">📁 Clips pendientes</button>`;
+        let btnComprobante = p.linkComprobante ? `<button class="btn-outline" style="border-color:#10b981; color:#10b981; background:rgba(16,185,129,0.1); font-weight:bold;" onclick="event.stopPropagation(); window.open('${p.linkComprobante}')">🧾 Ver comprobante</button>` : '';
 
         if(p.estado === "Asignado") {
             // SOLO el botón de aceptar. Nada de Clips para evitar trampas con los tiempos.
@@ -3098,36 +3116,52 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
       
       function confirmarEntrega() { 
          const link = document.getElementById('link-entregable').value; 
-         if(!link) return; 
+         if(!link) return alert("Por favor ingresa un enlace."); 
          
          const btn = document.getElementById('btn-confirmar-entrega'); 
-         btn.innerText = "⏳ Enviando a Firebase..."; 
+         btn.innerText = "🤖 ALX Auditando Carpeta..."; 
          btn.disabled = true; 
          
-         // 1. Buscamos el proyecto actual para no borrar el historial de feedback
          let p = misProyectosGlobales.find(proj => proj.id === idProyectoEditorActivo);
-         let nuevoFeedback = p.feedback || "";
-         
-         // 2. Creamos la nota automática de entrega
-         const fechaActual = obtenerHoraLasVegas(); // <--- USA LA HORA DE LAS VEGAS
-         const nuevaEntrada = `► [${fechaActual}] ENTREGADO: El editor ha subido los archivos.`;
-         nuevoFeedback = nuevoFeedback ? nuevoFeedback + "\n\n" + nuevaEntrada : nuevaEntrada;
+         let tareas = [];
+         try { tareas = JSON.parse(p.tareasJSON); } catch(e){}
+         let tareaReq = tareas.length > 0 ? tareas[0].tipo : "Desconocido";
 
-         // 3. MAGIA DE FIREBASE: Actualizamos estado, link y feedback
-         db.collection("eventos").doc(idProyectoEditorActivo).update({
-             estado: "Revisar",
-             linkEditor: link,
-             feedback: nuevoFeedback
-         }).then(() => {
-             btn.innerText = "Confirmar ✔"; 
+         // 1. LLAMAMOS AL MOTOR AUDITOR EN VERCEL
+         fetch('/api/validar-carpeta', {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({ linkCarpeta: link, tareaRequerida: tareaReq })
+         })
+         .then(res => res.json())
+         .then(data => {
+             if (data.status === "error") throw new Error(data.message);
+
+             // 2. Si es EXITOSA, Guardamos en Firestore
+             btn.innerText = "⏳ Aprobado. Guardando..."; 
+             let nuevoFeedback = p.feedback || "";
+             const fechaActual = obtenerHoraLasVegas(); 
+             const nuevaEntrada = `► [${fechaActual}] AUDITORÍA ALX OK: El editor ha subido archivos validados y estructurados.`;
+             nuevoFeedback = nuevoFeedback ? nuevoFeedback + "\n\n" + nuevaEntrada : nuevaEntrada;
+
+             db.collection("eventos").doc(idProyectoEditorActivo).update({
+                 estado: "Revisar",
+                 linkEditor: link,
+                 feedback: nuevoFeedback,
+                 arbolArchivos: JSON.stringify(data.arbolArchivos),
+                 carpetaRaizId: data.raizId
+             }).then(() => {
+                 btn.innerText = "Auditar y Entregar 🚀"; 
+                 btn.disabled = false; 
+                 document.getElementById('modal-entregar').classList.add('hidden'); 
+                 alert("✅ ¡Auditoría Perfecta! Trabajo entregado."); 
+             });
+
+         })
+         .catch(error => {
+             btn.innerText = "Auditar y Entregar 🚀"; 
              btn.disabled = false; 
-             document.getElementById('modal-entregar').classList.add('hidden'); 
-             alert("✅ ¡Trabajo entregado para revisión!"); 
-             // Alerta: OnSnapshot se encarga de mover la tarjeta solo
-         }).catch(error => {
-             btn.innerText = "Confirmar ✔"; 
-             btn.disabled = false; 
-             alert("Error al entregar: " + error.message);
+             alert("❌ AUDITORÍA FALLIDA:\n\n" + error.message);
          });
       }
 
@@ -5901,6 +5935,95 @@ async function cargarFeedbackManager() {
       }
 
       function mandarFeedback(origen) { let textId = origen === 'asig' ? 'texto-feedback-asig' : origen === 'gest' ? 'texto-feedback-gest' : 'texto-feedback-ed'; let text = document.getElementById(textId).value; if(!text) return; let btnId = origen === 'asig' ? 'btn-enviar-fb-asig' : origen === 'gest' ? 'btn-enviar-fb-gest' : 'btn-enviar-fb-ed'; document.getElementById(btnId).innerText = "⏳ Enviando..."; document.getElementById(btnId).disabled = true; google.script.run.withSuccessHandler(resFeedback => { document.getElementById(btnId).innerText = "Enviar al Manager 🚀"; document.getElementById(btnId).disabled = false; if(resFeedback.status === "success") { document.getElementById(textId).value = ""; alert("💬 ¡Mensaje enviado con éxito!"); } else { alert("Error al enviar: " + resFeedback.message); } }).enviarFeedbackGeneral(usuarioActual, text); }
+
+// ================= LÓGICA DEL EXPLORADOR DE ARCHIVOS ALX =================
+      let exploradorArchivosState = {
+          arbol: [],
+          historialRutas: [],
+          raizId: ""
+      };
+
+      function formatearTamanoArchivo(bytes) {
+          if (!bytes || isNaN(bytes)) return "";
+          const mb = bytes / (1024 * 1024);
+          if (mb > 1000) return (mb / 1024).toFixed(2) + " GB";
+          return mb.toFixed(2) + " MB";
+      }
+
+      function obtenerIconoPorMime(mime, nombre) {
+          if (mime === 'application/vnd.google-apps.folder') return '📁';
+          if (nombre.toLowerCase().endsWith('.mp4')) return '🎬';
+          if (['.drp', '.prproj', '.fcpxml', '.aep'].some(ext => nombre.toLowerCase().endsWith(ext))) return '✂️';
+          return '📄';
+      }
+
+      function abrirExploradorArchivos(idProyecto) {
+          let p = proyectosGlobalesDeAgencia.find(proj => proj.id === idProyecto);
+          if (!p || !p.arbolArchivos) return alert("Este proyecto no tiene auditoría ALX.");
+          
+          try {
+              exploradorArchivosState.arbol = JSON.parse(p.arbolArchivos);
+              exploradorArchivosState.raizId = p.carpetaRaizId;
+              exploradorArchivosState.historialRutas = [{ id: p.carpetaRaizId, nombre: 'Raíz (Drive)' }];
+              
+              document.getElementById('modal-explorador-archivos').classList.remove('hidden');
+              renderizarCarpetaExplorador(p.carpetaRaizId);
+          } catch(e) { alert("Error leyendo el árbol de archivos."); }
+      }
+
+      function renderizarCarpetaExplorador(folderId) {
+          const grid = document.getElementById('grid-explorador-archivos');
+          grid.innerHTML = "";
+
+          // Imprimir Migas de Pan
+          document.getElementById('ruta-explorador').innerText = exploradorArchivosState.historialRutas.map(r => r.nombre).join(" / ");
+
+          // Filtrar archivos que pertenezcan a la carpeta actual
+          const contenidos = exploradorArchivosState.arbol.filter(f => f.parents && f.parents.includes(folderId));
+
+          if (contenidos.length === 0) {
+              grid.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; padding:20px; color:var(--text-gray);">Carpeta vacía.</div>`;
+              return;
+          }
+
+          // Ordenar: Carpetas primero, luego alfabético
+          contenidos.sort((a,b) => {
+              let isFolderA = a.mimeType === 'application/vnd.google-apps.folder' ? 0 : 1;
+              let isFolderB = b.mimeType === 'application/vnd.google-apps.folder' ? 0 : 1;
+              if (isFolderA !== isFolderB) return isFolderA - isFolderB;
+              return a.name.localeCompare(b.name);
+          });
+
+          let html = "";
+          contenidos.forEach(f => {
+              let esCarpeta = f.mimeType === 'application/vnd.google-apps.folder';
+              let icono = obtenerIconoPorMime(f.mimeType, f.name);
+              let tamanoStr = esCarpeta ? "" : `<br><span style="font-size:10px; color:var(--text-muted);">${formatearTamanoArchivo(f.size)}</span>`;
+              let dobleClick = esCarpeta ? `ondblclick="exploradorEntrarCarpeta('${f.id}', '${f.name.replace(/'/g, "\\'")}')"` : "";
+
+              html += `
+              <div ${dobleClick} style="display:flex; flex-direction:column; align-items:center; text-align:center; padding:15px 10px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:8px; cursor:${esCarpeta ? 'pointer' : 'default'}; transition:0.2s;" onmouseover="this.style.borderColor='var(--lvg-yellow)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+                  <div style="font-size:36px; margin-bottom:8px;">${icono}</div>
+                  <div style="font-size:12px; color:var(--text-dark); word-break:break-all; line-height:1.2;">
+                      ${f.name}
+                      ${tamanoStr}
+                  </div>
+              </div>`;
+          });
+          grid.innerHTML = html;
+      }
+
+      function exploradorEntrarCarpeta(id, nombre) {
+          exploradorArchivosState.historialRutas.push({ id, nombre });
+          renderizarCarpetaExplorador(id);
+      }
+
+      function exploradorIrAtras() {
+          if (exploradorArchivosState.historialRutas.length <= 1) return; // Ya en la raíz
+          exploradorArchivosState.historialRutas.pop();
+          let carpetaPadre = exploradorArchivosState.historialRutas[exploradorArchivosState.historialRutas.length - 1];
+          renderizarCarpetaExplorador(carpetaPadre.id);
+      }
 
      function actualizarCanvasFactura() { 
          let imgSrc = BACKGROUND_FACTURA; if(!imgSrc.startsWith("data:image")) { imgSrc = "data:image/png;base64," + imgSrc; } 
