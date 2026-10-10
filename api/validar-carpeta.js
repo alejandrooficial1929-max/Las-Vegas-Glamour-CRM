@@ -81,12 +81,6 @@ export default async function handler(req, res) {
         throw new Error("RECHAZADO: No se encontró ningún archivo nombrado como 'Slideshow'.");
     }
 
-    // Regla 4: Protocolo Proxy/Web (Solo si la tarea es de Video)
-    if (tareaL.includes("movie") || tareaL.includes("highlight") || tareaL.includes("screen")) {
-        const tieneProxy = nombresArchivos.some(n => n.includes("proxy") || n.includes("web"));
-        if (!tieneProxy) throw new Error("RECHAZADO: Falta el video versión Proxy/Web. Debes incluir 'proxy' o 'web' en el nombre de la versión liviana.");
-    }
-
     // Si pasa todas las auditorías, devolvemos éxito y el árbol
     return res.status(200).json({ 
         status: 'success', 
