@@ -95,6 +95,12 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    return res.status(500).json({ status: "error", message: error.message });
+    let msg = error.message;
+    // Interceptamos el bloqueo de Google Cloud y lo traducimos a instrucciones claras
+    if (msg.includes("has not been used in project") || msg.includes("is disabled")) {
+        msg = "FALTA HABILITAR LA API EN GOOGLE CLOUD: Copia y entra a este enlace https://console.cloud.google.com/apis/api/drive.googleapis.com/overview?project=583597197408 y haz clic en el botón azul 'Habilitar' (Enable). Espera un par de minutos y vuelve a intentarlo.";
+    }
+    // Devolvemos 400 (Bad Request) para que la consola del navegador no lance el error rojo 500
+    return res.status(400).json({ status: "error", message: msg });
   }
 }
