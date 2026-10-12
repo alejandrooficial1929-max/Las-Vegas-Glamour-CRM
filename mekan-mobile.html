@@ -246,6 +246,8 @@
     const db = firebase.firestore();
 
     let baseDeDatosMemoria = [];
+    let prestamosMemoria = [];
+    let usuariosMemoria = [];
     let historialChat = [];
     let memoriasALX = []; // Nuevo arreglo para guardar los recuerdos
     let ROL = "";
@@ -320,6 +322,16 @@ function actualizarCabecera() {
       let temp = [];
       snapshot.forEach(doc => temp.push(doc.data()));
       baseDeDatosMemoria = temp;
+    });
+    db.collection("prestamos").onSnapshot(snapshot => {
+      let temp = [];
+      snapshot.forEach(doc => temp.push(doc.data()));
+      prestamosMemoria = temp;
+    });
+    db.collection("usuarios").onSnapshot(snapshot => {
+      let temp = [];
+      snapshot.forEach(doc => temp.push(doc.data()));
+      usuariosMemoria = temp;
     });
 
     // --- 2. GRABACIÓN DE AUDIO NATIVO ---
@@ -449,6 +461,8 @@ function actualizarCabecera() {
         usuarioActual: USUARIO,
         rolActual: ROL,
         baseDeDatos: bdFiltrada,
+        prestamos: prestamosMemoria,
+        usuarios: usuariosMemoria,
         memorias: memoriasALX, // Le enviamos las memorias a Vercel
         historialChat: historialChat,
         texto: texto
