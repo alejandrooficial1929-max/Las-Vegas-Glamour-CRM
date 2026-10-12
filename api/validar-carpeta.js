@@ -27,14 +27,17 @@ export default async function handler(req, res) {
     });
     const drive = google.drive({ version: 'v3', auth });
 
-    // 3. Inspección Recursiva
+    // 3. Inspección Recursiva (CON SOPORTE PARA UNIDADES COMPARTIDAS WORKSPACE)
     let todosLosArchivos = [];
     
     async function fetchCarpetasRecursivo(folderId) {
         const response = await drive.files.list({
             q: `'${folderId}' in parents and trashed=false`,
             fields: 'files(id, name, mimeType, size, fileExtension, parents)',
-            pageSize: 1000
+            pageSize: 1000,
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true,
+            corpora: 'allDrives' // <--- ESTE ES EL TRUCO PARA QUE LEA UNIDADES COMPARTIDAS
         });
         const archivos = response.data.files || [];
         todosLosArchivos.push(...archivos);
@@ -48,7 +51,7 @@ export default async function handler(req, res) {
     await fetchCarpetasRecursivo(folderRaizId);
 
     if (todosLosArchivos.length === 0) {
-        throw new Error("La carpeta está vacía o es inaccesible (asegúrate de darle permisos de lectura a la cuenta de servicio).");
+        throw new Error(`La carpeta (ID: ${folderRaizId}) parece estar vacía o el Robot no puede ver su contenido interior. Asegúrate de que los archivos estén subidos y no en la papelera.`);
     }
 
     // 4. MOTOR DE VALIDACIÓN DE REGLAS (AUDITORÍA)
@@ -90,10 +93,13 @@ export default async function handler(req, res) {
 
   } catch (error) {
     let msg = error.message;
-    // Interceptamos el bloqueo de Google Cloud y lo traducimos a instrucciones claras
+    // Interceptamos bloqueos y los traducimos a instrucciones claras
     if (msg.includes("has not been used in project") || msg.includes("is disabled")) {
         msg = "FALTA HABILITAR LA API EN GOOGLE CLOUD: Copia y entra a este enlace https://console.cloud.google.com/apis/api/drive.googleapis.com/overview?project=583597197408 y haz clic en el botón azul 'Habilitar' (Enable). Espera un par de minutos y vuelve a intentarlo.";
+    } else if (msg.includes("File not found")) {
+        msg = "El Robot de Vercel no tiene permiso para ver este enlace. Verifica que el correo del robot (alx-drive...) esté agregado en la carpeta de Drive con permisos de Lector o Editor.";
     }
+    
     // Devolvemos 400 (Bad Request) para que la consola del navegador no lance el error rojo 500
     return res.status(400).json({ status: "error", message: msg });
   }
