@@ -239,10 +239,17 @@
     /// --- 1. CONFIGURACIÓN INICIAL ---
     const URL_API_GAS = "/api/mekan";
     
-    firebase.initializeApp({
-        apiKey: "AIzaSyCgjS4R1CzNk3aimJCKjLDDcD9cgT9mlIc",
-        projectId: "las-vegas-glamour-manager",
-    });
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgjS4R1CzNk3aimJCKjLDDcD9cgT9mlIc",
+      authDomain: "las-vegas-glamour-manager.firebaseapp.com",
+      projectId: "las-vegas-glamour-manager",
+      storageBucket: "las-vegas-glamour-manager.firebasestorage.app",
+      messagingSenderId: "284294009400",
+      appId: "1:284294009400:web:91ae57b06d894b49f88ccd",
+      measurementId: "G-C5BY58E8BM"
+    };
+
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     let baseDeDatosMemoria = [];
