@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#16171a">
+  <!-- PWA Setup -->
+  <link rel="manifest" href="manifest.json">
+  <title>EngineAL-X</title>
+
+  <!-- Firebase y Markdown -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    /* 1. PALETA DE COLORES Y FUENTE */
+    :root {
+        --lvg-bg: #0a0a0a;
+        --lvg-surface: #1a1a1a;
+        --lvg-gold: #d4af37;
+        --lvg-gold-hover: #b5952f;
+        --lvg-text-main: #f0f0f0;
+        --lvg-text-muted: #a0a0a0;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body, html {
+        background-color: var(--lvg-bg);
+        color: var(--lvg-text-main);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    body::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 95%; /* Ocupará casi todo el ancho de la pantalla */
+        max-width: 600px; /* Límite de crecimiento ampliado */
+        height: 80%; /* Más espacio vertical para permitir que el logo escale */
+        background-image: url('logo-header-removebg-preview.png');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+        opacity: 0.05; 
+        pointer-events: none; 
+        z-index: 0;
+    }
+
+    /* 2. ENCABEZADO (HEADER) */
+    .header {
+        background-color: var(--lvg-surface);
+        position: relative;
+        z-index: 10;
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        border-bottom: 2px solid var(--lvg-gold);
+        box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
+    }
+    .header img {
+        width: 45px;
+        border-radius: 50%;
+        border: none;
+        margin-right: 15px;
+    }
+    .header-text h1 {
+        font-size: 1.1rem;
+        color: var(--lvg-gold);
+        font-weight: 500;
+        letter-spacing: 1px;
+    }
+    .header-text p {
+        font-size: 0.75rem;
+        color: var(--lvg-text-muted);
+        letter-spacing: 0.5px;
+    }
+
+    /* 3. ÁREA DE CHAT */
+    .chat-box {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Animación de entrada fluida */
+    @keyframes apariciónElegante {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .mensaje {
+        max-width: 85%;
+        padding: 12px 16px;
+        line-height: 1.5;
+        font-size: 0.95rem;
+        word-wrap: break-word;
+        opacity: 0; /* Inicia invisible para que la animación tome el control */
+        animation: apariciónElegante 0.35s ease-out forwards;
+    }
+
+    /* Ajuste de sangría para listas numeradas y viñetas */
+    .mensaje ul, .mensaje ol {
+        margin-left: 25px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .mensaje li {
+        margin-bottom: 5px;
+    }
+
+    /* Mensaje de Mekan Álex (IA) */
+    .msg-mekan {
+        align-self: flex-start;
+        background-color: var(--lvg-surface);
+        border-left: 3px solid var(--lvg-gold);
+        border-radius: 5px 15px 15px 15px;
+        color: var(--lvg-text-main);
+    }
+
+    /* Mensaje del Usuario */
+    .msg-usuario {
+        align-self: flex-end;
+        background-color: var(--lvg-gold);
+        color: #000; /* Texto negro para contrastar con el fondo dorado */
+        border-radius: 15px 5px 15px 15px;
+        font-weight: 500;
+    }
+
+    /* 4. BARRA DE ESCRITURA (INPUT AREA) */
+    .chat-input-area {
+        background-color: var(--lvg-surface);
+        position: relative;
+        z-index: 10;
+        padding: 15px 20px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        border-top: 1px solid #333;
+    }
+
+    #input-mensaje {
+        flex: 1;
+        background-color: var(--lvg-bg);
+        color: var(--lvg-text-main);
+        border: 1px solid #333;
+        border-radius: 20px;
+        padding: 12px 15px;
+        font-size: 1rem;
+        resize: none;
+        outline: none;
+        transition: border 0.3s;
+    }
+    #input-mensaje:focus {
+        border: 1px solid var(--lvg-gold);
+    }
+    #input-mensaje::placeholder {
+        color: var(--lvg-text-muted);
+    }
+
+    /* Botones de Acción (Micrófono y Enviar) */
+    .btn-action {
+        background-color: var(--lvg-gold);
+        color: #000;
+        border: none;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: background-color 0.2s, transform 0.1s;
+    }
+    .btn-action:hover {
+        background-color: var(--lvg-gold-hover);
+    }
+    .btn-action:active {
+        transform: scale(0.95);
+    }
+</style>
+</head>
+<body>
+
+  <!-- Pantalla de Login de Mekan Álex -->
+<div id="login-mekan" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--lvg-dark, #1a1a1a); z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white;">
+    <img src="https://i.imgur.com/3Q95w5A.png" alt="Mekan" style="width:80px; margin-bottom:20px; border-radius:50%;">
+    <h2 style="margin-bottom:20px; font-family:sans-serif;">Acceso ALX</h2>
+    <input type="text" id="m-user" placeholder="Usuario" style="margin-bottom:15px; padding:12px; width:250px; border-radius:8px; border:none; text-align:center; font-size:16px;">
+    <input type="password" id="m-pass" placeholder="Contraseña" style="margin-bottom:20px; padding:12px; width:250px; border-radius:8px; border:none; text-align:center; font-size:16px;">
+    <button onclick="intentarLoginMekan()" style="padding:12px 30px; background:#d4af37; color:black; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">Conectar</button>
+    <p id="m-error" style="color:#ff6b6b; display:none; margin-top:15px; font-family:sans-serif;">Credenciales incorrectas</p>
+</div>
+
+  <div class="header">
+    <img src="alx-logo.png" alt="ALX Logo">
+    <div class="header-text">
+      <h1>EngineAL-X Core</h1>
+      <p id="rol-subtitle">Neural Project Assistant</p>
+    </div>
+  </div>
+
+  <div class="chat-box" id="chat-box">
+    <div class="mensaje msg-mekan">En línea, Alex. Sistemas operativos y base de datos sincronizada. ¿Cuál es la directiva?</div>
+  </div>
+
+  <div class="chat-input-area">
+    <button class="btn-action" id="btn-mic" onpointerdown="iniciarGrabacionAudio()" onpointerup="detenerYEnviarAudio()" onpointerleave="detenerYEnviarAudio()">🎙️</button>
+    <button onclick="adjuntarFoto()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: white; padding: 0 5px;">📎</button>
+    <textarea id="input-mensaje" placeholder="Mensaje..." rows="1"></textarea>
+    <button class="btn-action" id="btn-envio" onclick="enviarTexto()">➤</button>
+  </div>
+
+  <script>
+    /// --- 1. CONFIGURACIÓN INICIAL ---
+    const URL_API_GAS = "/api/mekan";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyCgjS4R1CzNk3aimJCKjLDDcD9cgT9mlIc",
+      authDomain: "las-vegas-glamour-manager.firebaseapp.com",
+      projectId: "las-vegas-glamour-manager",
+      storageBucket: "las-vegas-glamour-manager.firebasestorage.app",
+      messagingSenderId: "284294009400",
+      appId: "1:284294009400:web:91ae57b06d894b49f88ccd",
+      measurementId: "G-C5BY58E8BM"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let baseDeDatosMemoria = [];
+    let prestamosMemoria = [];
+    let usuariosMemoria = [];
+    let catalogoTareasMemoria = [];
+    let historialChat = [];
+    let memoriasALX = []; // Nuevo arreglo para guardar los recuerdos
+    let ROL = "";
+    let USUARIO = "";
+    let imagenPendienteGlobal = null; 
+    let nombreImagenGlobal = null;
+
+    // Función para descargar los recuerdos del usuario desde Firebase
+    function cargarMemorias() {
+        db.collection("memorias_alx").where("usuario", "==", USUARIO).onSnapshot(snapshot => {
+            let temp = [];
+            snapshot.forEach(doc => temp.push(doc.data().recuerdo));
+            memoriasALX = temp;
+        });
+    }
+
+// 1. VERIFICAR SESIÓN ACTIVA AL ENTRAR
+window.onload = () => {
+    const sesionUsuario = localStorage.getItem('mekan_user');
+    const sesionRol = localStorage.getItem('mekan_role');
+
+    if (sesionUsuario && sesionRol) {
+        USUARIO = sesionUsuario;
+        ROL = sesionRol;
+        document.getElementById('login-mekan').style.display = 'none';
+        actualizarCabecera();
+        cargarMemorias();
+        cargarHistorialChatUI(); // <-- Esta es la orden para descargar el chat al refrescar
+    }
+};
+
+// 2. FUNCIÓN DE INICIO DE SESIÓN
+async function intentarLoginMekan() {
+    const u = document.getElementById('m-user').value.trim();
+    const p = document.getElementById('m-pass').value.trim();
+    if (!u || !p) return;
+
+    try {
+        const snapshot = await db.collection("usuarios").where("user", "==", u).where("pass", "==", p).get();
+        if (!snapshot.empty) {
+            const data = snapshot.docs[0].data();
+            USUARIO = data.user;
+            ROL = data.role;
+            
+            // Guardar en la memoria del celular/navegador
+            localStorage.setItem('mekan_user', USUARIO);
+            localStorage.setItem('mekan_role', ROL);
+            
+            document.getElementById('login-mekan').style.display = 'none';
+            actualizarCabecera();
+            cargarMemorias();
+            cargarHistorialChatUI(); // Activa la descarga límite de mensajes
+        } else {
+            document.getElementById('m-error').style.display = 'block';
+        }
+    } catch (err) {
+        document.getElementById('m-error').innerText = "Error de red.";
+        document.getElementById('m-error').style.display = 'block';
+    }
+}
+
+// 3. ACTUALIZAR INTERFAZ
+function actualizarCabecera() {
+    const subtitulo = document.getElementById('rol-subtitle');
+    if (subtitulo) {
+        // Mantiene el texto elegante y añade el rol del usuario sutilmente
+        subtitulo.innerHTML = `Neural Project Assistant <span style="color: var(--lvg-gold); opacity: 0.7;">| ${ROL}</span>`;
+    }
+}
+
+    db.collection("eventos").onSnapshot(snapshot => {
+      let temp = [];
+      snapshot.forEach(doc => temp.push(doc.data()));
+      baseDeDatosMemoria = temp;
+    });
+    db.collection("prestamos").onSnapshot(snapshot => {
+      let temp = [];
+      snapshot.forEach(doc => temp.push(doc.data()));
+      prestamosMemoria = temp;
+    });
+    db.collection("usuarios").onSnapshot(snapshot => {
+      let temp = [];
+      snapshot.forEach(doc => temp.push(doc.data()));
+      usuariosMemoria = temp;
+    });
+
+    db.collection("sistema").doc("catalogos").onSnapshot((doc) => {
+        if (doc.exists && doc.data().tareas) {
+            catalogoTareasMemoria = doc.data().tareas;
+        }
+    });
+
+    // --- 2. GRABACIÓN DE AUDIO NATIVO ---
+    let mediaRecorder;
+    let audioChunks = [];
+    const btnMic = document.getElementById('btn-mic');
+
+    async function iniciarGrabacionAudio() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = event => {
+                if (event.data.size > 0) audioChunks.push(event.data);
+            };
+            
+            mediaRecorder.start();
+            btnMic.classList.add('grabando');
+            if (navigator.vibrate) navigator.vibrate([50]);
+        } catch (err) {
+            alert("Necesitas dar permiso al micrófono para enviar audios.");
+            console.error(err);
+        }
+    }
+
+    function detenerYEnviarAudio() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            btnMic.classList.remove('grabando');
+            if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+            
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    const base64String = reader.result.split(',')[1];
+                    transcribirConGemini(base64String);
+                };
+            };
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    // --- 3. TRANSCRIPCIÓN CON GEMINI (MODO DICTADO) ---
+    async function transcribirConGemini(base64String) {
+        const input = document.getElementById('input-mensaje');
+        const valorOriginal = input.value;
+        input.value = "Transcribiendo... (Gemini está escuchando)";
+
+        try {
+            // Reutilizamos el backend que ya habíamos preparado para "solo transcribir"
+            const respuesta = await fetch(URL_API_GAS, {
+                method: "POST",
+                body: JSON.stringify({ modo: "transcripcion", audioBase64: base64String, audioMimeType: 'audio/webm' })
+            });
+            const data = await respuesta.json();
+
+            if (data.status === "success") {
+                const textoTranscrito = data.respuesta.trim();
+                // Pone el texto en la caja para que lo puedas editar
+                input.value = textoTranscrito;
+                // Auto-ajusta la altura de la caja de texto
+                input.style.height = 'auto';
+                input.style.height = (input.scrollHeight) + 'px';
+            } else {
+                input.value = valorOriginal;
+                alert("Error al transcribir: " + data.message);
+            }
+        } catch (err) {
+            input.value = valorOriginal;
+            alert("Error de conexión al transcribir.");
+        }
+    }
+
+    // --- ENVÍO DE TEXTO NORMAL ---
+    function enviarTexto() {
+      const texto = document.getElementById('input-mensaje').value.trim();
+      if (!texto) return;
+      document.getElementById('input-mensaje').value = "";
+      agregarBurbuja(texto, "msg-usuario");
+      guardarMensajeFirebase("user", texto);
+      procesarConsultaMekan(texto);
+    }
+
+    // --- 4. FILTRO NATIVO (MAGIA MEJORADA) ---
+    function preFiltrarBD(query) {
+        const q = query.toLowerCase();
+        
+        // Mapeo inteligente para entender los apodos de la agencia
+        let editorBuscado = q;
+        if (q.includes("gabo")) editorBuscado += " gabriel hernandez";
+        if (q.includes("alex")) editorBuscado += " alejandro baldivieso";
+        if (q.includes("pablo")) editorBuscado += " pablo gomez";
+
+        let matches = baseDeDatosMemoria.filter(p => {
+            const cliente = (p.cliente || "").toLowerCase();
+            const fecha = (p.fecha_evento || p.fecha || "").toLowerCase();
+            const editor = (p.editor || "").toLowerCase();
+            const estado = (p.estado_actual || p.estado || "").toLowerCase();
+
+            // Verificamos si la consulta menciona al cliente, fecha, editor o estado
+            const coincidenciaCliente = cliente.split(" ").filter(w => w.length > 3).some(w => q.includes(w));
+            const coincidenciaFecha = fecha && q.includes(fecha);
+            const coincidenciaEditor = editor && editor !== "sin asignar" && editorBuscado.includes(editor.split(" ")[0].toLowerCase());
+            const coincidenciaEstado = estado && q.includes(estado.toLowerCase());
+
+            // Si coincide cualquiera de estos criterios, lo seleccionamos
+            return coincidenciaCliente || coincidenciaFecha || coincidenciaEditor || coincidenciaEstado;
+        });
+
+        // Si pregunta por un editor o estado general, ampliamos el límite para que Gemini tenga la foto completa
+        let limite = (q.includes("gabo") || q.includes("gabriel") || q.includes("pablo") || q.includes("alex") || q.includes("corrección") || q.includes("proceso")) ? 50 : 15;
+
+        // Si hay resultados, mandamos esos. Si no, mandamos los últimos 10 para dar contexto.
+        return matches.length > 0 ? matches.slice(0, limite) : baseDeDatosMemoria.slice(0, 10);
+    }
+
+    // --- 5. COMUNICACIÓN CON MEKAN ÁLEX (Ya filtrado) ---
+    async function procesarConsultaMekan(texto) {
+      const idCarga = agregarBurbuja("Analizando datos y procesando...", "msg-mekan", true);
+      const bdFiltrada = preFiltrarBD(texto); 
+      
+      const payloadCompleto = {
+        modo: "mekan",
+        usuarioActual: USUARIO,
+        rolActual: ROL,
+        baseDeDatos: bdFiltrada,
+        prestamos: prestamosMemoria,
+        usuarios: usuariosMemoria,
+        catalogoTareas: catalogoTareasMemoria,
+        memorias: memoriasALX, // Le enviamos las memorias a Vercel
+        historialChat: historialChat,
+        texto: texto
+      };
+
+      try {
+        const respuesta = await fetch(URL_API_GAS, {
+          method: "POST",
+          body: JSON.stringify(payloadCompleto)
+        });
+        
+        const data = await respuesta.json();
+        document.getElementById(idCarga).remove();
+
+        if (data.status === "success") {
+          historialChat.push({ role: "user", parts: [{text: texto}]});
+          historialChat.push({ role: "model", parts: [{text: data.respuesta}]});
+          
+          guardarMensajeFirebase("model", data.respuesta);
+
+          const textoLimpio = procesarYCrearProyectos(data.respuesta);
+          agregarBurbuja(marked.parse(textoLimpio), "msg-mekan", false, true);
+        } else {
+          agregarBurbuja("Error en el núcleo: " + data.message, "msg-mekan");
+        }
+      } catch (err) {
+        document.getElementById(idCarga).remove();
+        agregarBurbuja("No hay conexión con el servidor.", "msg-mekan");
+      }
+    }
+
+    // --- 5. INTERCEPTOR DE ÓRDENES ---
+    // Añadimos esCargaInicial para saber si ALX está recordando mensajes viejos o procesando uno nuevo
+    function procesarYCrearProyectos(respuestaMekan, esCargaInicial = false) {
+      
+      // 1. Interceptar Órdenes de Memoria
+      const regexRecordar = /\[ACCION:RECORDAR\s*\|\s*RECUERDO:(.*?)\]/gi;
+      let matchMemoria;
+      while ((matchMemoria = regexRecordar.exec(respuestaMekan)) !== null) {
+          const recuerdoTexto = matchMemoria[1].trim();
+          respuestaMekan = respuestaMekan.replace(matchMemoria[0], '').trim(); 
+          
+          // Solo guarda en Firebase si es un mensaje nuevo, no si está cargando el historial
+          if (!esCargaInicial) {
+              db.collection("memorias_alx").add({
+                  usuario: USUARIO,
+                  recuerdo: recuerdoTexto,
+                  fecha: new Date().toISOString()
+              });
+          }
+      }
+
+      // 2. Interceptar Órdenes de Creación (Ahora con Urgencia)
+      const regexCrear = /\[ACCION:CREAR\s*\|\s*CLIENTE:(.*?)\s*\|\s*FECHA:(.*?)\s*\|\s*EVENTO:(.*?)\s*\|\s*EDITOR:(.*?)\s*\|\s*TAREA:(.*?)\s*\|\s*PRECIO:(.*?)\s*\|\s*MONEDA:(.*?)\s*\|\s*URGENCIA:(.*?)\]/gi;
+      let match;
+      let textoRenderizado = respuestaMekan;
+      let creacionExitosa = false;
+
+      while ((match = regexCrear.exec(respuestaMekan)) !== null) {
+          creacionExitosa = true;
+          const cliente = match[1].trim(); const fecha = match[2].trim(); const evento = match[3].trim(); const editor = match[4].trim(); const tarea = match[5].trim(); const precio = match[6].trim(); const moneda = match[7].trim(); const urgencia = match[8].trim();
+          
+          textoRenderizado = textoRenderizado.replace(match[0], '').trim();
+          
+          // Solo opera si es un mensaje nuevo (no al cargar historial)
+          if (!esCargaInicial) {
+              // 1. Guardar en Firebase (Base de Datos)
+              db.collection("eventos").add({
+                  cliente: cliente, fecha: fecha, tipo: evento, editor: editor,
+                  estado: editor !== "Sin asignar" ? "Asignado" : "Sin asignar",
+                  tareasJSON: JSON.stringify([{ tipo: tarea, precio: precio, moneda: moneda, urgencia: urgencia }]),
+                  precioTotal: "Pendiente",
+                  fechaCreacion: new Date().toISOString()
+              });
+
+              // 2. Disparar creación en Google Drive (Motor Vercel)
+              const nombreCarpetaDrive = cliente + " " + fecha; // Ej: "Claudia 07.22.23"
+              
+              fetch('/api/drive', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ nombreCarpeta: nombreCarpetaDrive })
+              })
+              .then(res => res.json())
+              .then(dataDrive => {
+                  if(dataDrive.status === 'success') {
+                      console.log("Éxito total: Carpeta creada en Drive ->", dataDrive.url);
+                  } else {
+                      console.error("Fallo al crear en Drive:", dataDrive.message);
+                  }
+              })
+              .catch(err => console.error("Error de conexión con Drive:", err));
+          }
+      }
+      
+      // Solo muestra la alerta de éxito si es un mensaje nuevo
+      if (creacionExitosa && !esCargaInicial) {
+          agregarBurbuja("✅ Proyecto registrado en la plataforma exitosamente.", "msg-mekan");
+      }
+
+      // 3. Interceptar Órdenes de Guardar Fotos
+      const regexFoto = /\[ACCION:GUARDAR_FOTO\s*\|\s*CARPETA:(.*?)\]/gi;
+      let matchFoto;
+      while ((matchFoto = regexFoto.exec(respuestaMekan)) !== null) {
+          const carpetaDestino = matchFoto[1].trim();
+          textoRenderizado = textoRenderizado.replace(matchFoto[0], '').trim();
+
+          if (imagenPendienteGlobal && !esCargaInicial) {
+              agregarBurbuja("⏳ Subiendo imagen a la carpeta " + carpetaDestino + "...", "msg-mekan");
+              
+              fetch('/api/upload', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      nombreCarpeta: carpetaDestino,
+                      imagenBase64: imagenPendienteGlobal,
+                      nombreArchivo: nombreImagenGlobal,
+                      mimeType: 'image/jpeg'
+                  })
+              })
+              .then(res => res.json())
+              .then(data => {
+                  if(data.status === 'success') {
+                      agregarBurbuja("✅ Imagen guardada con éxito en Drive.", "msg-mekan");
+                  } else {
+                      agregarBurbuja("❌ Error al subir a Drive: " + data.message, "msg-mekan");
+                  }
+              })
+              .catch(err => agregarBurbuja("❌ Error de red al subir foto.", "msg-mekan"));
+              
+              // Limpiamos la memoria para la próxima foto
+              imagenPendienteGlobal = null;
+              nombreImagenGlobal = null;
+          }
+      }
+      
+      return textoRenderizado;
+    }
+
+    // --- 6. GESTOR DE HISTORIAL Y PAGINACIÓN (Modo Diagnóstico) ---
+    let ultimoMensajeCargado = null; 
+
+    function guardarMensajeFirebase(rol, contenido) {
+        db.collection("chats_alx").doc(USUARIO).collection("mensajes").add({
+            rol: rol,
+            texto: contenido,
+            timestamp: Date.now()
+        }).then(() => {
+            console.log("Mensaje guardado correctamente en Firebase.");
+        }).catch(err => {
+            alert("Error al GUARDAR en Firebase: " + err.message);
+        });
+    }
+
+    function cargarHistorialChatUI() {
+        console.log("Intentando descargar historial de:", USUARIO);
+        
+        db.collection("chats_alx").doc(USUARIO).collection("mensajes")
+          .orderBy("timestamp", "desc")
+          .limit(30)
+          .get().then(snapshot => {
+              
+              if (snapshot.empty) {
+                  console.log("Firebase dice que no hay mensajes guardados para este usuario.");
+                  return;
+              }
+
+              console.log("Se descargaron " + snapshot.size + " mensajes.");
+
+              const msgBienvenida = document.querySelector('#chat-box .mensaje:first-child');
+              if (msgBienvenida && msgBienvenida.innerText.includes("En línea")) {
+                  msgBienvenida.style.display = 'none';
+              }
+
+              let mensajesLote = [];
+              ultimoMensajeCargado = snapshot.docs[snapshot.docs.length - 1]; 
+
+              snapshot.forEach(doc => mensajesLote.push(doc.data()));
+              mensajesLote.reverse(); 
+
+              mensajesLote.forEach(data => {
+                  const clase = data.rol === "user" ? "msg-usuario" : "msg-mekan";
+                  historialChat.push({ role: data.rol, parts: [{text: data.texto}] });
+                  
+                  const textoFinal = data.rol === "model" ? procesarYCrearProyectos(data.texto, true) : data.texto;
+                  agregarBurbuja(data.rol === "model" ? marked.parse(textoFinal) : textoFinal, clase, false, data.rol === "model");
+              });
+          }).catch(err => {
+              alert("Error al DESCARGAR de Firebase: " + err.message);
+          });
+    }
+
+    // --- ACTIVADOR DE SCROLL INFINITO HACIA ARRIBA ---
+    document.getElementById('chat-box').addEventListener('scroll', function() {
+        // Si el usuario toca el techo del chat y hay mensajes viejos por cargar
+        if (this.scrollTop === 0 && ultimoMensajeCargado) {
+            let alturaPrevia = this.scrollHeight; 
+            
+            db.collection("chats_alx").doc(USUARIO).collection("mensajes")
+              .orderBy("timestamp", "desc")
+              .startAfter(ultimoMensajeCargado) // Empezamos a buscar a partir del último cargado
+              .limit(30)
+              .get().then(snapshot => {
+                  if (snapshot.empty) {
+                      ultimoMensajeCargado = null; // Ya no hay historial más antiguo
+                      return;
+                  }
+                  
+                  ultimoMensajeCargado = snapshot.docs[snapshot.docs.length - 1];
+                  let mensajesViejos = [];
+                  snapshot.forEach(doc => mensajesViejos.push(doc.data()));
+                  
+                  // Insertamos los mensajes viejos arriba del todo
+                  mensajesViejos.forEach(data => {
+                      const clase = data.rol === "user" ? "msg-usuario" : "msg-mekan";
+                      const msg = document.createElement('div');
+                      msg.className = "mensaje " + clase;
+                      const textoFinal = data.rol === "model" ? procesarYCrearProyectos(data.texto, true) : data.texto;
+                      msg.innerHTML = data.rol === "model" ? marked.parse(textoFinal) : textoFinal;
+                      
+                      this.insertBefore(msg, this.firstChild);
+                      
+                      // Le alimentamos este recuerdo al cerebro de ALX también
+                      historialChat.unshift({ role: data.rol, parts: [{text: data.texto}] });
+                  });
+                  
+                  // Empujamos el scroll para que la pantalla no salte bruscamente al cargar
+                  this.scrollTop = this.scrollHeight - alturaPrevia;
+              });
+        }
+    });
+
+    // --- UTILIDADES UI ---
+    function agregarBurbuja(contenido, clase, esCarga = false, esHTML = false) {
+      const caja = document.getElementById('chat-box');
+      const msg = document.createElement('div');
+      msg.className = "mensaje " + clase;
+      // Añadimos un número aleatorio para evitar identificadores duplicados en el mismo milisegundo
+      msg.id = "msg-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
+      if(esCarga) { msg.style.color = "#aaa"; msg.style.fontStyle = "italic"; }
+      
+      if(esHTML) msg.innerHTML = contenido;
+      else msg.innerText = contenido;
+
+      caja.appendChild(msg);
+      caja.scrollTop = caja.scrollHeight;
+      return msg.id;
+    }
+
+    document.getElementById('input-mensaje').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+    
+    document.getElementById('input-mensaje').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { 
+        e.preventDefault();
+        enviarTexto();
+        this.style.height = 'auto';
+      }
+    });
+  // --- UTILIDAD PARA ADJUNTAR FOTOS ---
+    function adjuntarFoto() {
+        const inputF = document.createElement('input');
+        inputF.type = 'file';
+        inputF.accept = 'image/*';
+        inputF.onchange = e => {
+            const file = e.target.files[0];
+            if(!file) return;
+            nombreImagenGlobal = file.name;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imagenPendienteGlobal = event.target.result; // Guardamos la foto en la memoria del navegador
+                
+                // Le avisamos a ALX simulando que el usuario habló
+                const textoAviso = "He adjuntado la imagen: " + file.name;
+                agregarBurbuja("📷 [Imagen adjuntada]<br>" + textoAviso, "msg-usuario");
+                
+                // Le inyectamos una orden oculta a ALX para que sepa qué hacer
+                procesarConsultaMekan(textoAviso + " [SISTEMA: El usuario ha cargado una foto en memoria. Activa tu protocolo de archivos y pregúntale a qué carpeta de proyecto debe ir]");
+            };
+            reader.readAsDataURL(file);
+        };
+        inputF.click(); // Abre la galería de fotos
+    }
+</script>
+</body>
+</html>
