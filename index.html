@@ -6864,6 +6864,7 @@ async function cargarFeedbackManager() {
                  method: 'POST',
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify({
+                     idCarpeta: dataDrive.idCarpeta,
                      nombreCarpeta: nombreCarpetaFactura,
                      imagenBase64: facturaDataParaGuardar.base64,
                      nombreArchivo: `${numeroFactura}.png`,

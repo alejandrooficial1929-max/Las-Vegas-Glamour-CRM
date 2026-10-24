@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send('Método no permitido');
 
   try {
-    const { nombreCarpeta, imagenBase64, mimeType, nombreArchivo } = req.body;
+    const { nombreCarpeta, idCarpeta, imagenBase64, mimeType, nombreArchivo } = req.body;
     
     if (!imagenBase64) throw new Error("No se recibió ninguna imagen.");
 
@@ -18,18 +18,23 @@ export default async function handler(req, res) {
     });
     const drive = google.drive({ version: 'v3', auth });
 
-    // 1. Buscamos la carpeta del cliente dentro de tu Drive
-    const resBusqueda = await drive.files.list({
-      q: `name='${nombreCarpeta}' and '${folderRaiz}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-      fields: 'files(id, name)',
-      spaces: 'drive',
-    });
+    let idCarpetaDestino = idCarpeta;
 
-    if (resBusqueda.data.files.length === 0) {
-      return res.status(404).json({ status: 'error', message: 'No encontré la carpeta del proyecto en Drive.' });
+    // 1. Buscamos la carpeta en Drive SOLO si no nos enviaron el ID directo
+    if (!idCarpetaDestino && nombreCarpeta) {
+        const resBusqueda = await drive.files.list({
+          q: `name='${nombreCarpeta}' and '${folderRaiz}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+          fields: 'files(id, name)',
+          spaces: 'drive',
+        });
+
+        if (resBusqueda.data.files.length === 0) {
+          return res.status(404).json({ status: 'error', message: 'No encontré la carpeta del proyecto en Drive.' });
+        }
+        idCarpetaDestino = resBusqueda.data.files[0].id;
     }
 
-    const idCarpetaDestino = resBusqueda.data.files[0].id;
+    if (!idCarpetaDestino) throw new Error("No se pudo identificar la carpeta destino.");
 
     // 2. Convertimos la imagen recibida a un formato que Drive entienda
     const buffer = Buffer.from(imagenBase64.split(',')[1] || imagenBase64, 'base64');

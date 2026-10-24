@@ -83,7 +83,7 @@ export default async function handler(req, res) {
             supportsAllDrives: true             // SOPORTE UNIDADES COMPARTIDAS
         });
 
-        return res.status(200).json({ status: 'success', urlCarpeta: folder.data.webViewLink });
+        return res.status(200).json({ status: 'success', urlCarpeta: folder.data.webViewLink, idCarpeta: folder.data.id });
     }
     
     // 3. CREACIÓN DIRECTA DESDE EL CHATBOT ALX
