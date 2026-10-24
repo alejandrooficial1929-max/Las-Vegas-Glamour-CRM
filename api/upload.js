@@ -53,6 +53,7 @@ export default async function handler(req, res) {
         body: stream
       },
       fields: 'id, webViewLink',
+      supportsAllDrives: true
     });
 
     return res.status(200).json({ status: 'success', url: file.data.webViewLink });
