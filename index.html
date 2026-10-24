@@ -1870,6 +1870,11 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
             </div>
         </div>
 
+        <div style="margin-bottom:15px;">
+            <label>Link de Carpeta en Drive (Comprobantes)</label>
+            <input type="text" id="edit-link-factura" placeholder="https://drive.google.com/drive/folders/..." style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; background: var(--bg-main); color: var(--text-dark);">
+        </div>
+
         <label style="color:var(--lvg-dark);">Proyectos en esta factura:</label>
         <div id="lista-proyectos-edicion-factura" style="overflow-y:auto; flex:1; margin-bottom:16px; border: 1px solid #eee; border-radius: 8px; padding: 10px; background: #fbfaf8;"></div>
 
@@ -7795,6 +7800,10 @@ function abrirModalEdicionFactura(idFactura) {
     document.getElementById('edit-codigo-factura').value = idFactura;
     document.getElementById('edit-fecha-factura').value = fecha;
     if(editor) document.getElementById('edit-editor-factura').value = editor;
+    
+    // Rellenar el nuevo campo del link
+    const linkExistente = proyectoValido ? proyectoValido.linkComprobante : "";
+    document.getElementById('edit-link-factura').value = linkExistente || "";
 
     // --- MAGIA: Activar el botón de Abrir Carpeta ---
     const btnCarpeta = document.getElementById('btn-carpeta-modal-edicion-factura');
@@ -7902,6 +7911,7 @@ function confirmarCambiosFactura() {
     // 2. Proyectos que se mantuvieron (incluyendo el pivote oculto) se actualizan con los nuevos datos
     const nuevaFecha = document.getElementById('edit-fecha-factura').value.trim();
     const nuevoEditor = document.getElementById('edit-editor-factura').value;
+    const nuevoLink = document.getElementById('edit-link-factura').value.trim();
     
     proyectosFacturaTemporal.forEach(p => {
         let ref = db.collection("eventos").doc(p.id);
@@ -7910,6 +7920,10 @@ function confirmarCambiosFactura() {
             fechaPago: nuevaFecha || p.fechaPago,
             editor: nuevoEditor
         };
+        // Si el usuario modificó el link, lo actualizamos
+        if (nuevoLink) {
+            updateObj.linkComprobante = nuevoLink;
+        }
         // MAGIA: Guardar oficialmente en la base de datos los extras modificados en memoria
         if (p.tipo === "Pivote Factura" && p.extrasFactura !== undefined) {
             updateObj.extrasFactura = p.extrasFactura;

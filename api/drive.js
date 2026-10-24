@@ -73,11 +73,18 @@ export default async function handler(req, res) {
     
     // 2. CREACIÓN DE CARPETA PARA FACTURAS (MANAGER)
     else if (data.accion === 'crearCarpetaFactura') {
+        // Extraer el año del nombre de la carpeta (Ej. "Factura - LVG0001-2026 - Gabriel") -> "2026"
+        const matchAnio = data.nombreCarpeta.match(/-(\d{4}) -/);
+        const anioCarpeta = matchAnio ? matchAnio[1] : new Date().getFullYear().toString();
+        
+        // Buscar o crear la subcarpeta del año dentro de la raíz de comprobantes
+        const idCarpetaAnio = await obtenerOCrearCarpeta(anioCarpeta, folderRaiz);
+
         const folder = await drive.files.create({
             resource: {
                 name: data.nombreCarpeta,
                 mimeType: 'application/vnd.google-apps.folder',
-                parents: [folderRaiz] 
+                parents: [idCarpetaAnio] 
             },
             fields: 'id, webViewLink',
             supportsAllDrives: true             // SOPORTE UNIDADES COMPARTIDAS
