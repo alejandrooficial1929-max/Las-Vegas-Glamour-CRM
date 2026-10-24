@@ -683,6 +683,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
             </div>
             <button class="btn-yellow" style="padding:8px 15px; font-size:14px;" onclick="abrirModalCrearFactura()">+ Crear nueva factura</button>
           </div>
+          
           <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
             <input type="text" id="busqueda-historial-man" class="search-bar" placeholder="Buscar código de factura (Ej. LVG0001)... ⚲" style="flex:2; min-width:200px; height: 42px !important; margin: 0; box-sizing: border-box;" oninput="dibujarHistorialPagosManager()">
             <select id="filtro-editor-historial-man" class="task-input" style="flex:1; min-width:150px; height: 42px !important;" onchange="dibujarHistorialPagosManager()">
@@ -697,6 +698,9 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
               <option value="manual">Orden Manual (Drag & Drop)</option>
             </select>
           </div>
+
+          <div class="board-header"><div style="flex:1;">Código de Factura</div><div style="flex:1; text-align:center;">Fecha Creación</div><div style="flex:1; text-align:center;">Editor</div><div style="flex:1; text-align:center;">Estado</div></div>
+          <div id="contenedor-historial-manager"><div style="text-align:center; padding: 20px; color: #666;">Cargando historial...</div></div>
         </div>
 
         <div id="vista-manager-prestamos" class="hidden" style="flex:1;">
