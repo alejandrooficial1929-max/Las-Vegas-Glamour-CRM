@@ -4285,6 +4285,7 @@ function cargarMetricasEditor() {
             </div>
             <div class="tarjeta-body" style="flex-direction:column; gap:15px; padding-top:15px;">
                 <div style="display:flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn-outline" style="border-color:var(--lvg-yellow); color:var(--text-dark);" onclick="event.stopPropagation(); verFacturaGuardada('${idFactura}')">👁️ Ver Factura</button>
                     <button class="btn-outline" style="border-color:#38bdf8; color:#38bdf8;" onclick="event.stopPropagation(); window.open('${f.linkCarpeta}')">📁 Abrir carpeta de comprobantes</button>
                 </div>
                 <div style="background: var(--bg-main); border: 1px solid var(--border-subtle); padding: 15px; border-radius: 10px;">
@@ -6069,7 +6070,7 @@ async function cargarFeedbackManager() {
         contHistorial.innerHTML = hayHistorial ? htmlHistorial : '<div style="text-align:center; padding: 20px; color: #666;">No hay historial de pagos.</div>';
       }
 
-      function mostrarVistaPreviewFacturaGestion(idFactura) {
+      function verFacturaGuardada(idFactura) {
          if(!idFactura) return;
          
          let factProjs = proyectosGlobalesDeAgencia.filter(p => {
@@ -6081,7 +6082,8 @@ async function cargarFeedbackManager() {
          if(factProjs.length === 0) return;
          
          datosFacturaActiva.proyectos = factProjs; 
-         datosFacturaActiva.editor = factProjs[0].editor;
+         let proyValido = factProjs.find(p => p.tipo !== "Pivote Factura") || factProjs[0];
+         datosFacturaActiva.editor = proyValido.editor;
          
          // --- RECUPERAR EXTRAS DE FIREBASE ---
          datosFacturaActiva.extras = [];
@@ -6097,18 +6099,26 @@ async function cargarFeedbackManager() {
          if(inputFecha && factProjs.length > 0) {
              inputFecha.value = factProjs[0].fechaPago || Utilities_formatDate();
          }
-
+         
          const btnCrear = document.getElementById('btn-crear-pago');
          if(btnCrear) btnCrear.classList.add('hidden'); 
          
          const btnDescargar = document.getElementById('btn-solo-descargar');
-         if(btnDescargar) btnDescargar.classList.add('hidden'); 
+         if(btnDescargar) {
+             btnDescargar.classList.remove('hidden'); 
+             btnDescargar.onclick = descargarFacturaLocal;
+         }
          
          const modal = document.getElementById('modal-factura');
          if(modal) {
              modal.classList.remove('hidden'); 
+             renderizarPanelExtensionFactura(); // Dibuja la barra lateral de edicion
              if(typeof actualizarCanvasFactura === 'function') actualizarCanvasFactura();
          }
+      }
+
+      function mostrarVistaPreviewFacturaGestion(idFactura) {
+          verFacturaGuardada(idFactura);
       }
 
       function abrirModalPagoGestion(idFactura, linkDrive) { 
