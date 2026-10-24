@@ -6837,52 +6837,77 @@ async function cargarFeedbackManager() {
 
       function Utilities_formatDate() { let d = new Date(); return `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}.${String(d.getFullYear()).slice(-2)}`; }
       function descargarFacturaLocal() { let a = document.createElement('a'); a.href = facturaDataParaGuardar.base64; a.download = `${facturaDataParaGuardar.idFactura}.png`; a.click(); }
-      function crearPagoEnDrive() { 
+      async function crearPagoEnDrive() { 
          const numeroFactura = document.getElementById('input-n-factura').value;
          if(!numeroFactura) { alert("Escribe un Número de Factura."); return; } 
          
          const btn = document.getElementById('btn-crear-pago'); 
          if(btn) { btn.innerText = "⏳ Creando carpeta en Drive..."; btn.disabled = true; }
          
-         google.script.run.withSuccessHandler(res => { 
-            if(res.status === "success") { 
-                if(btn) btn.innerText = "⏳ Guardando en Firebase...";
-                
-                // Actualizamos en FIREBASE todos los proyectos de la factura
-                let inputFecha = document.getElementById('input-fecha-factura-canvas');
-                let fechaFinalGuardar = (inputFecha && inputFecha.value) ? inputFecha.value : res.fechaPago;
-                
-                let promesas = facturaDataParaGuardar.ids.map((id, index) => {
-                    let updateData = {
-                        fechaPago: fechaFinalGuardar,
-                        linkComprobante: res.folderUrl,
-                        estadoCobro: "En proceso",
-                        idFactura: numeroFactura
-                    };
-                    // Novedad: Guardamos los extras SOLO en el primer proyecto para vincularlos a esta factura
-                    if (index === 0 && datosFacturaActiva.extras && datosFacturaActiva.extras.length > 0) {
-                        updateData.extrasFactura = JSON.stringify(datosFacturaActiva.extras);
-                    }
-                    return db.collection("eventos").doc(id).update(updateData);
-                });
-                
-                Promise.all(promesas).then(() => {
-                    if(btn) { btn.innerText = "Aprobar y Crear Carpeta 🚀"; btn.disabled = false; }
-                    document.getElementById('modal-factura').classList.add('hidden'); 
-                    alert("✅ ¡Factura generada y guardada con éxito!"); 
-                    // Refrescamos la vista
-                    if(typeof cargarProyectos === 'function') cargarProyectos();
-                    cambiarTabFinanzasMan('Historial');
-                }).catch(error => {
-                    if(btn) { btn.innerText = "Aprobar y Crear Carpeta 🚀"; btn.disabled = false; }
-                    alert("Carpeta creada, pero error al guardar en Firebase: " + error.message);
-                });
-                
-            } else { 
-                if(btn) { btn.innerText = "Aprobar y Crear Carpeta 🚀"; btn.disabled = false; }
-                alert("Error creando carpeta en Drive: " + res.message); 
-            } 
-         }).procesarPagoEnLoteYFactura(facturaDataParaGuardar.ids, facturaDataParaGuardar.base64, facturaDataParaGuardar.editor, numeroFactura); 
+         const nombreCarpetaFactura = `Factura - ${numeroFactura} - ${facturaDataParaGuardar.editor}`;
+
+         try {
+             // 1. Crear carpeta en Drive vía Vercel
+             const resDrive = await fetch('/api/drive', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ accion: 'crearCarpetaFactura', nombreCarpeta: nombreCarpetaFactura })
+             });
+             const dataDrive = await resDrive.json();
+             
+             if(dataDrive.status !== "success") throw new Error("Error Drive: " + dataDrive.message);
+
+             if(btn) btn.innerText = "⏳ Subiendo factura a Drive...";
+             
+             // 2. Subir el PNG a la carpeta creada
+             const resUpload = await fetch('/api/upload', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({
+                     nombreCarpeta: nombreCarpetaFactura,
+                     imagenBase64: facturaDataParaGuardar.base64,
+                     nombreArchivo: `${numeroFactura}.png`,
+                     mimeType: 'image/png'
+                 })
+             });
+             const dataUpload = await resUpload.json();
+             
+             if(dataUpload.status !== "success") throw new Error("Error Upload: " + dataUpload.message);
+
+             if(btn) btn.innerText = "⏳ Guardando en Firebase...";
+             
+             // 3. Leer la fecha del nuevo cuadrito (o usar la de hoy)
+             let inputFecha = document.getElementById('input-fecha-factura-canvas');
+             let fechaFinalGuardar = (inputFecha && inputFecha.value) ? inputFecha.value : Utilities_formatDate();
+             
+             // 4. Actualizar todos los proyectos en Firebase
+             let promesas = facturaDataParaGuardar.ids.map((id, index) => {
+                 let updateData = {
+                     fechaPago: fechaFinalGuardar,
+                     linkComprobante: dataDrive.urlCarpeta,
+                     estadoCobro: "En proceso",
+                     idFactura: numeroFactura
+                 };
+                 if (index === 0 && datosFacturaActiva.extras && datosFacturaActiva.extras.length > 0) {
+                     updateData.extrasFactura = JSON.stringify(datosFacturaActiva.extras);
+                 }
+                 return db.collection("eventos").doc(id).update(updateData);
+             });
+             
+             await Promise.all(promesas);
+
+             // 5. Terminar con éxito
+             if(btn) { btn.innerText = "Aprobar y Crear Carpeta 🚀"; btn.disabled = false; }
+             document.getElementById('modal-factura').classList.add('hidden'); 
+             alert("✅ ¡Factura generada y guardada con éxito!"); 
+             
+             if(typeof cargarProyectos === 'function') cargarProyectos();
+             cambiarTabFinanzasMan('Historial');
+             
+         } catch(error) {
+             if(btn) { btn.innerText = "Aprobar y Crear Carpeta 🚀"; btn.disabled = false; }
+             alert(error.message);
+         }
       }
       // =================================================================
       // ================= CEREBRO DEL CALENDARIO (ERP) ==================
@@ -8175,3 +8200,4 @@ function guardarCatalogoFirebase() {
 </script>
   </body>
 </html>
+
