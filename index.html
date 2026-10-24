@@ -683,8 +683,20 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
             </div>
             <button class="btn-yellow" style="padding:8px 15px; font-size:14px;" onclick="abrirModalCrearFactura()">+ Crear nueva factura</button>
           </div>
-          <div class="board-header"><div style="flex:1;">Código de Factura</div><div style="flex:1; text-align:center;">Fecha Creación</div><div style="flex:1; text-align:center;">Editor</div><div style="flex:1; text-align:center;">Estado</div></div>
-          <div id="contenedor-historial-manager"><div style="text-align:center; padding: 20px; color: #666;">Cargando historial...</div></div>
+          <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+            <input type="text" id="busqueda-historial-man" class="search-bar" placeholder="Buscar código de factura (Ej. LVG0001)... ⚲" style="flex:2; min-width:200px; height: 42px !important; margin: 0; box-sizing: border-box;" oninput="dibujarHistorialPagosManager()">
+            <select id="filtro-editor-historial-man" class="task-input" style="flex:1; min-width:150px; height: 42px !important;" onchange="dibujarHistorialPagosManager()">
+              <option value="Todos">Cualquier editor</option>
+              <option value="Gabriel Hernandez">Gabriel Hernandez</option>
+              <option value="Alejandro Baldivieso">Alejandro Baldivieso</option>
+              <option value="Pablo Gomez">Pablo Gomez</option>
+            </select>
+            <select id="sort-historial-man" class="task-input" style="flex:1; min-width:180px; height: 42px !important;" onchange="dibujarHistorialPagosManager()">
+              <option value="desc">Más recientes (Ej. 2026)</option>
+              <option value="asc">Más antiguas (Ej. 2025)</option>
+              <option value="manual">Orden Manual (Drag & Drop)</option>
+            </select>
+          </div>
         </div>
 
         <div id="vista-manager-prestamos" class="hidden" style="flex:1;">
@@ -4164,12 +4176,52 @@ function cargarMetricasEditor() {
         return { idFactura: k, ...gruposFacturas[k] };
     });
 
-    // Ordenamos el array: Primero por el orden manual guardado, y si son nuevos (-1), por fecha
+    // --- LEER FILTROS DEL NUEVO BUSCADOR ---
+    const inputBusqueda = document.getElementById('busqueda-historial-man');
+    const inputEditor = document.getElementById('filtro-editor-historial-man');
+    const inputSort = document.getElementById('sort-historial-man');
+
+    const busquedaVal = inputBusqueda ? inputBusqueda.value.toLowerCase().trim() : "";
+    const editorVal = inputEditor ? inputEditor.value : "Todos";
+    const sortVal = inputSort ? inputSort.value : "desc"; // Por defecto los más recientes
+
+    // --- APLICAR FILTROS (Búsqueda y Editor) ---
+    arrayFacturas = arrayFacturas.filter(f => {
+        if (editorVal !== "Todos" && f.editor !== editorVal) return false;
+        if (busquedaVal && !f.idFactura.toLowerCase().includes(busquedaVal)) return false;
+        return true;
+    });
+
+    // --- ORDENAR ARRAY ---
     arrayFacturas.sort((a, b) => {
-        if (a.ordenVisual !== b.ordenVisual) {
-            return a.ordenVisual - b.ordenVisual;
+        if (sortVal === "manual") {
+            if (a.ordenVisual !== b.ordenVisual) return a.ordenVisual - b.ordenVisual;
+            return new Date(b.fecha) - new Date(a.fecha);
         }
-        return new Date(b.fecha) - new Date(a.fecha);
+
+        // Función para extraer el año y el número de un formato "LVG0001-2026"
+        const extraerDatosFactura = (codigo) => {
+            const match = codigo.match(/(\d+)-(\d{4})/);
+            if (match) {
+                return { num: parseInt(match[1], 10), year: parseInt(match[2], 10) };
+            }
+            return { num: 0, year: 0 };
+        };
+
+        const datosA = extraerDatosFactura(a.idFactura);
+        const datosB = extraerDatosFactura(b.idFactura);
+
+        // Comparamos años primero
+        if (datosA.year !== datosB.year) {
+            return sortVal === "desc" ? datosB.year - datosA.year : datosA.year - datosB.year;
+        }
+        // Si es el mismo año, comparamos número de factura
+        if (datosA.num !== datosB.num) {
+            return sortVal === "desc" ? datosB.num - datosA.num : datosA.num - datosB.num;
+        }
+        
+        // Si por alguna razón no tienen el formato, ordenamos por fecha de forma normal
+        return sortVal === "desc" ? new Date(b.fecha) - new Date(a.fecha) : new Date(a.fecha) - new Date(b.fecha);
     });
 
     let htmlFinal = "";
@@ -7938,19 +7990,25 @@ function dropFactura(e) {
     target.style.boxShadow = 'none'; // Limpiamos la sombra amarilla
     
     if (dragSrcElFactura !== target) {
-        // Calculamos si soltamos en la mitad de arriba o en la mitad de abajo de la tarjeta objetivo
-        let bounding = target.getBoundingClientRect();
-        let offset = bounding.y + (bounding.height / 2);
-        
-        if (e.clientY > offset) {
-            target.parentNode.insertBefore(dragSrcElFactura, target.nextSibling); // Soltar debajo
-        } else {
-            target.parentNode.insertBefore(dragSrcElFactura, target); // Soltar encima
+            // Calculamos si soltamos en la mitad de arriba o en la mitad de abajo de la tarjeta objetivo
+            let bounding = target.getBoundingClientRect();
+            let offset = bounding.y + (bounding.height / 2);
+            
+            if (e.clientY > offset) {
+                target.parentNode.insertBefore(dragSrcElFactura, target.nextSibling); // Soltar debajo
+            } else {
+                target.parentNode.insertBefore(dragSrcElFactura, target); // Soltar encima
+            }
+            
+            // Cambiamos el select a manual para que la vista no se desordene sola al arrastrar
+            let sortSelect = document.getElementById('sort-historial-man');
+            if(sortSelect && sortSelect.value !== 'manual') {
+                sortSelect.value = 'manual';
+            }
+
+            // Guardamos el nuevo orden en Firebase
+            guardarOrdenFacturas();
         }
-        
-        // Guardamos el nuevo orden en Firebase
-        guardarOrdenFacturas();
-    }
     return false;
 }
 
