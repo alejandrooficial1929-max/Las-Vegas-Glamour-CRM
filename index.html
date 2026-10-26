@@ -1843,8 +1843,8 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
 
     <div id="modal-edicion-factura" class="modal-overlay hidden">
       <div class="modal-content" style="width:650px; max-width:92vw; max-height:85vh; display:flex; flex-direction:column;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 2px solid #eee; padding-bottom: 10px;">
-          <h2 id="titulo-modal-edicion-factura" style="margin:0; color:var(--lvg-dark);">✏️ Editar Factura</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+          <h2 id="titulo-modal-edicion-factura" style="margin:0; color:var(--text-dark);">✏️ Editar Factura</h2>
           <div style="display:flex; gap:10px;">
             <button id="btn-carpeta-modal-edicion-factura" class="btn-outline" style="border-color:#0284c7; color:#0284c7; padding: 6px 12px; font-size:12px;">📁 Abrir carpeta</button>
             <button class="btn-yellow" style="padding: 6px 12px; font-size:12px;" onclick="abrirModalAgregarAFactura()">+ Añadir Proyecto</button>
@@ -1875,8 +1875,8 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
             <input type="text" id="edit-link-factura" placeholder="https://drive.google.com/drive/folders/..." style="width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; background: var(--bg-main); color: var(--text-dark);">
         </div>
 
-        <label style="color:var(--lvg-dark);">Proyectos en esta factura:</label>
-        <div id="lista-proyectos-edicion-factura" style="overflow-y:auto; flex:1; margin-bottom:16px; border: 1px solid #eee; border-radius: 8px; padding: 10px; background: #fbfaf8;"></div>
+        <label style="color:var(--text-dark);">Proyectos en esta factura:</label>
+        <div id="lista-proyectos-edicion-factura" style="overflow-y:auto; flex:1; margin-bottom:16px; border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; background: var(--bg-main);"></div>
 
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <button class="btn-outline" style="border-color:#ef4444; color:#ef4444;" onclick="eliminarFacturaCompleta(facturaEditandoID)">Eliminar Factura 🗑️</button>
@@ -1890,7 +1890,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
 
     <div id="modal-agregar-afactura" class="modal-overlay hidden">
       <div class="modal-content" style="width: 900px; max-width: 95vw; height: 85vh; display: flex; flex-direction: column;">
-        <h2 style="margin-top:0; color:var(--lvg-dark); padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle);">Añadir proyectos a la factura</h2>
+        <h2 style="margin-top:0; color:var(--text-dark); padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle);">Añadir proyectos a la factura</h2>
         
         <div style="display: flex; flex: 1; overflow: hidden; gap: 20px; padding-top: 10px;">
           <!-- Panel Izquierdo: Buscador y Resultados -->
@@ -1919,12 +1919,12 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
             </div>
             
             <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom: 2px solid var(--border-subtle);">
-              <button id="tab-buscador-pendientes" class="btn-outline" style="border:none; border-radius:0; border-bottom:3px solid var(--lvg-yellow); color:var(--lvg-dark); padding:5px 10px;" onclick="cambiarTabBuscadorProyectos('pendientes')">Pendientes</button>
+              <button id="tab-buscador-pendientes" class="btn-outline" style="border:none; border-radius:0; border-bottom:3px solid var(--lvg-yellow); color:var(--text-dark); padding:5px 10px;" onclick="cambiarTabBuscadorProyectos('pendientes')">Pendientes</button>
               <button id="tab-buscador-general" class="btn-outline" style="border:none; border-radius:0; border-bottom:3px solid transparent; color:var(--text-gray); padding:5px 10px;" onclick="cambiarTabBuscadorProyectos('general')">General (Todos)</button>
             </div>
             
             <h4 style="margin: 0 0 10px 0; color: var(--text-gray); font-size: 12px; text-transform: uppercase;">Resultados de búsqueda</h4>
-            <div id="lista-agregar-afactura" style="overflow-y:auto; flex:1; border:1px solid var(--border-subtle); border-radius:10px; padding:10px; background: #fafafa;">
+            <div id="lista-agregar-afactura" style="overflow-y:auto; flex:1; border:1px solid var(--border-subtle); border-radius:10px; padding:10px; background: var(--bg-main);">
               <!-- Los resultados van aquí -->
             </div>
           </div>
@@ -4319,16 +4319,16 @@ function cambiarTabBuscadorProyectos(tab) {
     const tabGeneral = document.getElementById('tab-buscador-general');
     
     if (tab === 'pendientes') {
-        tabPendientes.style.borderBottomColor = 'var(--lvg-yellow)';
-        tabGeneral.style.color = 'var(--text-dark)';
-        tabGeneral.style.borderBottomColor = 'transparent';
-        tabGeneral.style.color = 'var(--text-gray)';
-    } else {
-        tabGeneral.style.borderBottomColor = 'var(--lvg-yellow)';
-        tabGeneral.style.color = 'var(--lvg-dark)';
-        tabPendientes.style.borderBottomColor = 'transparent';
-        tabPendientes.style.color = 'var(--text-dark)';
-    }
+                tabPendientes.style.borderBottomColor = 'var(--lvg-yellow)';
+                tabPendientes.style.color = 'var(--text-dark)';
+                tabGeneral.style.borderBottomColor = 'transparent';
+                tabGeneral.style.color = 'var(--text-gray)';
+            } else {
+                tabGeneral.style.borderBottomColor = 'var(--lvg-yellow)';
+                tabGeneral.style.color = 'var(--text-dark)';
+                tabPendientes.style.borderBottomColor = 'transparent';
+                tabPendientes.style.color = 'var(--text-gray)';
+            }
     
     // Refrescamos la lista de proyectos con la nueva configuración
     filtrarListaAgregarAFactura();
@@ -7911,13 +7911,40 @@ function renderizarProyectosFacturaEnEdicion() {
     });
 
     proyectosVisibles.forEach(p => {
+        let sumaMontoObj = {};
+        let tiposTareas = [];
+        try {
+            let tareasArr = JSON.parse(p.tareasJSON);
+            if (tareasArr && tareasArr.length > 0) {
+                tareasArr.forEach(t => {
+                    tiposTareas.push(t.tipo);
+                    sumaMontoObj[t.moneda] = (sumaMontoObj[t.moneda] || 0) + Number(t.precio);
+                });
+            }
+        } catch(e) {}
+        
+        let arraySumas = [];
+        for(let moneda in sumaMontoObj) { arraySumas.push(`${sumaMontoObj[moneda].toLocaleString('es-CO')} ${moneda}`); }
+        let totalDisplay = arraySumas.length > 0 ? arraySumas.join(' + ') : '0 USD';
+        let strTareas = tiposTareas.length > 0 ? tiposTareas.join(' + ') : 'Sin tareas';
+        let claseEstado = `estado-${(p.estado || '').replace(/\s+/g, '')}`;
+
         html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px; border-radius:6px; border:1px solid #eaeaea; margin-bottom:8px;">
-            <div>
-                <strong style="color:var(--lvg-dark);">${p.cliente}</strong> <span style="color:#666; font-size:12px;">(${p.fecha})</span><br>
-                <span style="font-size:12px; color:#c9a54a;">${p.tipo}</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-card); padding:12px; border-radius:8px; border:1px solid var(--border-subtle); margin-bottom:8px;">
+            <div style="flex:1; min-width:0;">
+                <div style="margin-bottom:4px;">
+                    <strong style="color:var(--text-dark); font-size:14px;">${p.cliente}</strong> 
+                    <span style="color:var(--text-gray); font-size:12px; margin-left:4px;">${p.fecha}</span>
+                </div>
+                <div style="font-size:12px; margin-bottom:4px;">
+                    <span style="color:var(--lvg-yellow);">${p.tipo}</span> <span style="color:var(--text-gray);">| ${strTareas}</span>
+                </div>
+                <div style="font-size:12px; color:var(--text-gray); margin-bottom:4px;">
+                    🧑‍💻 ${p.editor || 'Sin asignar'} <span style="margin: 0 8px;">•</span> <span style="color:#10b981; font-weight:bold;">${totalDisplay}</span>
+                </div>
+                <div><span class="pill ${claseEstado}" style="font-size:10px; padding:3px 8px;">${p.estado || 'Desconocido'}</span></div>
             </div>
-            <button class="btn-icon-circle" style="width:30px; height:30px; color:#ef4444; border-color:#fecaca; background:#fef2f2;" title="Quitar de la factura" onclick="quitarProyectoDeFacturaTemporal('${p.id}')">✕</button>
+            <button class="btn-icon-circle" style="width:32px; height:32px; color:#ef4444; border-color:var(--border-subtle); background:rgba(239, 68, 68, 0.15); margin-left:10px; flex-shrink:0;" title="Quitar de la factura" onclick="quitarProyectoDeFacturaTemporal('${p.id}')">✕</button>
         </div>`;
     });
     contenedor.innerHTML = html;

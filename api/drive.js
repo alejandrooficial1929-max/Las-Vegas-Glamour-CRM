@@ -15,6 +15,8 @@ export default async function handler(req, res) {
     
     const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
     const folderRaiz = process.env.DRIVE_FOLDER_ID;
+    const folderRaizFacturas = '1Qb8onZgF4W8dv8CPIZ-ohdwyV-YRxV_2';
+    const folderRaizProyectos = '1KNa35lpytHrh2qD7Nzg0UZKRpCKzO9sX';
     
     const auth = new google.auth.GoogleAuth({
       credentials,
@@ -55,7 +57,7 @@ export default async function handler(req, res) {
         const folderName = `${cliente} ${fecha}`;
         
         // Crea la estructura anidada: Categoría (Ej. Screen) -> Tipo (Ej. Sweet XV) -> Cliente
-        const idCat = await obtenerOCrearCarpeta(categoria, folderRaiz);
+        const idCat = await obtenerOCrearCarpeta(categoria, folderRaizProyectos);
         const idTipo = await obtenerOCrearCarpeta(tipo, idCat);
         
         const folder = await drive.files.create({
@@ -78,7 +80,7 @@ export default async function handler(req, res) {
         const anioCarpeta = matchAnio ? matchAnio[1] : new Date().getFullYear().toString();
         
         // Buscar o crear la subcarpeta del año dentro de la raíz de comprobantes
-        const idCarpetaAnio = await obtenerOCrearCarpeta(anioCarpeta, folderRaiz);
+        const idCarpetaAnio = await obtenerOCrearCarpeta(anioCarpeta, folderRaizFacturas);
 
         const folder = await drive.files.create({
             resource: {
