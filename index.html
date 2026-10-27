@@ -2338,21 +2338,18 @@ const contextoDinamico = SYSTEM_PROMPT_BASE +
           proyectosGlobalesDeAgencia = datosTemporal;
           
           // --- MAGIA: PRIVACIDAD ABSOLUTA DEL EDITOR ---
-          window.obtenerNombreOficialEditor = function(u) {
-              if (!u) return "";
-              let uL = String(u).toLowerCase().trim();
-              if (uL.includes("gabo") || uL.includes("gabriel") || uL.includes("hernandez")) return "Gabriel Hernandez";
-              if (uL.includes("pablo") || uL.includes("gomez")) return "Pablo Gomez";
-              if (uL.includes("alex") || uL.includes("alejandro") || uL.includes("valdivieso") || uL.includes("baldivieso")) return "Alejandro Baldivieso";
-              return u; // Fallback
-          };
-
           if(usuarioActual) {
-              let nombreOficial = window.obtenerNombreOficialEditor(usuarioActual);
+              let uL = String(usuarioActual).toLowerCase().trim();
+              let nombreOficial = usuarioActual;
+              
+              if (uL.includes("gabo") || uL.includes("gabriel") || uL.includes("hernandez")) nombreOficial = "Gabriel Hernandez";
+              else if (uL.includes("pablo") || uL.includes("gomez")) nombreOficial = "Pablo Gomez";
+              else if (uL.includes("alex") || uL.includes("alejandro") || uL.includes("valdivieso") || uL.includes("baldivieso")) nombreOficial = "Alejandro Baldivieso";
+
               misProyectosGlobales = datosTemporal.filter(p => {
-                  if (p.tipo === "Pivote Factura") return false; // El editor jamás debe ver los pivotes
+                  if (p.tipo === "Pivote Factura") return false; 
                   let ed = String(p.editor || "").trim();
-                  return ed === nombreOficial; // IGUALDAD ESTRICTA EXACTA. Imposible que se crucen.
+                  return ed === nombreOficial; 
               });
           }
           
@@ -2860,10 +2857,14 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
                       if(panel) panel.classList.remove('hidden');
 
                       // --- MAGIA: MAPEO DE NOMBRES REALES ---
+                      let nombreMostrar = usuarioActual; 
+                      let uLowerLogin = String(usuarioActual).toLowerCase().trim();
+                      if (uLowerLogin.includes("gabo") || uLowerLogin.includes("gabriel") || uLowerLogin.includes("hernandez")) nombreMostrar = "Gabriel Hernandez";
+                      else if (uLowerLogin.includes("pablo") || uLowerLogin.includes("gomez")) nombreMostrar = "Pablo Gomez";
+                      else if (uLowerLogin.includes("alex") || uLowerLogin.includes("alejandro") || uLowerLogin.includes("valdivieso") || uLowerLogin.includes("baldivieso")) nombreMostrar = "Alejandro Baldivieso";
+
                       const perfilNombre = document.getElementById('u-nombre-editor');
-                      if(perfilNombre && typeof window.obtenerNombreOficialEditor === 'function') {
-                          perfilNombre.innerText = window.obtenerNombreOficialEditor(usuarioActual);
-                      }
+                      if(perfilNombre) perfilNombre.innerText = nombreMostrar;
                       // -------------------------------------------
 
                       if(typeof mostrarVistaPrincipalEditor === 'function') mostrarVistaPrincipalEditor('proyectos');
@@ -6960,8 +6961,11 @@ async function cargarFeedbackManager() {
               let stringTotalFinal = arrTotales.length > 0 ? arrTotales.join(' + ') : '0 USD';
               subTarjetasHTML += `<div style="display:flex; justify-content:flex-end; align-items:center; padding: 15px 20px 5px 20px; border-top: 2px dashed var(--border-subtle); margin-top: 10px;"><span style="font-size:14px; color:var(--text-gray); margin-right:15px; text-transform:uppercase; font-weight:bold;">Total de esta Factura:</span><span style="font-size:18px; font-weight:bold; color:#10b981;">${stringTotalFinal}</span></div>`;
 
-              let colorTextoEstado = f.estado === 'Pagado' ? '#10b981' : '#eab308'; 
-              let labelEstado = `<span style="color:${colorTextoEstado}; font-weight:bold; padding: 5px 15px; background: rgba(16, 185, 129, 0.1); border-radius: 20px; border: 1px solid ${colorTextoEstado};">${f.estado}</span>`;
+              let estVal = f.estado;
+              if (estVal === "Pendiente") estVal = "En proceso"; // Normalizamos el texto visualmente
+              let colorTextoEstado = estVal === 'Pagado' ? '#10b981' : '#eab308'; 
+              let bgEstado = estVal === 'Pagado' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(234, 179, 8, 0.1)';
+              let labelEstado = `<span style="color:${colorTextoEstado}; font-weight:bold; padding: 5px 15px; background: ${bgEstado}; border-radius: 20px; border: 1px solid ${colorTextoEstado};">${estVal}</span>`;
 
               htmlFinal += `
               <div class="tarjeta" style="border: 1px solid var(--border-subtle); margin-bottom: 20px;">
