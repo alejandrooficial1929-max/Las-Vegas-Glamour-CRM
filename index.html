@@ -1333,7 +1333,7 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         <input type="hidden" id="amort-id-prestamo">
         <label>Selecciona los proyectos que destinarás al pago:</label>
         <input type="text" id="buscador-amortizar" placeholder="Buscar por nombre o tipo..." onkeyup="filtrarAmortizar()" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:10px; box-sizing: border-box;">
-        <div id="lista-proyectos-amortizar" style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border-subtle); padding: 10px; border-radius: 8px; background: var(--bg-main); margin-bottom: 15px;"></div>
+        <div id="lista-proyectos-amortizar" class="dark-scroll" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; border: 1px solid var(--border-subtle); padding: 10px; border-radius: 8px; background: var(--bg-main); margin-bottom: 15px;"></div>
         
         <div id="resumen-amortizacion" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
             <div style="display:flex; justify-content:space-between;"><span>Total Seleccionado:</span><strong id="amort-seleccionado">$0.00 USD</strong></div>
@@ -6148,21 +6148,31 @@ async function cargarFeedbackManager() {
           let listaHtml = "";
           proys.forEach(proj => {
               let valorMoneda = 0;
-              try { let tArr = JSON.parse(proj.tareasJSON); tArr.forEach(t => { if(t.moneda === monedaLocal) valorMoneda += Number(t.precio); }); } catch(e){}
+              let tareasTxt = "Sin tareas";
+              try { 
+                  let tArr = JSON.parse(proj.tareasJSON); 
+                  if(tArr && tArr.length > 0) tareasTxt = tArr.map(x => x.tipo).join(' + ');
+                  tArr.forEach(t => { if(t.moneda === monedaLocal) valorMoneda += Number(t.precio); }); 
+              } catch(e){}
               
               let yaAbonado = Number(proj.abonoPrestamo) || 0;
               let valorDisponible = valorMoneda - yaAbonado;
 
               if (valorDisponible > 0) {
                   let j = JSON.stringify({id: proj.id, disp: valorDisponible}).replace(/'/g, "&apos;");
-                  let badgePagado = proj.fechaPago ? `<span style="background:#ecfdf5; color:#10b981; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px; border:1px solid #10b981;">Ya Pagado</span>` : '';
+                  let badgePagado = proj.fechaPago ? `<span style="background:rgba(16, 185, 129, 0.1); color:#10b981; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:5px; border:1px solid #10b981;">Ya Pagado</span>` : '';
+                  
                   listaHtml += `
-                  <div class="item-amortizar-row" style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border-subtle);">
-                      <div style="display:flex; gap:10px; align-items:center;">
-                          <input type="checkbox" style="transform:scale(1.2);" value='${j}' onchange="calcularAmortizacionTiempoReal()">
-                          <span>${proj.cliente} <span style="font-size:11px; color:var(--text-gray);">(${proj.tipo})</span>${badgePagado}</span>
+                  <div class="item-amortizar-row" style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border-subtle); background:var(--bg-card); margin-bottom:6px; border-radius:8px;">
+                      <div style="display:flex; gap:15px; align-items:center; flex:1; min-width:0;">
+                          <input type="checkbox" style="transform:scale(1.4); cursor:pointer; flex-shrink:0; margin-left:5px;" value='${j}' onchange="calcularAmortizacionTiempoReal()">
+                          <div style="font-size:12px; min-width:0; overflow:hidden; flex:1;">
+                              <div style="margin-bottom:3px;"><strong style="color:var(--text-dark); font-size:13px;">${proj.cliente}</strong> <span style="color:var(--text-gray); font-size:11px; margin-left:5px;">${proj.fecha}</span> ${badgePagado}</div>
+                              <div style="margin-bottom:3px;"><span style="color:var(--lvg-yellow);">${proj.tipo}</span> <span style="color:var(--text-gray);">| ${tareasTxt}</span></div>
+                              <div>🧑‍💻 <span style="color:var(--text-gray);">${proj.editor || 'Sin editor'}</span> <span style="margin:0 5px; color:var(--border-subtle);">•</span> <span style="color:#10b981; font-weight:bold;">${proj.estado}</span></div>
+                          </div>
                       </div>
-                      <strong style="color:#10b981;">$${valorDisponible} ${monedaLocal}</strong>
+                      <strong style="color:#10b981; font-size:15px; margin-left:10px; text-align:right;">$${valorDisponible.toLocaleString('en-US', {minimumFractionDigits: 2})} ${monedaLocal}</strong>
                   </div>`;
               }
           });
