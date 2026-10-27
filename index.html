@@ -1125,7 +1125,11 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
             <div class="sub-item active" id="tab-ed-activos" onclick="cambiarTabEditor('Activos')">Mesa de trabajo</div>
             <div class="sub-item" id="tab-ed-terminados" onclick="cambiarTabEditor('Terminados')">Terminados</div>
           </div>
-          <div class="nav-item" id="nav-saldos-ed" onclick="mostrarVistaPrincipalEditor('saldos')">Saldos</div>
+          <div class="nav-item" id="nav-finanzas-ed" onclick="mostrarVistaPrincipalEditor('finanzas')">Finanzas y Pagos ▼</div>
+          <div id="sub-finanzas-ed" class="sub-menu hidden">
+            <div class="sub-item active" id="tab-ed-cobrar" onclick="cambiarTabFinanzasEditor('Cobrar')">Mesa de Cobro</div>
+            <div class="sub-item" id="tab-ed-historial" onclick="cambiarTabFinanzasEditor('Historial')">Historial de Pagos</div>
+          </div>
           <div class="nav-item" id="nav-prestamos-ed" onclick="mostrarVistaPrincipalEditor('prestamos')">Préstamos 🏦</div>
           <div class="nav-item" id="nav-alertas-ed" onclick="mostrarVistaPrincipalEditor('alertas')" style="display:flex; align-items:center;">Alertas <span id="badge-alertas-ed" class="badge hidden">0</span></div>
           <div class="nav-item" id="nav-metricas-ed" onclick="mostrarVistaPrincipalEditor('metricas')">Métricas 📊</div>
@@ -1152,7 +1156,27 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         </div>
         <div id="vista-proyectos-editor" style="flex:1;"><h2 id="titulo-vista-editor" style="margin-top:0; color: var(--text-dark);">Proyectos Activos</h2><div class="board-header"><div class="col-cliente">Nombre del cliente</div><div class="col-fecha">Fecha del evento</div><div class="col-tipo">Tipo de evento</div><div class="col-estado">Estado</div></div><div id="contenedor-tarjetas-editor"></div></div>
         
-        <div id="vista-saldos-editor" class="hidden" style="flex:1;"><h2 style="margin-top:0; color: var(--lvg-yellow);">💰 Mis Saldos</h2><div style="display:flex; justify-content:space-between; align-items:end; border-bottom: 2px solid var(--border-subtle); padding-bottom: 5px;"><h3 style="color: #eab308; margin:0;">⏳ Listos para cobrar</h3><div id="editor-suma-total" style="font-weight:bold; color: #eab308; font-size:18px;">$0</div></div><div id="contenedor-saldos-pendientes"></div><h3 style="color: #10b981; border-bottom: 2px solid var(--border-subtle); padding-bottom: 5px; margin-top: 40px;">✅ Historial de pagos</h3><div id="contenedor-saldos-pagados"></div></div>
+        <div id="vista-editor-cobrar" class="hidden" style="flex:1;">
+            <h2 style="margin-top:0; color: var(--lvg-yellow);">⏳ Mesa de Cobro</h2>
+            <div style="display:flex; justify-content:space-between; align-items:end; border-bottom: 2px solid var(--border-subtle); padding-bottom: 10px; margin-bottom:15px;">
+                <p style="color:var(--text-gray); margin:0;">Proyectos terminados pendientes de facturar.</p>
+                <div id="editor-suma-total" style="font-weight:bold; color: #eab308; font-size:18px;">$0 USD</div>
+            </div>
+            <div id="contenedor-saldos-pendientes"></div>
+        </div>
+        
+        <div id="vista-editor-historial" class="hidden" style="flex:1;">
+            <h2 style="margin-top:0; color: #10b981;">✅ Historial de Pagos</h2>
+            <p style="color:var(--text-gray); margin-top:-10px; margin-bottom:15px;">Registro de tus facturas y proyectos cobrados.</p>
+            <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                <input type="text" id="busqueda-historial-ed" class="search-bar" placeholder="Buscar factura, cliente o fecha... ⚲" style="flex:2; min-width:200px; height: 42px !important; margin: 0; box-sizing: border-box;" oninput="cargarSaldosEditor()">
+                <select id="sort-historial-ed" class="task-input" style="flex:1; min-width:180px; height: 42px !important;" onchange="cargarSaldosEditor()">
+                    <option value="desc">Más recientes (Ej. 2026)</option>
+                    <option value="asc">Más antiguas (Ej. 2025)</option>
+                </select>
+            </div>
+            <div id="contenedor-saldos-pagados"></div>
+        </div>
         
         <div id="vista-editor-prestamos" class="hidden" style="flex:1;">
           <h2 style="margin-top:0; color:var(--lvg-yellow);">🏦 Mi Estado Crediticio y Préstamos</h2>
@@ -6681,26 +6705,48 @@ async function cargarFeedbackManager() {
       }
 
       // ================= LÓGICA EDITOR (AHORA INSTANTÁNEA) =================
+      let tabActualFinanzasEd = 'Cobrar';
       function mostrarVistaPrincipalEditor(vista) { 
           document.querySelectorAll('#panel-editor .nav-item').forEach(el => el.classList.remove('active'));
           document.getElementById('vista-proyectos-editor').classList.add('hidden'); 
-          document.getElementById('vista-saldos-editor').classList.add('hidden'); 
+          let oldSaldos = document.getElementById('vista-saldos-editor'); if(oldSaldos) oldSaldos.classList.add('hidden'); 
+          document.getElementById('vista-editor-cobrar').classList.add('hidden'); 
+          document.getElementById('vista-editor-historial').classList.add('hidden'); 
           document.getElementById('vista-editor-prestamos').classList.add('hidden');
           document.getElementById('vista-alertas-editor').classList.add('hidden'); 
           document.getElementById('vista-metricas-editor').classList.add('hidden'); 
           document.getElementById('vista-feedback-editor').classList.add('hidden'); 
           document.getElementById('sub-proyectos-ed').classList.add('hidden'); 
+          let subFinanzas = document.getElementById('sub-finanzas-ed'); if(subFinanzas) subFinanzas.classList.add('hidden');
           document.getElementById(`nav-${vista}-ed`).classList.add('active'); 
 
           if(vista === 'proyectos') document.getElementById('top-bar-ed').classList.remove('hidden'); else document.getElementById('top-bar-ed').classList.add('hidden'); 
           
           if (vista === 'proyectos') { document.getElementById('vista-proyectos-editor').classList.remove('hidden'); document.getElementById('sub-proyectos-ed').classList.remove('hidden'); cambiarTabEditor(tabActual); } 
-          else if (vista === 'saldos') { document.getElementById('vista-saldos-editor').classList.remove('hidden'); cargarSaldosEditor(); } 
+          else if (vista === 'finanzas') { document.getElementById('sub-finanzas-ed').classList.remove('hidden'); cambiarTabFinanzasEditor(tabActualFinanzasEd); } 
           else if (vista === 'prestamos') { document.getElementById('vista-editor-prestamos').classList.remove('hidden'); dibujarPrestamosEditor(); }
           else if (vista === 'alertas') { document.getElementById('vista-alertas-editor').classList.remove('hidden'); cargarAlertasEditor(); } 
           else if (vista === 'metricas') { document.getElementById('vista-metricas-editor').classList.remove('hidden'); cargarMetricasEditor(); } 
           else if (vista === 'feedback') { document.getElementById('vista-feedback-editor').classList.remove('hidden'); } 
       }
+      
+      function cambiarTabFinanzasEditor(tab) {
+          tabActualFinanzasEd = tab;
+          document.getElementById('tab-ed-cobrar').classList.remove('active');
+          document.getElementById('tab-ed-historial').classList.remove('active');
+          document.getElementById('vista-editor-cobrar').classList.add('hidden');
+          document.getElementById('vista-editor-historial').classList.add('hidden');
+          
+          if (tab === 'Cobrar') {
+              document.getElementById('tab-ed-cobrar').classList.add('active');
+              document.getElementById('vista-editor-cobrar').classList.remove('hidden');
+          } else {
+              document.getElementById('tab-ed-historial').classList.add('active');
+              document.getElementById('vista-editor-historial').classList.remove('hidden');
+          }
+          cargarSaldosEditor();
+      }
+
       function cambiarTabEditor(tab) { tabActual = tab; document.getElementById('tab-ed-asignados').classList.remove('active'); document.getElementById('tab-ed-activos').classList.remove('active'); document.getElementById('tab-ed-terminados').classList.remove('active'); document.getElementById(`tab-ed-${tab.toLowerCase()}`).classList.add('active'); let titulo = tab === 'Asignados' ? "Nuevos Proyectos Asignados" : tab === 'Terminados' ? "Proyectos Terminados" : "Proyectos Activos"; document.getElementById('titulo-vista-editor').innerText = titulo; cargarProyectosEditor(); }
       function cargarProyectosEditor() { dibujarTarjetasEditor(); verificarAlertasEditorSilencioso(); }
       
@@ -6957,7 +7003,36 @@ async function cargarFeedbackManager() {
           let arrayFacturas = Object.keys(gruposFacturas).map(k => {
               return { idFactura: k, ...gruposFacturas[k] };
           });
-          arrayFacturas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+          // --- FILTROS DE BÚSQUEDA Y ORDEN (EDITOR) ---
+          const inputBusquedaEd = document.getElementById('busqueda-historial-ed');
+          const inputSortEd = document.getElementById('sort-historial-ed');
+          const qEd = inputBusquedaEd ? inputBusquedaEd.value.toLowerCase().trim() : "";
+          const sortValEd = inputSortEd ? inputSortEd.value : "desc";
+
+          if(qEd) {
+              arrayFacturas = arrayFacturas.filter(f => {
+                  if(f.idFactura.toLowerCase().includes(qEd)) return true;
+                  // Si no coincide la factura, busca dentro de los proyectos que la componen
+                  return f.proyectos.some(p => {
+                      return (p.cliente || "").toLowerCase().includes(qEd) || (p.fecha || "").includes(qEd);
+                  });
+              });
+          }
+
+          arrayFacturas.sort((a, b) => {
+              const extraerAnioNum = (codigo) => {
+                  const match = codigo.match(/(\d+)-(\d{4})/);
+                  if (match) return { num: parseInt(match[1], 10), year: parseInt(match[2], 10) };
+                  return { num: 0, year: 0 };
+              };
+              const dA = extraerAnioNum(a.idFactura);
+              const dB = extraerAnioNum(b.idFactura);
+
+              if (dA.year !== dB.year) return sortValEd === "desc" ? dB.year - dA.year : dA.year - dB.year;
+              if (dA.num !== dB.num) return sortValEd === "desc" ? dB.num - dA.num : dA.num - dB.num;
+              return sortValEd === "desc" ? new Date(b.fecha) - new Date(a.fecha) : new Date(a.fecha) - new Date(b.fecha);
+          });
 
           let htmlFinal = "";
 
