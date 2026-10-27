@@ -1348,11 +1348,18 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
       </div>
     </div>
 
+    <style>
+      .dark-scroll::-webkit-scrollbar { width: 6px; }
+      .dark-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); border-radius: 4px; }
+      .dark-scroll::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+      .dark-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-gray); }
+    </style>
     <div id="modal-prestamo-estandar-manager" class="modal-overlay hidden">
-      <div class="modal-content" id="modal-content-prestamo-est" style="width: 480px; max-height: 95vh; transition: width 0.35s ease; display:flex; gap:20px; background: var(--bg-card); color: var(--text-dark); overflow:hidden; padding: 25px;">
+      <!-- 500px base (450 contenido + 50 padding). box-sizing: border-box evita los cortes laterales -->
+      <div class="modal-content" id="modal-content-prestamo-est" style="box-sizing: border-box; width: 500px; max-height: 95vh; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); display:flex; background: var(--bg-card); color: var(--text-dark); overflow:hidden; padding: 25px;">
         
-        <!-- Panel Izquierdo Mejorado -->
-        <div style="width: 480px; flex-shrink: 0; display:flex; flex-direction:column;">
+        <!-- Panel Izquierdo (Fijo en 450px) -->
+        <div style="width: 450px; flex-shrink: 0; display:flex; flex-direction:column;">
             <h2 style="margin-top:0; color:var(--lvg-yellow);">🏦 Crear Préstamo Estándar</h2>
             
             <div style="display:flex; gap:10px; margin-bottom:15px;">
@@ -1417,17 +1424,17 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
             </div>
         </div>
 
-        <!-- Panel Derecho Nuevo (Garantía) con Flex 1 en Listas -->
-        <div id="panel-garantia-prestamo" style="width: 480px; flex-shrink: 0; display:none; flex-direction:column; border-left: 1px dashed var(--border-subtle); padding-left: 20px;">
-            <h3 style="margin-top:0; color:#38bdf8;">🔍 Garantía por Ambigüedad</h3>
-            <p style="font-size:12px; color:var(--text-gray); margin-bottom:15px;">Selecciona los proyectos incompletos que respaldan este adelanto. Solo se liquidará la deuda cuando estos proyectos sean aprobados.</p>
+        <!-- Panel Derecho Deslizante (Inicialmente invisible, se expande con JS) -->
+        <div id="panel-garantia-prestamo" style="width: 0px; opacity: 0; flex-shrink: 0; display:flex; flex-direction:column; border-left: 1px dashed transparent; padding-left: 0px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;">
+            <h3 style="margin-top:0; color:#38bdf8; white-space: nowrap;">🔍 Garantía por Ambigüedad</h3>
+            <p style="font-size:12px; color:var(--text-gray); margin-bottom:15px; min-width: 450px;">Selecciona los proyectos incompletos que respaldan este adelanto. Solo se liquidará la deuda cuando estos proyectos sean aprobados.</p>
             
-            <div style="display:flex; gap:10px; margin-bottom:10px; flex-shrink:0;">
+            <div style="display:flex; gap:10px; margin-bottom:10px; flex-shrink:0; min-width: 450px;">
                 <div style="flex:1;"><input type="text" id="garantia-search-cliente" placeholder="Cliente..." class="task-input" oninput="filtrarGarantia()"></div>
                 <div style="flex:1;"><input type="text" id="garantia-search-fecha" placeholder="Fecha (mm.dd.aa)" class="task-input" oninput="filtrarGarantia()"></div>
             </div>
             
-            <div style="display:flex; gap:10px; margin-bottom:10px; flex-shrink:0;">
+            <div style="display:flex; gap:10px; margin-bottom:10px; flex-shrink:0; min-width: 450px;">
                 <div style="flex:1;">
                     <select id="garantia-search-editor" class="task-input" onchange="cargarFacturasGarantia(); filtrarGarantia();">
                         <option value="Todos">Cualquier editor</option>
@@ -1441,10 +1448,10 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
                 </div>
             </div>
             
-            <div id="lista-resultados-garantia" style="flex:1; min-height:180px; overflow-y:auto; border:1px solid var(--border-subtle); border-radius:8px; padding:5px; background:var(--bg-main); margin-bottom:15px;"></div>
+            <div id="lista-resultados-garantia" class="dark-scroll" style="flex:1; min-height:180px; min-width:450px; overflow-y:auto; overflow-x:hidden; border:1px solid var(--border-subtle); border-radius:8px; padding:5px; background:var(--bg-main); margin-bottom:15px;"></div>
             
-            <h4 style="margin:0 0 10px 0; color:var(--lvg-yellow); flex-shrink:0;">Proyectos en Garantía:</h4>
-            <div id="lista-seleccionados-garantia" style="flex:1; min-height:180px; overflow-y:auto; border:1px solid var(--lvg-yellow); border-radius:8px; padding:5px; background:rgba(212, 175, 55, 0.05);"></div>
+            <h4 style="margin:0 0 10px 0; color:var(--lvg-yellow); flex-shrink:0; min-width:450px;">Proyectos en Garantía:</h4>
+            <div id="lista-seleccionados-garantia" class="dark-scroll" style="flex:1; min-height:180px; min-width:450px; overflow-y:auto; overflow-x:hidden; border:1px solid var(--lvg-yellow); border-radius:8px; padding:5px; background:rgba(212, 175, 55, 0.05);"></div>
         </div>
       </div>
     </div>
