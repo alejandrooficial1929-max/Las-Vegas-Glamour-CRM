@@ -6806,15 +6806,24 @@ async function cargarFeedbackManager() {
       }
 
       function cargarSaldosEditor() { 
-         let terminados = misProyectosGlobales.filter(p => p.estado === "Terminado"); 
-         let pendientes = terminados.filter(p => !p.fechaPago); 
+         // 1. Proyectos listos para cobrar (Solo Terminados y sin factura)
+         let pendientes = misProyectosGlobales.filter(p => p.estado === "Terminado" && !p.fechaPago); 
+         
+         // 2. Proyectos ya facturados (TODOS los que estén en una factura, sin importar su estado de producción)
+         let facturados = misProyectosGlobales.filter(p => p.fechaPago); 
+         
          let sumas = {}; 
-         pendientes.forEach(p => { try { let tArr = JSON.parse(p.tareasJSON); tArr.forEach(t => { sumas[t.moneda] = (sumas[t.moneda] || 0) + Number(t.precio); }); } catch(e){} }); 
+         pendientes.forEach(p => { 
+             try { 
+                 let tArr = JSON.parse(p.tareasJSON); 
+                 tArr.forEach(t => { sumas[t.moneda] = (sumas[t.moneda] || 0) + Number(t.precio); }); 
+             } catch(e){} 
+         }); 
          let textoSuma = []; for(let mon in sumas) { textoSuma.push(`${sumas[mon]} ${mon}`); } 
          document.getElementById('editor-suma-total').innerText = textoSuma.length > 0 ? textoSuma.join(' + ') : '$0'; 
          
          dibujarTarjetasSaldosEditor(pendientes, 'contenedor-saldos-pendientes'); 
-         dibujarHistorialPagosEditor(terminados.filter(p => p.fechaPago), 'contenedor-saldos-pagados'); 
+         dibujarHistorialPagosEditor(facturados, 'contenedor-saldos-pagados'); 
       }
 
       function dibujarTarjetasSaldosEditor(proyectos, contenedorId) { 
@@ -6893,12 +6902,15 @@ async function cargarFeedbackManager() {
               if(!gruposFacturas[idFactura]) { 
                   gruposFacturas[idFactura] = { 
                       fecha: p.fechaPago, 
-                      estado: p.estadoCobro || "Pagado", 
+                      estado: p.estadoCobro || "En proceso", // Asumimos 'En proceso' por defecto
                       linkCarpeta: p.linkComprobante, 
                       proyectos: [], 
                       extras: []
                   }; 
               } 
+              // Si cualquier proyecto de esta factura dice "Pagado", forzamos que toda la factura sea "Pagado"
+              if (p.estadoCobro === "Pagado") gruposFacturas[idFactura].estado = "Pagado";
+
               gruposFacturas[idFactura].proyectos.push(p); 
               if(p.extrasFactura && gruposFacturas[idFactura].extras.length === 0) {
                   try { gruposFacturas[idFactura].extras = JSON.parse(p.extrasFactura); } catch(e){}
@@ -6943,12 +6955,15 @@ async function cargarFeedbackManager() {
                       }
                   } catch(e){}
                   
+                  let claseEstado = `estado-${(p.estado || '').replace(/\s+/g, '')}`;
+                  if(!['estado-Asignado', 'estado-Enproceso', 'estado-Revisar', 'estado-Corrección', 'estado-Incompleto', 'estado-Terminado'].includes(claseEstado)) claseEstado = 'estado-default'; 
+
                   return `
                   <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--border-subtle); background:var(--bg-card); margin-bottom:6px; border-radius:8px;">
                       <div style="font-size:12px; min-width:0; overflow:hidden; flex:1;">
                           <div style="margin-bottom:3px;"><strong style="color:var(--text-dark); font-size:13px;">${p.cliente}</strong> <span style="color:var(--text-gray); font-size:11px; margin-left:5px;">${p.fecha}</span></div>
                           <div style="margin-bottom:3px;"><span style="color:var(--lvg-yellow);">${p.tipo}</span> <span style="color:var(--text-gray);">| ${tareasTxt}</span></div>
-                          <div>🧑‍💻 <span style="color:var(--text-gray);">${p.editor || 'Sin editor'}</span> <span style="margin:0 5px; color:var(--border-subtle);">•</span> <span style="color:#10b981; font-weight:bold;">${p.estado}</span></div>
+                          <div>🧑‍💻 <span style="color:var(--text-gray);">${p.editor || 'Sin editor'}</span> <span style="margin:0 5px; color:var(--border-subtle);">•</span> <span class="pill ${claseEstado}" style="font-size:10px; padding:3px 8px;">${p.estado}</span></div>
                       </div>
                       <strong style="color:#10b981; font-size:15px; margin-left:10px; text-align:right;">${precioTxt}</strong>
                   </div>`;
