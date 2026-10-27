@@ -5311,10 +5311,16 @@ async function cargarFeedbackManager() {
           
           document.getElementById('est-editor-man').onchange = () => simularPrestamoManager(false);
           
-          // Resetear Panel de Garantía
+          // Resetear Panel de Garantía a estado CERRADO SUAVE
           garantiaBuscadorTemporal = [];
-          document.getElementById('panel-garantia-prestamo').style.display = 'none';
-          document.getElementById('modal-content-prestamo-est').style.width = '450px';
+          const panel = document.getElementById('panel-garantia-prestamo');
+          const modalContent = document.getElementById('modal-content-prestamo-est');
+          
+          modalContent.style.width = '500px';
+          panel.style.width = '0px';
+          panel.style.opacity = '0';
+          panel.style.paddingLeft = '0px';
+          panel.style.borderLeftColor = 'transparent';
           
           document.getElementById('modal-prestamo-estandar-manager').classList.remove('hidden');
       }
@@ -5323,9 +5329,14 @@ async function cargarFeedbackManager() {
           const panel = document.getElementById('panel-garantia-prestamo');
           const modalContent = document.getElementById('modal-content-prestamo-est');
           
-          if (panel.style.display === 'none') {
-              panel.style.display = 'flex';
-              modalContent.style.width = '1000px'; // Se expande al nuevo tamaño
+          // Detectamos si está cerrado revisando el ancho (0px o vacío)
+          if (panel.style.width === '0px' || panel.style.width === '') {
+              // EXPANDIR (Animación Suave) -> (450 content left + 25 padding L + 25 padding R + 450 content right + 20 padding center = 970px)
+              modalContent.style.width = '970px';
+              panel.style.width = '470px'; // 450 + 20px de padding izquierdo
+              panel.style.opacity = '1';
+              panel.style.paddingLeft = '20px';
+              panel.style.borderLeftColor = 'var(--border-subtle)';
               
               let ops = '<option value="Todos">Cualquier editor</option>' + 
                         usuariosGlobales.filter(u => u.role.toLowerCase().includes('editor')).map(u => `<option value="${u.user}">${u.user}</option>`).join('');
@@ -5339,8 +5350,12 @@ async function cargarFeedbackManager() {
               
               filtrarGarantia();
           } else {
-              panel.style.display = 'none';
-              modalContent.style.width = '480px'; // Se contrae a su nuevo tamaño base
+              // CONTRAER (Animación Suave)
+              modalContent.style.width = '500px';
+              panel.style.width = '0px';
+              panel.style.opacity = '0';
+              panel.style.paddingLeft = '0px';
+              panel.style.borderLeftColor = 'transparent';
           }
       }
 
