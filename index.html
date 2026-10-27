@@ -2464,11 +2464,7 @@ function filtrarProyectosParaMetricas(editorSeleccionado) {
   const esEditor = String(rolActual || "").toLowerCase().includes("editor");
 
   if (esEditor) {
-    // CRÍTICO: pase lo que pase en editorSeleccionado (la vista de Editor ni siquiera
-    // tiene ese <select>), un Editor SOLO puede ver su propia data.
-    // Usamos misProyectosGlobales porque ya viene filtrado por el sistema de apodos
-    // (Gabo/Gabriel, Pablo, Alex/Alejandro) que existe más arriba en conectarFirebase().
-    return misProyectosGlobales;
+    return obtenerMisProyectosReales();
   }
 
   // Roles administrativos (Manager, Asignador, Gestión de citas): respetan el <select>
@@ -2857,8 +2853,9 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
                       if(panel) panel.classList.remove('hidden');
 
                       // --- MAGIA: MAPEO DE NOMBRES REALES ---
-                      let nombreMostrar = usuarioActual; 
+                      let nombreMostrar = usuarioActual;
                       let uLowerLogin = String(usuarioActual).toLowerCase().trim();
+                      
                       if (uLowerLogin.includes("gabo") || uLowerLogin.includes("gabriel") || uLowerLogin.includes("hernandez")) nombreMostrar = "Gabriel Hernandez";
                       else if (uLowerLogin.includes("pablo") || uLowerLogin.includes("gomez")) nombreMostrar = "Pablo Gomez";
                       else if (uLowerLogin.includes("alex") || uLowerLogin.includes("alejandro") || uLowerLogin.includes("valdivieso") || uLowerLogin.includes("baldivieso")) nombreMostrar = "Alejandro Baldivieso";
@@ -6666,10 +6663,22 @@ async function cargarFeedbackManager() {
       function dibujarAlertasGestion() { const div = document.getElementById('contenedor-alertas-gestion'); div.innerHTML = ""; let alertas = proyectosGlobalesDeAgencia.filter(p => (p.estado === "Terminado" || p.estadoCobro === "En proceso") && !alertasGestionBorradas.includes(p.id+"_g")); if(alertas.length === 0) { div.innerHTML = '<div style="text-align:center; padding: 20px; color: #666;">Bandeja limpia.</div>'; return; } alertas.forEach(p => { let b = !alertasGestionLeidas.includes(p.id+"_g") ? "font-weight:bold; border-left-width:8px;" : "opacity:0.8;"; if(p.estadoCobro === "En proceso") { div.innerHTML += `<div class="alerta-item verde" style="${b}"><div><strong style="color:#10b981;">💳 ¡Nueva Factura por Pagar!</strong><br><span style="font-size:14px;">El Manager ha generado una factura para <strong>${p.editor}</strong>.</span></div><button class="btn-outline" onclick="mostrarVistaPrincipalGestion('finanzas'); cambiarTabFinanzasGestion('Cubrir');">Ir a Cubrir</button></div>`; } else { div.innerHTML += `<div class="alerta-item amarilla" style="${b}"><div><strong style="color:#eab308;">✅ ¡Proyecto Terminado!</strong><br><span style="font-size:14px;">El proyecto de ${p.cliente} (${p.fecha}) está listo.</span></div><button class="btn-yellow" onclick="mostrarVistaPrincipalGestion('proyectos'); cambiarTabGestion('Todos');">Ver proyectos</button></div>`; } }); verificarAlertasGestionSilencioso(); }
       function marcarAlertasGestionLeidas() { proyectosGlobalesDeAgencia.filter(p => p.estado === "Terminado" || p.estadoCobro === "En proceso").forEach(p => { alertasGestionLeidas.push(p.id+"_g"); }); localStorage.setItem('lvg_alertas_gest_leidas', JSON.stringify(alertasGestionLeidas)); dibujarAlertasGestion(); }
       function limpiarBandejaAlertasGestion() { if(!confirm("¿Seguro?")) return; proyectosGlobalesDeAgencia.filter(p => p.estado === "Terminado" || p.estadoCobro === "En proceso").forEach(p => { alertasGestionBorradas.push(p.id+"_g"); }); localStorage.setItem('lvg_alertas_gest_borradas', JSON.stringify(alertasGestionBorradas)); dibujarAlertasGestion(); }
-      
-     
-      
 
+      function obtenerMisProyectosReales() {
+          if (!usuarioActual) return [];
+          let uL = String(usuarioActual).toLowerCase().trim();
+          let nombreOficial = usuarioActual;
+          
+          if (uL.includes("gabo") || uL.includes("gabriel") || uL.includes("hernandez")) nombreOficial = "Gabriel Hernandez";
+          else if (uL.includes("pablo") || uL.includes("gomez")) nombreOficial = "Pablo Gomez";
+          else if (uL.includes("alex") || uL.includes("alejandro") || uL.includes("valdivieso") || uL.includes("baldivieso")) nombreOficial = "Alejandro Baldivieso";
+          
+          return proyectosGlobalesDeAgencia.filter(p => {
+              if (p.tipo === "Pivote Factura") return false;
+              let ed = String(p.editor || "").toLowerCase().trim();
+              return ed === nombreOficial.toLowerCase();
+          });
+      }
 
       // ================= LÓGICA EDITOR (AHORA INSTANTÁNEA) =================
       function mostrarVistaPrincipalEditor(vista) { 
@@ -6696,9 +6705,9 @@ async function cargarFeedbackManager() {
       function cargarProyectosEditor() { dibujarTarjetasEditor(); verificarAlertasEditorSilencioso(); }
       
       function aceptarTrabajo(id) { 
-         // Revisamos si el editor ya tiene trabajo "Activo"
-         let p = misProyectosGlobales.find(proj => proj.id === id);
-         let tieneActivo = misProyectosGlobales.some(proj => 
+         let misProyectos = obtenerMisProyectosReales();
+         let p = misProyectos.find(proj => proj.id === id);
+         let tieneActivo = misProyectos.some(proj => 
              ["En proceso", "Revisar", "Corrección", "Incompleto"].includes(proj.estado)
          );
          
@@ -6726,7 +6735,7 @@ async function cargarFeedbackManager() {
 
       function verificarAlertasEditorSilencioso() {
          let alertas = [];
-         misProyectosGlobales.forEach(p => { 
+         obtenerMisProyectosReales().forEach(p => { 
              if(p.estado === "Asignado") alertas.push(p.id+"_asig"); 
              if(p.estado === "Terminado" && !p.fechaPago) alertas.push(p.id+"_term"); 
              if(p.permisoExtra === "Concedido" && p.estado === "Asignado") alertas.push(p.id+"_perm"); 
@@ -6744,7 +6753,7 @@ async function cargarFeedbackManager() {
          const div = document.getElementById('contenedor-alertas-editor'); div.innerHTML = ""; 
          let htmlNuevas = ""; let htmlViejas = ""; let hay = false;
          
-         misProyectosGlobales.forEach(p => {
+         obtenerMisProyectosReales().forEach(p => {
             if(p.estado === "Asignado" && !alertasEdBorradas.includes(p.id+"_asig")) { 
                 hay = true; let esN = !alertasEdLeidas.includes(p.id+"_asig"); let b = esN ? "font-weight:bold; border-left-width:8px;" : "opacity:0.8;"; 
                 let card = `<div class="alerta-item morada" style="${b}"><div><strong style="color:#a855f7;">🎥 ¡Nuevo Proyecto Asignado!</strong><br><span style="font-size:14px;">Se te ha asignado el proyecto <strong>${p.cliente}</strong>.</span></div><button class="btn-outline" onclick="mostrarVistaPrincipalEditor('proyectos'); cambiarTabEditor('Asignados');">Ver Bandeja</button></div>`; 
@@ -6806,11 +6815,13 @@ async function cargarFeedbackManager() {
       }
 
       function cargarSaldosEditor() { 
-         // 1. Proyectos listos para cobrar (Solo Terminados y sin factura)
-         let pendientes = misProyectosGlobales.filter(p => p.estado === "Terminado" && !p.fechaPago); 
+         let misProyectos = obtenerMisProyectosReales();
          
-         // 2. Proyectos ya facturados (TODOS los que estén en una factura, sin importar su estado de producción)
-         let facturados = misProyectosGlobales.filter(p => p.fechaPago); 
+         // 1. Proyectos listos para cobrar (Solo Terminados y sin factura)
+         let pendientes = misProyectos.filter(p => p.estado === "Terminado" && !p.fechaPago); 
+         
+         // 2. Proyectos ya facturados (TODOS los que estén en una factura, sin importar si están terminados o asignados)
+         let facturados = misProyectos.filter(p => p.fechaPago); 
          
          let sumas = {}; 
          pendientes.forEach(p => { 
@@ -8676,18 +8687,15 @@ function guardarOrdenFacturas() {
 function dibujarTarjetasEditor() {
           const contenedor = document.getElementById('contenedor-tarjetas-editor');
           
-          // 1. PRIVACIDAD ESTRICTA: Usamos la variable maestra ya blindada
-          let proyectosPropios = misProyectosGlobales.filter(p => p.tipo !== "Pivote Factura");
-
-          // 2. APLICAMOS EL MOTOR DE BÚSQUEDA Y PESTAÑAS
+          // Usamos el motor de privacidad en tiempo real
+          let proyectosPropios = obtenerMisProyectosReales();
           let filtrados = aplicarFiltrosYBusquedaAProyectos(proyectosPropios, 'busqueda-ed', tabActual, true);
 
           if (filtrados.length === 0) {
-              contenedor.innerHTML = '<div style="text-align:center; padding: 40px; color: #666;">No hay proyectos en esta sección.</div>';
+              contenedor.innerHTML = '<div style="text-align:center; padding: 40px; color: var(--text-gray);">No hay proyectos en esta sección.</div>';
               return;
           }
 
-          // 3. LÓGICA DE PAGINACIÓN RESTAURADA
           const totalPaginas = Math.ceil(filtrados.length / ITEMS_POR_PAG);
           if (paginaEd > totalPaginas) paginaEd = totalPaginas;
           if (paginaEd < 1) paginaEd = 1; 
