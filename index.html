@@ -6910,21 +6910,47 @@ async function cargarFeedbackManager() {
           let gruposFacturas = {}; 
           facturados.forEach(p => { 
               let idFactura = p.idFactura || "LVG-" + p.fechaPago.replace(/\D/g,'').slice(0,6); 
+              
               if(!gruposFacturas[idFactura]) { 
+                  // --- MAGIA: Consultamos la verdad absoluta en la base global (incluyendo el Pivote oculto) ---
+                  let proyectosDeEstaFactura = proyectosGlobalesDeAgencia.filter(globalP => {
+                      let globalId = globalP.idFactura || (globalP.fechaPago ? "LVG-" + globalP.fechaPago.replace(/\D/g,'').slice(0,6) : null);
+                      return globalId === idFactura;
+                  });
+                  
+                  // Rescatar estado real (Si el pivote o cualquier proyecto está pagado, la factura está pagada)
+                  let estadoReal = "En proceso";
+                  if (proyectosDeEstaFactura.some(globalP => globalP.estadoCobro === "Pagado")) {
+                      estadoReal = "Pagado";
+                  }
+
+                  // Rescatar link real (Normalmente está escondido en el pivote)
+                  let linkReal = p.linkComprobante || "";
+                  let proyectoConLink = proyectosDeEstaFactura.find(globalP => globalP.linkComprobante);
+                  if (proyectoConLink) {
+                      linkReal = proyectoConLink.linkComprobante;
+                  }
+
                   gruposFacturas[idFactura] = { 
                       fecha: p.fechaPago, 
-                      estado: p.estadoCobro || "En proceso", // Asumimos 'En proceso' por defecto
-                      linkCarpeta: p.linkComprobante, 
+                      estado: estadoReal, 
+                      linkCarpeta: linkReal, 
                       proyectos: [], 
                       extras: []
                   }; 
               } 
-              // Si cualquier proyecto de esta factura dice "Pagado", forzamos que toda la factura sea "Pagado"
-              if (p.estadoCobro === "Pagado") gruposFacturas[idFactura].estado = "Pagado";
 
               gruposFacturas[idFactura].proyectos.push(p); 
-              if(p.extrasFactura && gruposFacturas[idFactura].extras.length === 0) {
-                  try { gruposFacturas[idFactura].extras = JSON.parse(p.extrasFactura); } catch(e){}
+              
+              // Rescatar extras reales (Que también se esconden en el pivote)
+              if(gruposFacturas[idFactura].extras.length === 0) {
+                  let proyectoConExtras = proyectosGlobalesDeAgencia.find(globalP => {
+                      let globalId = globalP.idFactura || (globalP.fechaPago ? "LVG-" + globalP.fechaPago.replace(/\D/g,'').slice(0,6) : null);
+                      return globalId === idFactura && globalP.extrasFactura;
+                  });
+                  if(proyectoConExtras) {
+                      try { gruposFacturas[idFactura].extras = JSON.parse(proyectoConExtras.extrasFactura); } catch(e){}
+                  }
               }
           });
 
