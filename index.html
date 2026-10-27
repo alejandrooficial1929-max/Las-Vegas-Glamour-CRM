@@ -258,11 +258,11 @@
     align-items: center; transition: all 0.3s var(--ease);
   }
   .alerta-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-  .alerta-item.roja { border-left-color: #e05353; background: #fdf6f6; }
-  .alerta-item.morada { border-left-color: #9a6fd0; background: #f9f6fd; }
-  .alerta-item.verde { border-left-color: #1ea982; background: #f4faf8; }
-  .alerta-item.amarilla { border-left-color: var(--lvg-yellow); background: #fdfaf2; }
-  .alerta-item.azul { border-left-color: #3d7fd1; background: #f5f8fd; }
+  .alerta-item.roja { border-left-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+  .alerta-item.morada { border-left-color: #a855f7; background: rgba(168, 85, 247, 0.1); }
+  .alerta-item.verde { border-left-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+  .alerta-item.amarilla { border-left-color: var(--lvg-yellow); background: rgba(212, 175, 55, 0.1); }
+  .alerta-item.azul { border-left-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
   .badge { background: #e05353; color: white; border-radius: 50%; padding: 3px 8px; font-size: 11px; margin-left: auto; font-weight: 700;}
   .pulse { animation: pulse-animation 1.5s infinite; }
   @keyframes pulse-animation { 0% { box-shadow: 0 0 0 0 rgba(224, 83, 83, 0.5); } 70% { box-shadow: 0 0 0 8px rgba(224, 83, 83, 0); } 100% { box-shadow: 0 0 0 0 rgba(224, 83, 83, 0); } }
@@ -2650,6 +2650,7 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
       let paginaManager = 1;
       let paginaAsig = 1;
       let paginaEd = 1;
+      let paginaEdSaldos = 1;
       let paginaGest = 1;
       const ITEMS_POR_PAG = 10;
 
@@ -6433,21 +6434,28 @@ async function cargarFeedbackManager() {
       }
 
       function cargarSaldosEditor() { 
-         let terminados = misProyectosGlobales.filter(p => p.estado === "Terminado"); let pendientes = terminados.filter(p => !p.fechaPago); let sumas = {}; pendientes.forEach(p => { try { let tArr = JSON.parse(p.tareasJSON); tArr.forEach(t => { sumas[t.moneda] = (sumas[t.moneda] || 0) + Number(t.precio); }); } catch(e){} }); let textoSuma = []; for(let mon in sumas) { textoSuma.push(`${sumas[mon]} ${mon}`); } document.getElementById('editor-suma-total').innerText = textoSuma.length > 0 ? textoSuma.join(' + ') : '$0'; dibujarTarjetasSaldosEditor(pendientes, 'contenedor-saldos-pendientes', false); dibujarTarjetasSaldosEditor(terminados.filter(p => p.fechaPago), 'contenedor-saldos-pagados', true); 
+         let terminados = misProyectosGlobales.filter(p => p.estado === "Terminado"); 
+         let pendientes = terminados.filter(p => !p.fechaPago); 
+         let sumas = {}; 
+         pendientes.forEach(p => { try { let tArr = JSON.parse(p.tareasJSON); tArr.forEach(t => { sumas[t.moneda] = (sumas[t.moneda] || 0) + Number(t.precio); }); } catch(e){} }); 
+         let textoSuma = []; for(let mon in sumas) { textoSuma.push(`${sumas[mon]} ${mon}`); } 
+         document.getElementById('editor-suma-total').innerText = textoSuma.length > 0 ? textoSuma.join(' + ') : '$0'; 
+         
+         dibujarTarjetasSaldosEditor(pendientes, 'contenedor-saldos-pendientes'); 
+         dibujarHistorialPagosEditor(terminados.filter(p => p.fechaPago), 'contenedor-saldos-pagados'); 
       }
-      function dibujarTarjetasSaldosEditor(proyectos, contenedorId, esPagado) { 
+
+      function dibujarTarjetasSaldosEditor(proyectos, contenedorId) { 
          const contenedor = document.getElementById(contenedorId); 
          contenedor.innerHTML = ''; 
          if(proyectos.length === 0) {
-             contenedor.innerHTML = '<div style="text-align:center; padding: 20px; color: #666;">No hay proyectos aquí.</div>';
+             contenedor.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-gray);">No hay proyectos pendientes de cobro.</div>';
              return; 
          }
 
-         // --- LA NUEVA BARRA DE ACCIONES MASIVAS ---
-         // Solo la mostramos si NO están pagados y si al menos uno falta por cobrar
-         if(!esPagado && proyectos.some(p => p.estadoCobro !== "Solicitado")) {
+         if(proyectos.some(p => p.estadoCobro !== "Solicitado")) {
              const barraAcciones = document.createElement('div');
-             barraAcciones.style = "display:flex; justify-content:flex-end; gap:10px; margin-bottom:15px;";
+             barraAcciones.style = "display:flex; justify-content:flex-end; flex-wrap:wrap; gap:10px; margin-bottom:15px;";
              barraAcciones.innerHTML = `
                  <button class="btn-outline" onclick="seleccionarTodosParaPago()">Marcar / Desmarcar Todos</button>
                  <button class="btn-yellow" onclick="pedirPagoSeleccionados(this)">Cobrar Seleccionados 💳</button>
@@ -6456,45 +6464,137 @@ async function cargarFeedbackManager() {
              contenedor.appendChild(barraAcciones);
          }
 
-         proyectos.forEach(p => { 
+         const totalPaginas = Math.ceil(proyectos.length / ITEMS_POR_PAG);
+         if (paginaEdSaldos > totalPaginas) paginaEdSaldos = totalPaginas;
+         if (paginaEdSaldos < 1) paginaEdSaldos = 1; 
+         
+         const inicio = (paginaEdSaldos - 1) * ITEMS_POR_PAG;
+         const proyectosPaginados = proyectos.slice(inicio, inicio + ITEMS_POR_PAG);
+         
+         let htmlTarjetas = "";
+         proyectosPaginados.forEach(p => { 
             let ticketHTML = `<div class="ticket-factura">`; 
-            try { const tareasArr = JSON.parse(p.tareasJSON); if(tareasArr && tareasArr.length > 0) { tareasArr.forEach(t => { ticketHTML += `<div class="ticket-item"><span>• ${t.tipo}</span> <strong>${t.precio} ${t.moneda}</strong></div>`; }); } } catch(e) {} 
+            try { const tareasArr = JSON.parse(p.tareasJSON); if(tareasArr && tareasArr.length > 0) { tareasArr.forEach(t => { ticketHTML += `<div class="ticket-item"><span>• ${t.tipo}</span> <strong>${Number(t.precio).toLocaleString('es-CO')} ${t.moneda}</strong></div>`; }); } } catch(e) {} 
             ticketHTML += `<div class="ticket-total"><span>Total a pagar:</span> <span style="color: #10b981;">${p.precioTotal || "0"}</span></div></div>`; 
             
-            let btnComprobante = (esPagado && p.linkComprobante) ? `<button class="btn-outline" style="border-color:#10b981; color:#10b981;" onclick="event.stopPropagation(); window.open('${p.linkComprobante}')">📄 Ver carpeta de pago</button>` : ``; 
             let infoPago = ""; 
             let checkbox = "";
 
-            if(esPagado) { 
-                infoPago = `<div style="margin-top:15px; background:#ecfdf5; padding:10px; border-radius:8px; border-left:4px solid #10b981;"><strong>Pagado el:</strong> ${p.fechaPago}</div>`; 
+            if(p.estadoCobro === "Solicitado") {
+                infoPago = `<div style="margin-top:15px; color:#eab308; font-weight:bold;">⏳ Pago solicitado al Manager</div>`; 
             } else { 
-                if(p.estadoCobro === "Solicitado") {
-                    infoPago = `<div style="margin-top:15px; color:#eab308; font-weight:bold;">⏳ Pago solicitado al Manager</div>`; 
-                } else { 
-                    infoPago = `<div style="margin-top:15px;"><button class="btn-yellow" onclick="event.stopPropagation(); pedirPago('${p.id}', this)">Solicitar Pago Individual 💳</button></div>`; 
-                    // Agregamos el Checkbox al lado del título
-                    checkbox = `<input type="checkbox" class="chk-pago-ed" value="${p.id}" style="transform: scale(1.3); margin-right: 15px; cursor: pointer;" onclick="event.stopPropagation()">`;
-                } 
+                infoPago = `<div style="margin-top:15px;"><button class="btn-yellow" onclick="event.stopPropagation(); pedirPago('${p.id}', this)">Solicitar Pago Individual 💳</button></div>`; 
+                checkbox = `<input type="checkbox" class="chk-pago-ed" value="${p.id}" style="transform: scale(1.3); margin-right: 15px; cursor: pointer;" onclick="event.stopPropagation()">`;
             } 
             
-            const tarjeta = document.createElement('div'); 
-            tarjeta.className = 'tarjeta'; 
-            tarjeta.innerHTML = `
-                <div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    ${checkbox}
-                    <div class="col-cliente" style="flex:2;">${p.cliente}</div>
-                    <div class="col-fecha" style="flex:1; text-align:center;">${p.fecha}</div>
-                    <div class="col-tipo" style="flex:1; text-align:center;">${p.tipo}</div>
-                    <div class="col-estado" style="flex:1; text-align:center;"><span style="color:#10b981; font-weight:bold;">${p.precioTotal}</span></div>
-                </div>
-                <div class="tarjeta-body">
-                    <div style="flex:1;">${ticketHTML}</div>
-                    <div style="flex:1; text-align: right; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;">${infoPago}
-                        <div style="display:flex; gap:10px; margin-top: 20px;">${btnComprobante}</div>
+            htmlTarjetas += `
+                <div class="tarjeta">
+                    <div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')">
+                        ${checkbox}
+                        <div class="col-cliente" style="flex:2;">${p.cliente}</div>
+                        <div class="col-fecha" style="flex:1; text-align:center;">${p.fecha}</div>
+                        <div class="col-tipo" style="flex:1; text-align:center;">${p.tipo}</div>
+                        <div class="col-estado" style="flex:1; text-align:center;"><span style="color:#10b981; font-weight:bold;">${p.precioTotal}</span></div>
+                    </div>
+                    <div class="tarjeta-body">
+                        <div style="flex:1;">${ticketHTML}</div>
+                        <div style="flex:1; text-align: right; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-end;">${infoPago}</div>
                     </div>
                 </div>`; 
-            contenedor.appendChild(tarjeta); 
          }); 
+         
+         contenedor.innerHTML += htmlTarjetas;
+         contenedor.innerHTML += generarControlesPaginacion(proyectos.length, paginaEdSaldos, 'paginaEdSaldos', 'cargarSaldosEditor');
+      }
+
+      function dibujarHistorialPagosEditor(facturados, contenedorId) {
+          const contenedor = document.getElementById(contenedorId);
+          contenedor.innerHTML = ""; 
+          if(facturados.length === 0) { 
+              contenedor.innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-gray);">No tienes historial de pagos aún.</div>'; 
+              return; 
+          } 
+
+          let gruposFacturas = {}; 
+          facturados.forEach(p => { 
+              let idFactura = p.idFactura || "LVG-" + p.fechaPago.replace(/\D/g,'').slice(0,6); 
+              if(!gruposFacturas[idFactura]) { 
+                  gruposFacturas[idFactura] = { 
+                      fecha: p.fechaPago, 
+                      estado: p.estadoCobro || "Pagado", 
+                      linkCarpeta: p.linkComprobante, 
+                      proyectos: [], 
+                      extras: []
+                  }; 
+              } 
+              gruposFacturas[idFactura].proyectos.push(p); 
+              if(p.extrasFactura && gruposFacturas[idFactura].extras.length === 0) {
+                  try { gruposFacturas[idFactura].extras = JSON.parse(p.extrasFactura); } catch(e){}
+              }
+          });
+
+          let arrayFacturas = Object.keys(gruposFacturas).map(k => {
+              return { idFactura: k, ...gruposFacturas[k] };
+          });
+          arrayFacturas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+          let htmlFinal = "";
+
+          arrayFacturas.forEach(f => {
+              let idFactura = f.idFactura;
+              let subTarjetasHTML = ""; 
+              let totalesCalculados = {};
+
+              if(f.extras && f.extras.length > 0) {
+                  f.extras.forEach(ext => {
+                      subTarjetasHTML += `<div class="tarjeta" style="margin-bottom:8px; border:1px solid #0284c7; background:rgba(2,132,199,0.1); box-shadow:none; border-radius:8px;"><div class="tarjeta-header" style="background:transparent; cursor:default;"><div class="col-cliente" style="color:#38bdf8; flex:2;">[EXTRA] ${ext.detalle}</div><div class="col-fecha" style="flex:1; text-align:center; color:var(--text-gray);">${ext.concepto}</div><div class="col-tipo" style="flex:1;"></div><div class="col-estado" style="display:flex; align-items:center; justify-content:center;"><span style="font-weight:bold; color:#10b981; font-size:14px;">${Number(ext.precio).toLocaleString('es-CO')} ${ext.moneda}</span></div></div></div>`;
+                      if(!totalesCalculados[ext.moneda]) totalesCalculados[ext.moneda] = 0;
+                      totalesCalculados[ext.moneda] += Number(ext.precio);
+                  });
+              }
+
+              let proyectosReales = f.proyectos.filter(p => p.tipo !== "Pivote Factura");
+              subTarjetasHTML += proyectosReales.map(p => {
+                  try {
+                      let tareas = JSON.parse(p.tareasJSON);
+                      tareas.forEach(t => {
+                          if(!totalesCalculados[t.moneda]) totalesCalculados[t.moneda] = 0;
+                          totalesCalculados[t.moneda] += Number(t.precio);
+                      });
+                  } catch(e){}
+                  let htmlTarjeta = generarHTMLTarjetaProyectoEditor(p);
+                  return htmlTarjeta.replace('class="tarjeta"', 'class="tarjeta" style="border:1px solid var(--border-subtle); margin-bottom:8px; box-shadow:none; border-radius:8px;"');
+              }).join('');
+
+              let arrTotales = [];
+              for (let mon in totalesCalculados) {
+                  if (totalesCalculados[mon] !== 0) arrTotales.push(`${totalesCalculados[mon].toLocaleString('es-CO')} ${mon}`);
+              }
+              let stringTotalFinal = arrTotales.length > 0 ? arrTotales.join(' + ') : '0 USD';
+              subTarjetasHTML += `<div style="display:flex; justify-content:flex-end; align-items:center; padding: 15px 20px 5px 20px; border-top: 2px dashed var(--border-subtle); margin-top: 10px;"><span style="font-size:14px; color:var(--text-gray); margin-right:15px; text-transform:uppercase; font-weight:bold;">Total de esta Factura:</span><span style="font-size:18px; font-weight:bold; color:#10b981;">${stringTotalFinal}</span></div>`;
+
+              let colorTextoEstado = f.estado === 'Pagado' ? '#10b981' : '#eab308'; 
+              let labelEstado = `<span style="color:${colorTextoEstado}; font-weight:bold; padding: 5px 15px; background: rgba(16, 185, 129, 0.1); border-radius: 20px; border: 1px solid ${colorTextoEstado};">${f.estado}</span>`;
+
+              htmlFinal += `
+              <div class="tarjeta" style="border: 1px solid var(--border-subtle); margin-bottom: 20px;">
+                  <div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')" style="background: var(--bg-main);">
+                      <div style="flex:1; color: var(--text-dark); font-weight:bold;">📄 ${idFactura}</div>
+                      <div style="flex:1; text-align:center; font-size:14px; color:var(--text-gray);">${f.fecha}</div>
+                      <div style="flex:1; text-align:center;">${labelEstado}</div>
+                  </div>
+                  <div class="tarjeta-body" style="flex-direction:column; gap:15px; padding-top:15px;">
+                      <div style="display:flex; justify-content: flex-end; gap: 10px;">
+                          ${f.linkCarpeta ? `<button class="btn-outline" style="border-color:#38bdf8; color:#38bdf8;" onclick="event.stopPropagation(); window.open('${f.linkCarpeta}')">📁 Abrir carpeta de comprobantes</button>` : ''}
+                      </div>
+                      <div style="background: var(--bg-main); border: 1px solid var(--border-subtle); padding: 15px; border-radius: 10px;">
+                          <h4 style="margin-top:0; color:var(--text-gray);">Proyectos en esta factura:</h4>${subTarjetasHTML}
+                      </div>
+                  </div>
+              </div>`;
+          });
+
+          contenedor.innerHTML = htmlFinal;
       }
       
       // --- LÓGICA DE COBRO EN FIREBASE MULTIPLE O INDIVIDUAL ---
