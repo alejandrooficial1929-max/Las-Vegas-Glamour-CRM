@@ -1349,69 +1349,85 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
     </div>
 
     <div id="modal-prestamo-estandar-manager" class="modal-overlay hidden">
-      <div class="modal-content" id="modal-content-prestamo-est" style="width: 450px; transition: width 0.35s ease; display:flex; gap:20px; background: var(--bg-card); color: var(--text-dark); overflow:hidden;">
+      <div class="modal-content" id="modal-content-prestamo-est" style="width: 480px; max-height: 95vh; transition: width 0.35s ease; display:flex; gap:20px; background: var(--bg-card); color: var(--text-dark); overflow:hidden; padding: 25px;">
         
-        <!-- Panel Izquierdo Original -->
-        <div style="width: 450px; flex-shrink: 0; display:flex; flex-direction:column;">
+        <!-- Panel Izquierdo Mejorado -->
+        <div style="width: 480px; flex-shrink: 0; display:flex; flex-direction:column;">
             <h2 style="margin-top:0; color:var(--lvg-yellow);">🏦 Crear Préstamo Estándar</h2>
+            
             <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <div style="flex:1;">
+                <div style="flex:1; display:flex; flex-direction:column;">
                     <label>Código</label>
-                    <input type="text" id="est-codigo-man" placeholder="Ej. LVGP001" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box; font-weight:bold;">
+                    <input type="text" id="est-codigo-man" placeholder="Ej. LVGP001" class="task-input" style="font-weight:bold;">
                 </div>
-                <div style="flex:2;">
+                <div style="flex:2; display:flex; flex-direction:column;">
                     <label>Editor Asignado</label>
-                    <select id="est-editor-man" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;"></select>
+                    <select id="est-editor-man" class="task-input"></select>
                 </div>
             </div>
             
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <div style="flex:2;">
+            <!-- ALINEACIÓN PERFECTA: align-items: flex-end -->
+            <div style="display:flex; gap:10px; margin-bottom:15px; align-items: flex-end;">
+                <div style="flex:2; display:flex; flex-direction:column;">
                     <label>Monto Solicitado</label>
-                    <input type="number" id="est-monto-man" placeholder="Ej. 200" oninput="simularPrestamoManager(false)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); box-sizing: border-box;">
+                    <input type="number" id="est-monto-man" placeholder="Ej. 200" class="task-input" oninput="simularPrestamoManager(false)">
                 </div>
-                <div style="flex:1;">
+                <div style="flex:1; display:flex; flex-direction:column;">
                     <label>Moneda</label>
-                    <select id="est-moneda-man" onchange="simularPrestamoManager(false)" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); font-weight:bold; box-sizing: border-box;">
+                    <select id="est-moneda-man" class="task-input" style="font-weight:bold;" onchange="simularPrestamoManager(false)">
                         <option value="USD">USD</option><option value="MXN">MXN</option><option value="COP">COP</option><option value="ARS">ARS</option>
                     </select>
                 </div>
             </div>
             
             <label>Concepto / Detalle del Préstamo (Opcional)</label>
-            <input type="text" id="est-concepto-man" placeholder="Ej. Adelanto nómina, Renta, etc." style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); margin-bottom:15px; box-sizing: border-box;">
+            <input type="text" id="est-concepto-man" placeholder="Ej. Adelanto nómina, Renta, etc." class="task-input" style="margin-bottom:15px;">
             
             <div style="background:rgba(212, 175, 55, 0.1); padding:15px; border-radius:8px; margin-bottom:15px; font-size:13px; color:var(--text-gray);">
-                La tasa base se calcula por Credit Score, pero puedes editarla manualmente.<br><br>
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; margin-top:5px;">
-                    <label style="margin:0; width:130px; font-weight:bold; color:var(--text-dark);">Tasa Asignada (%):</label>
-                    <input type="number" id="est-tasa-man" step="0.1" oninput="simularPrestamoManager(true)" style="width:80px; padding:6px; border-radius:6px; border:1px solid var(--lvg-yellow); background: var(--bg-main); color: var(--lvg-yellow); font-weight:bold; font-size:15px; text-align:center;">
+                La tasa base se calcula por Credit Score, pero puedes editarla.<br><br>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; margin-top:5px;">
+                    <label style="margin:0; font-weight:bold; color:var(--text-dark); white-space:nowrap;">TASA ASIGNADA (%):</label>
+                    <input type="number" id="est-tasa-man" step="0.1" oninput="simularPrestamoManager(true)" style="width:80px; padding:6px; border-radius:6px; border:1px solid var(--lvg-yellow); background: var(--bg-main); color: var(--lvg-yellow); font-weight:bold; font-size:14px; text-align:center;">
                 </div>
-                Total a Devolver: <strong id="est-total-man" style="color:#ef4444; font-size:16px;">$0.00 USD</strong><br>
-                Días de Plazo: <strong id="est-dias-man" style="color:var(--text-dark);">0 días</strong>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <label style="margin:0; font-weight:bold; color:var(--text-dark); white-space:nowrap;">RECARGO POR MORA (%):</label>
+                    <input type="number" id="est-tasa-mora-man" step="0.1" value="0.5" style="width:80px; padding:6px; border-radius:6px; border:1px solid #ef4444; background: var(--bg-main); color: #ef4444; font-weight:bold; font-size:14px; text-align:center;">
+                </div>
+
+                <div style="margin-bottom:10px;">Total a Devolver: <strong id="est-total-man" style="color:#ef4444; font-size:16px;">$0.00 USD</strong></div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--text-dark);">Días de Plazo:</span>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                        <input type="number" id="est-dias-man" style="width:60px; padding:4px; border-radius:6px; border:1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); font-weight:bold; font-size:14px; text-align:center;">
+                        <span style="color:var(--text-gray);">días</span>
+                    </div>
+                </div>
             </div>
 
             <div style="margin-bottom: 20px;">
                 <button class="btn-outline" style="width:100%; border-style:dashed; color:#38bdf8; border-color:#38bdf8;" onclick="toggleGarantiaPrestamo()">Vincular proyectos como garantía (Ambigüedad) ◂</button>
             </div>
             
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top: auto;">
               <button class="btn-outline" onclick="document.getElementById('modal-prestamo-estandar-manager').classList.add('hidden')">Cancelar</button>
               <button class="btn-yellow" onclick="guardarPrestamoEstandarManager()">Crear y Fondear 🚀</button>
             </div>
         </div>
 
-        <!-- Panel Derecho Nuevo (Garantía) -->
-        <div id="panel-garantia-prestamo" style="width: 450px; flex-shrink: 0; display:none; flex-direction:column; border-left: 1px dashed var(--border-subtle); padding-left: 20px;">
+        <!-- Panel Derecho Nuevo (Garantía) con Flex 1 en Listas -->
+        <div id="panel-garantia-prestamo" style="width: 480px; flex-shrink: 0; display:none; flex-direction:column; border-left: 1px dashed var(--border-subtle); padding-left: 20px;">
             <h3 style="margin-top:0; color:#38bdf8;">🔍 Garantía por Ambigüedad</h3>
-            <p style="font-size:12px; color:var(--text-gray); margin-bottom:15px;">Selecciona los proyectos incompletos que respaldan este adelanto.</p>
+            <p style="font-size:12px; color:var(--text-gray); margin-bottom:15px;">Selecciona los proyectos incompletos que respaldan este adelanto. Solo se liquidará la deuda cuando estos proyectos sean aprobados.</p>
             
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <div style="display:flex; gap:10px; margin-bottom:10px; flex-shrink:0;">
                 <div style="flex:1;"><input type="text" id="garantia-search-cliente" placeholder="Cliente..." class="task-input" oninput="filtrarGarantia()"></div>
                 <div style="flex:1;"><input type="text" id="garantia-search-fecha" placeholder="Fecha (mm.dd.aa)" class="task-input" oninput="filtrarGarantia()"></div>
             </div>
             
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <div style="display:flex; gap:10px; margin-bottom:10px; flex-shrink:0;">
                 <div style="flex:1;">
                     <select id="garantia-search-editor" class="task-input" onchange="cargarFacturasGarantia(); filtrarGarantia();">
                         <option value="Todos">Cualquier editor</option>
@@ -1421,14 +1437,14 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
                     <select id="garantia-search-factura" class="task-input" style="flex:1;">
                         <option value="">Cód. Factura...</option>
                     </select>
-                    <button class="btn-outline" style="padding:0 10px; color:#10b981; border-color:#10b981;" title="Añadir toda la factura" onclick="agregarFacturaAGarantia()">➕</button>
+                    <button class="btn-outline" style="padding:0 10px; color:#10b981; border-color:#10b981; height:42px;" title="Añadir toda la factura" onclick="agregarFacturaAGarantia()">➕</button>
                 </div>
             </div>
             
-            <div id="lista-resultados-garantia" style="flex:1; overflow-y:auto; border:1px solid var(--border-subtle); border-radius:8px; padding:5px; background:var(--bg-main); margin-bottom:15px; max-height:160px;"></div>
+            <div id="lista-resultados-garantia" style="flex:1; min-height:180px; overflow-y:auto; border:1px solid var(--border-subtle); border-radius:8px; padding:5px; background:var(--bg-main); margin-bottom:15px;"></div>
             
-            <h4 style="margin:0 0 10px 0; color:var(--lvg-yellow);">Proyectos en Garantía:</h4>
-            <div id="lista-seleccionados-garantia" style="flex:1; overflow-y:auto; border:1px solid var(--lvg-yellow); border-radius:8px; padding:5px; background:rgba(212, 175, 55, 0.05); max-height:160px;"></div>
+            <h4 style="margin:0 0 10px 0; color:var(--lvg-yellow); flex-shrink:0;">Proyectos en Garantía:</h4>
+            <div id="lista-seleccionados-garantia" style="flex:1; min-height:180px; overflow-y:auto; border:1px solid var(--lvg-yellow); border-radius:8px; padding:5px; background:rgba(212, 175, 55, 0.05);"></div>
         </div>
       </div>
     </div>
@@ -5302,13 +5318,12 @@ async function cargarFeedbackManager() {
           
           if (panel.style.display === 'none') {
               panel.style.display = 'flex';
-              modalContent.style.width = '940px'; // Se expande animado
+              modalContent.style.width = '1000px'; // Se expande al nuevo tamaño
               
               let ops = '<option value="Todos">Cualquier editor</option>' + 
                         usuariosGlobales.filter(u => u.role.toLowerCase().includes('editor')).map(u => `<option value="${u.user}">${u.user}</option>`).join('');
               document.getElementById('garantia-search-editor').innerHTML = ops;
               
-              // Autoseleccionar el editor del préstamo
               let edPrestamo = document.getElementById('est-editor-man').value;
               if(edPrestamo) {
                   document.getElementById('garantia-search-editor').value = edPrestamo;
@@ -5318,7 +5333,112 @@ async function cargarFeedbackManager() {
               filtrarGarantia();
           } else {
               panel.style.display = 'none';
-              modalContent.style.width = '450px'; // Se contrae
+              modalContent.style.width = '480px'; // Se contrae a su nuevo tamaño base
+          }
+      }
+
+      function simularPrestamoManager(tasaManual = false) {
+          let editor = document.getElementById('est-editor-man').value;
+          let monto = Number(document.getElementById('est-monto-man').value) || 0;
+          let moneda = document.getElementById('est-moneda-man').value;
+          let inputTasa = document.getElementById('est-tasa-man');
+          let inputDias = document.getElementById('est-dias-man');
+          
+          let tasaActual = 0;
+          if (!tasaManual) {
+              let score = getCreditScore(editor);
+              tasaActual = calcularTasaInteres(score);
+              inputTasa.value = (tasaActual * 100).toFixed(1);
+          } else {
+              tasaActual = (Number(inputTasa.value) || 0) / 100;
+          }
+          
+          let totalDevolver = monto * (1 + tasaActual);
+          
+          // Cálculo referencial del plazo
+          let montoReferencial = moneda !== 'USD' ? (monto / 20) : monto; 
+          let equivProy = Math.ceil(montoReferencial / 50); 
+          let diasPlazoCalc = (equivProy * 7) + 3; 
+          if(diasPlazoCalc < 10) diasPlazoCalc = 10; 
+          
+          // Solo sobrescribimos los días automáticamente si el usuario no manualizó la tasa, 
+          // esto da un flujo más natural como calculadora
+          if (!tasaManual) {
+              inputDias.value = diasPlazoCalc;
+          }
+          
+          document.getElementById('est-total-man').innerText = `$${totalDevolver.toLocaleString('en-US', {minimumFractionDigits: 2})} ${moneda}`;
+      }
+
+      function guardarPrestamoEstandarManager() {
+          let editor = document.getElementById('est-editor-man').value;
+          let monto = Number(document.getElementById('est-monto-man').value) || 0;
+          let concepto = document.getElementById('est-concepto-man').value.trim();
+          let moneda = document.getElementById('est-moneda-man').value;
+          let codigo = document.getElementById('est-codigo-man').value.trim();
+          if(!codigo) return alert("Por favor asigna un Código de Préstamo (Ej. LVGP001).");
+          
+          let tasaManual = (Number(document.getElementById('est-tasa-man').value) || 0) / 100;
+          let tasaMora = (Number(document.getElementById('est-tasa-mora-man').value) || 0) / 100;
+          let diasPlazo = Number(document.getElementById('est-dias-man').value);
+
+          if (monto <= 0) return alert("Ingresa un monto válido.");
+          if (diasPlazo <= 0) return alert("Ingresa una cantidad de días de plazo válida.");
+
+          let totalDevolver = monto * (1 + tasaManual);
+
+          let strHoy = new Date().toLocaleString("en-US", {timeZone: "America/Los_Angeles"});
+          let limite = new Date(strHoy);
+          limite.setDate(limite.getDate() + diasPlazo);
+          let strLimite = limite.toLocaleDateString('en-US', {timeZone: 'America/Los_Angeles', month:'2-digit', day:'2-digit', year:'2-digit'}).replace(/\//g, '.');
+
+          // Lógica de Garantía
+          let garantiaIDs = garantiaBuscadorTemporal.map(p => p.id);
+          let esGarantia = garantiaIDs.length > 0;
+
+          let dataPrestamo = {
+              codigo: codigo,
+              idEditor: editor,
+              tipo: "estandar",
+              concepto: concepto,
+              montoSolicitado: monto,
+              moneda: moneda,
+              tasaAplicada: tasaManual,
+              tasaMoraPersonalizada: tasaMora, // Guardamos la mora editable
+              totalADevolver: totalDevolver,
+              saldoPendiente: totalDevolver,
+              fechaInicio: new Date().toISOString(),
+              diasPlazoCalc: diasPlazo,
+              fechaLimite: strLimite, 
+              estado: "Activo",
+              diasMora: 0,
+              conGarantia: esGarantia,
+              proyectosGarantia: garantiaIDs
+          };
+
+          const btn = document.querySelector('#modal-prestamo-estandar-manager .btn-yellow');
+          btn.innerText = "⏳ Creando...";
+          btn.disabled = true;
+
+          db.collection("prestamos").add(dataPrestamo).then(() => {
+              if (esGarantia) {
+                  let batch = db.batch();
+                  garantiaIDs.forEach(id => {
+                      let pRef = db.collection("eventos").doc(id);
+                      batch.update(pRef, { respaldoPrestamo: codigo });
+                  });
+                  batch.commit().then(() => { terminarGuardado(); });
+              } else {
+                  terminarGuardado();
+              }
+          });
+
+          function terminarGuardado() {
+              alert("✅ Préstamo Estándar creado exitosamente.");
+              document.getElementById('modal-prestamo-estandar-manager').classList.add('hidden');
+              btn.innerText = "Crear y Fondear 🚀";
+              btn.disabled = false;
+              garantiaBuscadorTemporal = [];
           }
       }
 
@@ -5353,19 +5473,32 @@ async function cargarFeedbackManager() {
               return true;
           });
           
-          resultados = resultados.slice(0, 20); // Top 20 resultados
+          resultados = resultados.slice(0, 20); 
           
           let html = "";
           if(resultados.length === 0) html = "<div style='color:var(--text-gray); text-align:center; padding: 15px; font-size:12px;'>No hay coincidencias.</div>";
           
           resultados.forEach(p => {
+              let tareasTxt = "Sin tareas";
+              let precioTxt = "0 USD";
+              try {
+                  let t = JSON.parse(p.tareasJSON);
+                  if(t && t.length > 0) {
+                      tareasTxt = t.map(x=>x.tipo).join(' + ');
+                      let suma = 0; let mon = t[0].moneda;
+                      t.forEach(x => { if(x.moneda === mon) suma += Number(x.precio); });
+                      precioTxt = `${suma.toLocaleString('es-CO')} ${mon}`;
+                  }
+              } catch(e){}
+
               html += `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid var(--border-subtle); background:var(--bg-card); margin-bottom:4px; border-radius:6px;">
-                  <div style="font-size:12px; min-width:0; overflow:hidden;">
-                      <strong style="color:var(--text-dark);">${p.cliente}</strong> <span style="color:var(--text-gray);">${p.fecha}</span><br>
-                      <span style="color:var(--lvg-yellow);">${p.tipo}</span> | <span style="color:#10b981;">${p.estado}</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--border-subtle); background:var(--bg-card); margin-bottom:6px; border-radius:6px;">
+                  <div style="font-size:12px; min-width:0; overflow:hidden; flex:1;">
+                      <div style="margin-bottom:3px;"><strong style="color:var(--text-dark); font-size:13px;">${p.cliente}</strong> <span style="color:var(--text-gray); font-size:11px; margin-left:5px;">${p.fecha}</span></div>
+                      <div style="margin-bottom:3px;"><span style="color:var(--lvg-yellow);">${p.tipo}</span> <span style="color:var(--text-gray);">| ${tareasTxt}</span></div>
+                      <div>🧑‍💻 <span style="color:var(--text-gray);">${p.editor || 'Sin editor'}</span> <span style="margin:0 5px; color:var(--border-subtle);">•</span> <span style="color:#10b981; font-weight:bold;">${p.estado}</span> <span style="margin:0 5px; color:var(--border-subtle);">•</span> <strong style="color:var(--text-dark);">${precioTxt}</strong></div>
                   </div>
-                  <button class="btn-outline" style="padding:2px 8px; font-size:12px; color:#38bdf8; border-color:#38bdf8; margin-left:5px;" onclick="agregarProyectoGarantia('${p.id}')">Añadir</button>
+                  <button class="btn-outline" style="padding:4px 12px; font-size:12px; color:#38bdf8; border-color:#38bdf8; margin-left:10px; height:fit-content;" onclick="agregarProyectoGarantia('${p.id}')">Añadir</button>
               </div>`;
           });
           document.getElementById('lista-resultados-garantia').innerHTML = html;
@@ -5402,13 +5535,26 @@ async function cargarFeedbackManager() {
           if(garantiaBuscadorTemporal.length === 0) html = "<div style='color:var(--text-gray); text-align:center; padding: 15px; font-size:12px;'>Ningún proyecto en garantía.</div>";
           
           garantiaBuscadorTemporal.forEach(p => {
+              let tareasTxt = "Sin tareas";
+              let precioTxt = "0 USD";
+              try {
+                  let t = JSON.parse(p.tareasJSON);
+                  if(t && t.length > 0) {
+                      tareasTxt = t.map(x=>x.tipo).join(' + ');
+                      let suma = 0; let mon = t[0].moneda;
+                      t.forEach(x => { if(x.moneda === mon) suma += Number(x.precio); });
+                      precioTxt = `${suma.toLocaleString('es-CO')} ${mon}`;
+                  }
+              } catch(e){}
+
               html += `
-              <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid var(--lvg-yellow); background:rgba(212, 175, 55, 0.05); margin-bottom:4px; border-radius:6px;">
-                  <div style="font-size:12px; min-width:0; overflow:hidden;">
-                      <strong style="color:var(--text-dark);">${p.cliente}</strong> <span style="color:var(--text-gray);">${p.fecha}</span><br>
-                      <span style="color:var(--lvg-yellow);">${p.tipo}</span>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--lvg-yellow); background:rgba(212, 175, 55, 0.05); margin-bottom:6px; border-radius:6px;">
+                  <div style="font-size:12px; min-width:0; overflow:hidden; flex:1;">
+                      <div style="margin-bottom:3px;"><strong style="color:var(--text-dark); font-size:13px;">${p.cliente}</strong> <span style="color:var(--text-gray); font-size:11px; margin-left:5px;">${p.fecha}</span></div>
+                      <div style="margin-bottom:3px;"><span style="color:var(--lvg-yellow);">${p.tipo}</span> <span style="color:var(--text-gray);">| ${tareasTxt}</span></div>
+                      <div>🧑‍💻 <span style="color:var(--text-gray);">${p.editor || 'Sin editor'}</span> <span style="margin:0 5px; color:var(--border-subtle);">•</span> <span style="color:#10b981; font-weight:bold;">${p.estado}</span> <span style="margin:0 5px; color:var(--border-subtle);">•</span> <strong style="color:var(--text-dark);">${precioTxt}</strong></div>
                   </div>
-                  <button class="btn-outline" style="padding:2px 8px; font-size:12px; color:#ef4444; border-color:#ef4444; margin-left:5px;" onclick="quitarProyectoGarantia('${p.id}')">✕</button>
+                  <button class="btn-outline" style="padding:4px 12px; font-size:12px; color:#ef4444; border-color:#ef4444; margin-left:10px; height:fit-content;" onclick="quitarProyectoGarantia('${p.id}')">✕</button>
               </div>`;
           });
           document.getElementById('lista-seleccionados-garantia').innerHTML = html;
