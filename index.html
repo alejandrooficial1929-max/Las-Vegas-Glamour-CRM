@@ -1351,7 +1351,13 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         <label style="margin-top: 15px; color: var(--lvg-yellow); font-weight: bold; border-bottom: 1px solid var(--border-subtle); padding-bottom: 5px;">Cámaras y Rangos de Clips</label>
         <div id="edit-contenedor-camaras"></div>
         <button class="btn-outline" style="width:100%; margin-top:10px; margin-bottom: 15px; border-style: dashed; color: var(--text-gray);" onclick="agregarFilaCamara()">+ Agregar nueva cámara</button>
-        <div id="modal-edicion-masiva" class="modal-overlay hidden">
+        
+        <label style="display:flex; align-items:center; gap:8px; color:#ef4444; font-weight:bold; font-size:14px; cursor:pointer;"><input type="checkbox" id="edit-chk-drive" style="width:auto; margin:0;"> CAMBIAR TAMBIÉN EL NOMBRE DE LA CARPETA EN DRIVE</label>
+        <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;"><button class="btn-outline" onclick="document.getElementById('modal-editar-proyecto').classList.add('hidden')">Cancelar</button><button class="btn-yellow" id="btn-guardar-edicion" onclick="guardarEdicion()">Guardar Cambios ✔</button></div>
+      </div>
+    </div>
+
+    <div id="modal-edicion-masiva" class="modal-overlay hidden">
       <div class="modal-content" style="width: 650px; max-width: 90vw; max-height: 90vh; overflow-y: auto;">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--border-subtle); padding-bottom:10px; margin-bottom:15px;">
             <h2 style="margin:0; color:#10b981;">📝 Edición Masiva de Proyectos</h2>
