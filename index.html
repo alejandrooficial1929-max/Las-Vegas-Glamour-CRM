@@ -3274,10 +3274,11 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
              let borderCheck = seleccionMasivaIds.includes(p.id) ? "#10b981" : "var(--border-subtle)";
              
              chkMasivaHTML = `
-             <div style="display:flex; align-items:center; justify-content:center; width:46px; height:46px; margin-left:-10px; margin-right:15px; cursor:pointer; background: ${bgCheck}; border-radius:8px; border:1px solid ${borderCheck}; flex-shrink:0; transition:all 0.2s;" 
-                  onclick="event.stopPropagation(); let cb = this.querySelector('input'); cb.checked = !cb.checked; this.style.background = cb.checked ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.05)'; this.style.borderColor = cb.checked ? '#10b981' : 'var(--border-subtle)'; toggleSeleccionMasiva('${p.id}', cb.checked);"
-                  onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor=this.querySelector('input').checked ? '#10b981' : 'var(--border-subtle)'">
-                 <input type="checkbox" ${isChecked} style="transform: scale(1.5); pointer-events:none; margin:0;">
+             <div style="display:flex; align-items:center; justify-content:center; width:54px; height:54px; margin-left:-12px; margin-right:18px; cursor:pointer; background: ${bgCheck}; border-radius:12px; border:2px solid ${borderCheck}; flex-shrink:0; transition:all 0.2s;" 
+                  onclick="event.stopPropagation(); window.toggleCheckboxMasivo(this, '${p.id}');"
+                  onmouseover="this.style.borderColor='#10b981'; this.style.transform='scale(1.05)';" 
+                  onmouseout="this.style.borderColor=this.querySelector('input').checked ? '#10b981' : 'var(--border-subtle)'; this.style.transform='scale(1)';">
+                 <input type="checkbox" ${isChecked} style="transform: scale(1.8); pointer-events:none; margin:0;">
              </div>`;
          }
 
@@ -3389,38 +3390,54 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
 
       // === LOGICA DE EDICION MASIVA ===
       function toggleModoEdicionMasiva() {
-          try {
-              const btn = document.getElementById('btn-edicion-masiva');
-              if (!modoEdicionMasiva) {
-                  modoEdicionMasiva = true;
-                  seleccionMasivaIds = []; 
-                  btn.style.backgroundColor = '#10b981';
-                  btn.style.color = 'white';
-                  btn.style.borderColor = '#10b981';
-                  dibujarTarjetasManager(); 
-              } else {
-                  if (seleccionMasivaIds.length > 0) {
+          const btn = document.getElementById('btn-edicion-masiva');
+          if (!modoEdicionMasiva) {
+              // ENCENDER MODO MASIVO
+              modoEdicionMasiva = true;
+              seleccionMasivaIds = []; 
+              btn.style.backgroundColor = '#10b981';
+              btn.style.color = 'white';
+              btn.style.borderColor = '#10b981';
+              dibujarTarjetasManager(); 
+          } else {
+              // SI YA ESTABA ENCENDIDO Y LE DAN CLIC...
+              if (seleccionMasivaIds.length > 0) {
+                  // Forzar estilos por si las clases CSS fallan
+                  const modal = document.getElementById('modal-edicion-masiva');
+                  if(modal) {
+                      modal.style.display = "flex"; 
                       abrirModalEdicionMasiva();
                   } else {
-                      modoEdicionMasiva = false;
-                      btn.style.backgroundColor = 'transparent';
-                      btn.style.color = 'var(--lvg-yellow)';
-                      btn.style.borderColor = 'var(--lvg-yellow)';
-                      dibujarTarjetasManager();
+                      alert("Error Crítico: El modal HTML no existe.");
                   }
+              } else {
+                  // Si no eligió nada, se apaga.
+                  modoEdicionMasiva = false;
+                  btn.style.backgroundColor = 'transparent';
+                  btn.style.color = 'var(--lvg-yellow)';
+                  btn.style.borderColor = 'var(--lvg-yellow)';
+                  dibujarTarjetasManager();
               }
-          } catch(e) {
-              alert("Error al intentar cambiar de modo: " + e.message);
           }
       }
 
-      function toggleSeleccionMasiva(id, checked) {
-          if (checked) {
-              if (!seleccionMasivaIds.includes(id)) seleccionMasivaIds.push(id);
+      // Reemplazamos la función anterior por esta súper-función global a prueba de fallos
+      window.toggleCheckboxMasivo = function(elementoDiv, idProyecto) {
+          let cb = elementoDiv.querySelector('input');
+          cb.checked = !cb.checked; // Invertimos el estado
+          
+          if (cb.checked) {
+              elementoDiv.style.background = 'rgba(16, 185, 129, 0.2)';
+              elementoDiv.style.borderColor = '#10b981';
+              // Guardamos en memoria
+              if (!seleccionMasivaIds.includes(idProyecto)) seleccionMasivaIds.push(idProyecto);
           } else {
-              seleccionMasivaIds = seleccionMasivaIds.filter(x => x !== id);
+              elementoDiv.style.background = 'rgba(255,255,255,0.05)';
+              elementoDiv.style.borderColor = 'var(--border-subtle)';
+              // Borramos de memoria
+              seleccionMasivaIds = seleccionMasivaIds.filter(x => x !== idProyecto);
           }
-      }
+      };
 
       function abrirModalEdicionMasiva() {
           try {
