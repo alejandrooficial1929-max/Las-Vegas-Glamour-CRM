@@ -647,6 +647,9 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
                         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 6h10V4H4v2zm0 5h7V9H4v2zm0 5h4v-2H4v2zm11-6v6h-2l3 3 3-3h-2V10h-2z"/></svg>
                     </div>
                 </div>
+                <button id="btn-edicion-masiva" class="btn-icon-circle" title="Edición Masiva" onclick="toggleModoEdicionMasiva()" style="color:var(--lvg-yellow); border-color:var(--lvg-yellow);">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                </button>
                 <button class="btn-icon-circle" title="Filtros Avanzados" onclick="abrirModalFiltrosBusqueda('manager')">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg>
                 </button>
@@ -1348,8 +1351,71 @@ input:focus, select:focus, textarea:focus, .search-bar:focus {
         <label style="margin-top: 15px; color: var(--lvg-yellow); font-weight: bold; border-bottom: 1px solid var(--border-subtle); padding-bottom: 5px;">Cámaras y Rangos de Clips</label>
         <div id="edit-contenedor-camaras"></div>
         <button class="btn-outline" style="width:100%; margin-top:10px; margin-bottom: 15px; border-style: dashed; color: var(--text-gray);" onclick="agregarFilaCamara()">+ Agregar nueva cámara</button>
-        <label style="display:flex; align-items:center; gap:8px; color:#ef4444; font-weight:bold; font-size:14px; cursor:pointer;"><input type="checkbox" id="edit-chk-drive" style="width:auto; margin:0;"> CAMBIAR TAMBIÉN EL NOMBRE DE LA CARPETA EN DRIVE</label>
-        <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;"><button class="btn-outline" onclick="document.getElementById('modal-editar-proyecto').classList.add('hidden')">Cancelar</button><button class="btn-yellow" id="btn-guardar-edicion" onclick="guardarEdicion()">Guardar Cambios ✔</button></div>
+        <div id="modal-edicion-masiva" class="modal-overlay hidden">
+      <div class="modal-content" style="width: 650px; max-width: 90vw; max-height: 90vh; overflow-y: auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--border-subtle); padding-bottom:10px; margin-bottom:15px;">
+            <h2 style="margin:0; color:#10b981;">📝 Edición Masiva de Proyectos</h2>
+            <span style="font-size:12px; color:var(--text-gray);">Marca las casillas que deseas modificar</span>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <div style="flex:2">
+                <label style="display:flex; align-items:center; gap:5px; color:var(--lvg-yellow);"><input type="checkbox" class="chk-bulk" id="chk-bulk-cliente" style="width:auto; margin:0;"> Cliente</label>
+                <input type="text" id="bulk-cliente" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);">
+            </div>
+            <div style="flex:1">
+                <label style="display:flex; align-items:center; gap:5px; color:var(--lvg-yellow);"><input type="checkbox" class="chk-bulk" id="chk-bulk-fecha" style="width:auto; margin:0;"> Fecha (mm.dd.aa)</label>
+                <input type="text" id="bulk-fecha" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);" maxlength="8" oninput="formatearFecha(this)">
+            </div>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <div style="flex:1">
+                <label style="display:flex; align-items:center; gap:5px; color:var(--lvg-yellow);"><input type="checkbox" class="chk-bulk" id="chk-bulk-tipo" style="width:auto; margin:0;"> Tipo de Evento</label>
+                <select id="bulk-tipo" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);"><option value="Sweet XV">Sweet XV</option><option value="Sweet XVI">Sweet XVI</option><option value="Debut 18">Debut 18</option><option value="Wedding">Wedding</option><option value="Graduacion">Graduación</option><option value="Renewal of vows">Renewal of vows</option><option value="Anniversary">Anniversary</option><option value="Birthday">Birthday</option></select>
+            </div>
+            <div style="flex:1">
+                <label style="display:flex; align-items:center; gap:5px; color:var(--lvg-yellow);"><input type="checkbox" class="chk-bulk" id="chk-bulk-editor" style="width:auto; margin:0;"> Editor Asignado</label>
+                <select id="bulk-editor" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);"><option value="Sin asignar">Sin asignar</option><option value="Gabriel Hernandez">Gabriel Hernandez</option><option value="Alejandro Baldivieso">Alejandro Baldivieso</option><option value="Pablo Gomez">Pablo Gomez</option></select>
+            </div>
+            <div style="flex:1">
+                <label style="display:flex; align-items:center; gap:5px; color:#10b981;"><input type="checkbox" class="chk-bulk" id="chk-bulk-estado" style="width:auto; margin:0;"> Calificación / Estado</label>
+                <select id="bulk-estado" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark); font-weight:bold;"><option value="Terminado">Terminado (Aprobar)</option><option value="Corrección">Corrección</option><option value="Incompleto">Incompleto</option><option value="Revisar">Revisar (Entregado)</option><option value="En proceso">En proceso</option><option value="Asignado">Asignado</option></select>
+            </div>
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <div style="flex:1;">
+                <label style="display:flex; align-items:center; gap:5px; color:var(--lvg-yellow);"><input type="checkbox" class="chk-bulk" id="chk-bulk-clips" style="width:auto; margin:0;"> Link de Clips Crudos 📁</label>
+                <input type="url" id="bulk-link-clips" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);" placeholder="Link de origen...">
+            </div>
+            <div style="flex:1;">
+                <label style="display:flex; align-items:center; gap:5px; color:var(--lvg-yellow);"><input type="checkbox" class="chk-bulk" id="chk-bulk-editor-link" style="width:auto; margin:0;"> Link de Entregables 📂</label>
+                <input type="url" id="bulk-link-editor" class="input-edit" style="width:100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle); background: var(--bg-main); color: var(--text-dark);" placeholder="Drive del editor...">
+            </div>
+        </div>
+        
+        <div style="display:flex; align-items:center; gap:12px; color:#38bdf8; font-weight:bold; font-size:14px; margin-top:10px; margin-bottom: 10px; background: rgba(2,132,199,0.1); padding: 12px 15px; border-radius: 8px; border: 1px solid #0284c7;">
+          <input type="checkbox" class="chk-bulk" id="chk-bulk-permiso" style="width:auto; margin:0; transform:scale(1.2);">
+          <span>Forzar Permiso de trabajo extra (Sobrescribir)</span>
+          <label class="switch" style="margin-left:auto;">
+            <input type="checkbox" id="bulk-chk-permiso">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <label style="margin-top: 15px; color: var(--lvg-yellow); font-weight: bold; border-bottom: 1px solid var(--border-subtle); padding-bottom: 5px; display:flex; align-items:center; gap:5px;"><input type="checkbox" class="chk-bulk" id="chk-bulk-tareas" style="width:auto; margin:0;"> Tareas y Precios (Sobrescribir en todos)</label>
+        <div id="bulk-contenedor-tareas"></div>
+        <button class="btn-outline" style="width:100%; margin-top:10px; margin-bottom: 15px; border-style: dashed; color: var(--text-gray);" onclick="agregarFilaBulk()">+ Agregar otra tarea</button>
+        
+        <label style="margin-top: 15px; color: var(--lvg-yellow); font-weight: bold; border-bottom: 1px solid var(--border-subtle); padding-bottom: 5px; display:flex; align-items:center; gap:5px;"><input type="checkbox" class="chk-bulk" id="chk-bulk-camaras" style="width:auto; margin:0;"> Cámaras y Rangos de Clips (Sobrescribir en todos)</label>
+        <div id="bulk-contenedor-camaras"></div>
+        <button class="btn-outline" style="width:100%; margin-top:10px; margin-bottom: 15px; border-style: dashed; color: var(--text-gray);" onclick="agregarFilaCamaraBulk()">+ Agregar nueva cámara</button>
+        
+        <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;">
+            <button class="btn-outline" onclick="document.getElementById('modal-edicion-masiva').classList.add('hidden')">Cancelar</button>
+            <button class="btn-yellow" id="btn-guardar-masiva" style="background:#10b981; color:white;" onclick="guardarEdicionMasiva()">Aplicar a Todos ✔</button>
+        </div>
       </div>
     </div>
 
@@ -2735,6 +2801,10 @@ const PALETA_CHARTS = ["#c9a54a", "#3d7fd1", "#a855f7", "#2ba7bd", "#34a869", "#
 // Punto de partida del historial solicitado para la línea de tiempo
 const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
 
+      // ESTADOS GLOBALES DE EDICIÓN MASIVA
+      let modoEdicionMasiva = false;
+      let seleccionMasivaIds = [];
+
       // NUEVAS VARIABLES PARA PAGINACIÓN
       let paginaManager = 1;
       let paginaAsig = 1;
@@ -3197,7 +3267,13 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
          // MAGIA: El precio ahora se mostrará al lado del estado de forma nativa si es una factura
          let precioEnCabecera = (rol === "manager_fact" || rol === "gestion_fact") ? `<span style="font-weight:bold; color:#10b981; font-size:14px; margin-right:15px;">${precioCalculadoFinal}</span>` : "";
 
-         return `<div class="tarjeta" id="tarjeta-${p.id}" style="margin-bottom:15px; border:1px solid #ddd; box-shadow:none;"><div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')"><div class="col-cliente">${p.cliente || 'Sin Cliente'}</div><div class="col-fecha">${p.fecha || 'Sin fecha'}</div><div class="col-tipo">${p.tipo || 'Sin tipo'}</div><div class="col-estado" style="display:flex; align-items:center; justify-content:center;">${precioEnCabecera}<span class="pill ${claseEstado}">${p.estado}</span>${pildoraCita}</div></div><div class="tarjeta-body"><div style="flex:1;">${infoCreacion}${infoAsignacion}${infoConclusion}<div class="info-group"><strong>Editor asignado:</strong> ${p.editor || 'Sin asignar'}</div>${ticketHTML}${feedbackHTML}${extraCitaInfo}</div><div style="flex:1; text-align: right;"><div class="info-group" style="text-align:left; width: 100%;"><strong>Cámaras y Rangos:</strong><br>${camarasHTML}${infoBackups}</div><div style="display:flex; gap:10px; margin-top: 20px; justify-content:flex-end; align-items:center; flex-wrap:wrap;">${botonesHTML}</div></div></div></div>`;
+         let chkMasivaHTML = "";
+         if (rol === "manager" && typeof modoEdicionMasiva !== 'undefined' && modoEdicionMasiva) {
+             let isChecked = seleccionMasivaIds.includes(p.id) ? "checked" : "";
+             chkMasivaHTML = `<input type="checkbox" ${isChecked} style="transform: scale(1.4); margin-right: 15px; cursor: pointer; flex-shrink: 0;" onclick="event.stopPropagation(); toggleSeleccionMasiva('${p.id}', this.checked)">`;
+         }
+
+         return `<div class="tarjeta" id="tarjeta-${p.id}" style="margin-bottom:15px; border:1px solid #ddd; box-shadow:none;"><div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')"><div style="display:flex; align-items:center; flex:2;"><div style="display:flex; align-items:center;">${chkMasivaHTML}</div><div class="col-cliente" style="flex:1;">${p.cliente || 'Sin Cliente'}</div></div><div class="col-fecha">${p.fecha || 'Sin fecha'}</div><div class="col-tipo">${p.tipo || 'Sin tipo'}</div><div class="col-estado" style="display:flex; align-items:center; justify-content:center;">${precioEnCabecera}<span class="pill ${claseEstado}">${p.estado}</span>${pildoraCita}</div></div><div class="tarjeta-body"><div style="flex:1;">${infoCreacion}${infoAsignacion}${infoConclusion}<div class="info-group"><strong>Editor asignado:</strong> ${p.editor || 'Sin asignar'}</div>${ticketHTML}${feedbackHTML}${extraCitaInfo}</div><div style="flex:1; text-align: right;"><div class="info-group" style="text-align:left; width: 100%;"><strong>Cámaras y Rangos:</strong><br>${camarasHTML}${infoBackups}</div><div style="display:flex; gap:10px; margin-top: 20px; justify-content:flex-end; align-items:center; flex-wrap:wrap;">${botonesHTML}</div></div></div></div>`;
       }
 
       function generarHTMLTarjetaProyectoEditor(p) {
@@ -3303,7 +3379,158 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
         document.getElementById('modal-editar-proyecto').classList.remove('hidden');
       }
 
-      function agregarFilaEdicion(tipo = "", precio = "0", moneda = "USD") { 
+      // === LOGICA DE EDICION MASIVA ===
+      function toggleModoEdicionMasiva() {
+          const btn = document.getElementById('btn-edicion-masiva');
+          if (!modoEdicionMasiva) {
+              modoEdicionMasiva = true;
+              seleccionMasivaIds = []; 
+              btn.style.backgroundColor = '#10b981';
+              btn.style.color = 'white';
+              btn.style.borderColor = '#10b981';
+              dibujarTarjetasManager(); 
+          } else {
+              if (seleccionMasivaIds.length > 0) {
+                  abrirModalEdicionMasiva();
+              } else {
+                  modoEdicionMasiva = false;
+                  btn.style.backgroundColor = 'transparent';
+                  btn.style.color = 'var(--lvg-yellow)';
+                  btn.style.borderColor = 'var(--lvg-yellow)';
+                  dibujarTarjetasManager();
+              }
+          }
+      }
+
+      function toggleSeleccionMasiva(id, checked) {
+          if (checked) {
+              if (!seleccionMasivaIds.includes(id)) seleccionMasivaIds.push(id);
+          } else {
+              seleccionMasivaIds = seleccionMasivaIds.filter(x => x !== id);
+          }
+      }
+
+      function abrirModalEdicionMasiva() {
+          document.querySelectorAll('.chk-bulk').forEach(chk => chk.checked = false);
+          document.getElementById('bulk-cliente').value = "";
+          document.getElementById('bulk-fecha').value = "";
+          document.getElementById('bulk-tipo').value = "Sweet XV";
+          document.getElementById('bulk-editor').value = "Sin asignar";
+          document.getElementById('bulk-estado').value = "Terminado";
+          document.getElementById('bulk-link-clips').value = "";
+          document.getElementById('bulk-link-editor').value = "";
+          document.getElementById('bulk-chk-permiso').checked = false;
+          
+          const contenedorT = document.getElementById('bulk-contenedor-tareas'); 
+          contenedorT.innerHTML = "";
+          agregarFilaBulk(); 
+          
+          const contenedorC = document.getElementById('bulk-contenedor-camaras'); 
+          contenedorC.innerHTML = "";
+          agregarFilaCamaraBulk();
+          
+          document.getElementById('modal-edicion-masiva').classList.remove('hidden');
+      }
+
+      function agregarFilaBulk() { 
+         const container = document.getElementById('bulk-contenedor-tareas'); const row = document.createElement('div'); row.className = 'task-row bulk-task-row'; 
+         row.innerHTML = `<div class="task-number" style="margin-top: 18px;"></div><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; margin-left: 4px;">Tipo de proyecto</span><select class="bulk-task-select task-input">${OPS_TAREAS}</select></div><div style="width: 40px; display: flex; flex-direction: column; align-items:center;"><span title="Multiplicador por urgencia" style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; cursor:help;">x2 ❓</span><button class="btn-outline btn-urgencia" style="width:36px; height:42px; padding:0; font-weight:bold; border-radius:8px; background:white; color:var(--text-dark);" onclick="event.preventDefault(); this.classList.toggle('active-x2'); this.style.background = this.classList.contains('active-x2') ? 'var(--lvg-yellow)' : 'white'; this.style.color = this.classList.contains('active-x2') ? 'white' : 'var(--text-dark)';">x2</button></div><div style="width: 90px; display: flex; flex-direction: column;"><span style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; margin-left: 4px;">Precio</span><input type="text" class="bulk-price-input task-input" placeholder="0" oninput="formatearMoneda(this)"></div><div style="width: 90px; display: flex; flex-direction: column;"><span style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; margin-left: 4px;">Divisa</span><select class="bulk-currency-select task-input"><option value="USD">USD</option><option value="MXN">MXN</option><option value="COL">COL</option></select></div><button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 5px 10px; margin-top: 18px; height: 42px;" onclick="event.stopPropagation(); this.parentElement.remove(); actualizarNumerosBulk();">✖</button>`; container.appendChild(row); actualizarNumerosBulk(); 
+      }
+      
+      function agregarFilaCamaraBulk() { 
+         const container = document.getElementById('bulk-contenedor-camaras'); if(container.children.length >= 10) return; const row = document.createElement('div'); row.className = 'task-row bulk-camara-row'; 
+         row.innerHTML = `<div style="flex:2; display:flex; flex-direction:column;"><span style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; margin-left: 4px;">Nombre de cámara</span><input type="text" class="bulk-cam-nombre task-input" placeholder="Arturo"></div><div style="flex:1; display:flex; align-items:flex-end; gap:5px;"><div style="flex:1; display:flex; flex-direction:column;"><span style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; margin-left: 4px;">Clips</span><input type="text" class="bulk-cam-inicio task-input" placeholder="Inicio"></div><span style="font-weight:bold; color:#999; margin-bottom:12px;">-</span><div style="flex:1; display:flex; flex-direction:column;"><span style="font-size: 11px; color: var(--bg-card); margin-bottom: 5px;">.</span><input type="text" class="bulk-cam-fin task-input" placeholder="Fin"></div></div><button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 5px 10px; margin-top: 18px; height: 42px;" onclick="event.stopPropagation(); this.parentElement.remove()">✖</button>`; container.appendChild(row); 
+      }
+      
+      function actualizarNumerosBulk() { document.querySelectorAll('.bulk-task-row').forEach((row, index) => { let n = row.querySelector('.task-number'); if(n) n.innerText = index + 1; }); }
+
+      function guardarEdicionMasiva() {
+          if(seleccionMasivaIds.length === 0) return;
+          let updateData = {};
+          
+          if(document.getElementById('chk-bulk-cliente').checked) updateData.cliente = document.getElementById('bulk-cliente').value;
+          if(document.getElementById('chk-bulk-fecha').checked) updateData.fecha = document.getElementById('bulk-fecha').value;
+          if(document.getElementById('chk-bulk-tipo').checked) updateData.tipo = document.getElementById('bulk-tipo').value;
+          if(document.getElementById('chk-bulk-editor').checked) updateData.editor = document.getElementById('bulk-editor').value;
+          if(document.getElementById('chk-bulk-estado').checked) {
+              updateData.estado = document.getElementById('bulk-estado').value;
+              if (updateData.estado === "Terminado") updateData.fechaConclusion = new Date().toISOString();
+          }
+          if(document.getElementById('chk-bulk-clips').checked) updateData.linkClips = document.getElementById('bulk-link-clips').value.trim();
+          if(document.getElementById('chk-bulk-editor-link').checked) updateData.linkEditor = document.getElementById('bulk-link-editor').value.trim();
+          if(document.getElementById('chk-bulk-permiso').checked) updateData.permisoExtra = document.getElementById('bulk-chk-permiso').checked ? "Concedido" : "";
+          
+          if(document.getElementById('chk-bulk-tareas').checked) {
+              let tareas = [];
+              document.querySelectorAll('#bulk-contenedor-tareas .bulk-task-row').forEach(row => {
+                  let esDoble = row.querySelector('.btn-urgencia').classList.contains('active-x2');
+                  let baseTipo = row.querySelector('.bulk-task-select').value;
+                  let precioStr = row.querySelector('.bulk-price-input').value.replace(/,/g, "") || "0";
+                  let precioFinal = esDoble ? Number(precioStr) * 2 : Number(precioStr);
+                  tareas.push({ tipo: esDoble ? baseTipo + " (doble)" : baseTipo, precio: precioFinal, moneda: row.querySelector('.bulk-currency-select').value });
+              });
+              updateData.tareasJSON = JSON.stringify(tareas);
+          }
+
+          if(document.getElementById('chk-bulk-camaras').checked) {
+              let camaras = [];
+              document.querySelectorAll('#bulk-contenedor-camaras .bulk-camara-row').forEach(row => {
+                  let n = row.querySelector('.bulk-cam-nombre').value.trim(); 
+                  let i = row.querySelector('.bulk-cam-inicio').value.trim(); 
+                  let f = row.querySelector('.bulk-cam-fin').value.trim(); 
+                  if(n) { if(i && f) camaras.push(`${n}: ${i} - ${f}`); else camaras.push(n); } 
+              });
+              updateData.camaras = camaras;
+          }
+
+          if (Object.keys(updateData).length === 0) {
+              alert("No marcaste ninguna casilla para actualizar.");
+              return;
+          }
+
+          const btn = document.getElementById('btn-guardar-masiva');
+          btn.innerText = "⏳ Aplicando...";
+          btn.disabled = true;
+
+          let batch = db.batch();
+          let contadorActualizados = 0;
+          seleccionMasivaIds.forEach(id => {
+              let ref = db.collection("eventos").doc(id);
+              let localUpdate = {...updateData};
+              let p = proyectosGlobalesDeAgencia.find(x => x.id === id);
+              if (p) {
+                  // Lógica inteligente: Si le asignas editor a un proyecto "Sin asignar", cambia de estado solo
+                  if (localUpdate.editor && localUpdate.editor !== "Sin asignar" && p.estado === "Sin asignar" && !localUpdate.estado) {
+                      localUpdate.estado = "Asignado";
+                      localUpdate.fechaAsignacion = new Date().toISOString();
+                  }
+              }
+              batch.update(ref, localUpdate);
+              contadorActualizados++;
+          });
+
+          batch.commit().then(() => {
+              btn.innerText = "Guardar Cambios ✔";
+              btn.disabled = false;
+              document.getElementById('modal-edicion-masiva').classList.add('hidden');
+              
+              // Apagar modo edición masiva y resetear colores
+              modoEdicionMasiva = false;
+              seleccionMasivaIds = [];
+              const btnToggle = document.getElementById('btn-edicion-masiva');
+              if (btnToggle) {
+                  btnToggle.style.backgroundColor = 'transparent';
+                  btnToggle.style.color = 'var(--lvg-yellow)';
+                  btnToggle.style.borderColor = 'var(--lvg-yellow)';
+              }
+              dibujarTarjetasManager();
+              alert(`✅ Se actualizaron ${contadorActualizados} proyectos con éxito.`);
+          }).catch(err => {
+              alert("Error: " + err.message);
+              btn.innerText = "Guardar Cambios ✔";
+              btn.disabled = false;
+          });
+       
          let esDoble = false; if(tipo.includes(" (doble)")) { esDoble = true; tipo = tipo.replace(" (doble)", ""); precio = String(Number(precio) / 2); }
          const container = document.getElementById('edit-contenedor-tareas'); const row = document.createElement('div'); row.className = 'task-row edit-task-row'; 
          row.innerHTML = `<div class="task-number" style="margin-top: 18px;"></div><div style="flex: 1; display: flex; flex-direction: column;"><span style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; margin-left: 4px;">Tipo de proyecto</span><select class="edit-task-select task-input" onchange="verificarSeleccionCatalogo(this)">${OPS_TAREAS}</select></div><div style="width: 40px; display: flex; flex-direction: column; align-items:center;"><span title="Multiplicador por urgencia" style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; cursor:help;">x2 ❓</span><button class="btn-outline btn-urgencia ${esDoble ? 'active-x2' : ''}" style="width:36px; height:42px; padding:0; font-weight:bold; border-radius:8px; background:${esDoble ? 'var(--lvg-yellow)' : 'white'}; color:${esDoble ? 'white' : 'var(--text-dark)'};" onclick="event.preventDefault(); this.classList.toggle('active-x2'); this.style.background = this.classList.contains('active-x2') ? 'var(--lvg-yellow)' : 'white'; this.style.color = this.classList.contains('active-x2') ? 'white' : 'var(--text-dark)';">x2</button></div><div style="width: 90px; display: flex; flex-direction: column;"><span style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; margin-left: 4px;">Precio</span><input type="text" class="edit-price-input task-input" value="${Number(precio).toLocaleString('es-CO')}" placeholder="0" oninput="formatearMoneda(this)"></div><div style="width: 90px; display: flex; flex-direction: column;"><span style="font-size: 11px; color: var(--text-gray); font-weight: bold; margin-bottom: 5px; margin-left: 4px;">Divisa</span><select class="edit-currency-select task-input"><option value="USD">USD</option><option value="MXN">MXN</option><option value="COL">COL</option></select></div><button class="btn-outline" style="color: #ef4444; border-color: #ef4444; padding: 5px 10px; margin-top: 18px; height: 42px;" onclick="event.stopPropagation(); this.parentElement.remove(); actualizarNumerosEdicion();">✖</button>`; container.appendChild(row); if(tipo) { let selectTipo = row.querySelector('.edit-task-select'); let options = Array.from(selectTipo.options).map(o => o.value); if(options.includes(tipo)) selectTipo.value = tipo; } if(moneda) row.querySelector('.edit-currency-select').value = moneda; actualizarNumerosEdicion(); 
