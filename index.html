@@ -3270,7 +3270,15 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
          let chkMasivaHTML = "";
          if (rol === "manager" && typeof modoEdicionMasiva !== 'undefined' && modoEdicionMasiva) {
              let isChecked = seleccionMasivaIds.includes(p.id) ? "checked" : "";
-             chkMasivaHTML = `<input type="checkbox" ${isChecked} style="transform: scale(1.4); margin-right: 15px; cursor: pointer; flex-shrink: 0;" onclick="event.stopPropagation(); toggleSeleccionMasiva('${p.id}', this.checked)">`;
+             let bgCheck = seleccionMasivaIds.includes(p.id) ? "rgba(16, 185, 129, 0.2)" : "rgba(255,255,255,0.05)";
+             let borderCheck = seleccionMasivaIds.includes(p.id) ? "#10b981" : "var(--border-subtle)";
+             
+             chkMasivaHTML = `
+             <div style="display:flex; align-items:center; justify-content:center; width:46px; height:46px; margin-left:-10px; margin-right:15px; cursor:pointer; background: ${bgCheck}; border-radius:8px; border:1px solid ${borderCheck}; flex-shrink:0; transition:all 0.2s;" 
+                  onclick="event.stopPropagation(); let cb = this.querySelector('input'); cb.checked = !cb.checked; this.style.background = cb.checked ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.05)'; this.style.borderColor = cb.checked ? '#10b981' : 'var(--border-subtle)'; toggleSeleccionMasiva('${p.id}', cb.checked);"
+                  onmouseover="this.style.borderColor='#10b981'" onmouseout="this.style.borderColor=this.querySelector('input').checked ? '#10b981' : 'var(--border-subtle)'">
+                 <input type="checkbox" ${isChecked} style="transform: scale(1.5); pointer-events:none; margin:0;">
+             </div>`;
          }
 
          return `<div class="tarjeta" id="tarjeta-${p.id}" style="margin-bottom:15px; border:1px solid #ddd; box-shadow:none;"><div class="tarjeta-header" onclick="this.parentElement.classList.toggle('expanded')"><div style="display:flex; align-items:center; flex:2;"><div style="display:flex; align-items:center;">${chkMasivaHTML}</div><div class="col-cliente" style="flex:1;">${p.cliente || 'Sin Cliente'}</div></div><div class="col-fecha">${p.fecha || 'Sin fecha'}</div><div class="col-tipo">${p.tipo || 'Sin tipo'}</div><div class="col-estado" style="display:flex; align-items:center; justify-content:center;">${precioEnCabecera}<span class="pill ${claseEstado}">${p.estado}</span>${pildoraCita}</div></div><div class="tarjeta-body"><div style="flex:1;">${infoCreacion}${infoAsignacion}${infoConclusion}<div class="info-group"><strong>Editor asignado:</strong> ${p.editor || 'Sin asignar'}</div>${ticketHTML}${feedbackHTML}${extraCitaInfo}</div><div style="flex:1; text-align: right;"><div class="info-group" style="text-align:left; width: 100%;"><strong>Cámaras y Rangos:</strong><br>${camarasHTML}${infoBackups}</div><div style="display:flex; gap:10px; margin-top: 20px; justify-content:flex-end; align-items:center; flex-wrap:wrap;">${botonesHTML}</div></div></div></div>`;
@@ -3381,24 +3389,28 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
 
       // === LOGICA DE EDICION MASIVA ===
       function toggleModoEdicionMasiva() {
-          const btn = document.getElementById('btn-edicion-masiva');
-          if (!modoEdicionMasiva) {
-              modoEdicionMasiva = true;
-              seleccionMasivaIds = []; 
-              btn.style.backgroundColor = '#10b981';
-              btn.style.color = 'white';
-              btn.style.borderColor = '#10b981';
-              dibujarTarjetasManager(); 
-          } else {
-              if (seleccionMasivaIds.length > 0) {
-                  abrirModalEdicionMasiva();
+          try {
+              const btn = document.getElementById('btn-edicion-masiva');
+              if (!modoEdicionMasiva) {
+                  modoEdicionMasiva = true;
+                  seleccionMasivaIds = []; 
+                  btn.style.backgroundColor = '#10b981';
+                  btn.style.color = 'white';
+                  btn.style.borderColor = '#10b981';
+                  dibujarTarjetasManager(); 
               } else {
-                  modoEdicionMasiva = false;
-                  btn.style.backgroundColor = 'transparent';
-                  btn.style.color = 'var(--lvg-yellow)';
-                  btn.style.borderColor = 'var(--lvg-yellow)';
-                  dibujarTarjetasManager();
+                  if (seleccionMasivaIds.length > 0) {
+                      abrirModalEdicionMasiva();
+                  } else {
+                      modoEdicionMasiva = false;
+                      btn.style.backgroundColor = 'transparent';
+                      btn.style.color = 'var(--lvg-yellow)';
+                      btn.style.borderColor = 'var(--lvg-yellow)';
+                      dibujarTarjetasManager();
+                  }
               }
+          } catch(e) {
+              alert("Error al intentar cambiar de modo: " + e.message);
           }
       }
 
@@ -3411,25 +3423,37 @@ const FECHA_INICIO_AGENCIA = new Date(2022, 0, 1); // Enero 2022
       }
 
       function abrirModalEdicionMasiva() {
-          document.querySelectorAll('.chk-bulk').forEach(chk => chk.checked = false);
-          document.getElementById('bulk-cliente').value = "";
-          document.getElementById('bulk-fecha').value = "";
-          document.getElementById('bulk-tipo').value = "Sweet XV";
-          document.getElementById('bulk-editor').value = "Sin asignar";
-          document.getElementById('bulk-estado').value = "Terminado";
-          document.getElementById('bulk-link-clips').value = "";
-          document.getElementById('bulk-link-editor').value = "";
-          document.getElementById('bulk-chk-permiso').checked = false;
-          
-          const contenedorT = document.getElementById('bulk-contenedor-tareas'); 
-          contenedorT.innerHTML = "";
-          agregarFilaBulk(); 
-          
-          const contenedorC = document.getElementById('bulk-contenedor-camaras'); 
-          contenedorC.innerHTML = "";
-          agregarFilaCamaraBulk();
-          
-          document.getElementById('modal-edicion-masiva').classList.remove('hidden');
+          try {
+              const modal = document.getElementById('modal-edicion-masiva');
+              if (!modal) {
+                  alert("CRÍTICO: No se encontró el panel HTML de edición masiva en el código.");
+                  return;
+              }
+
+              document.querySelectorAll('.chk-bulk').forEach(chk => chk.checked = false);
+              document.getElementById('bulk-cliente').value = "";
+              document.getElementById('bulk-fecha').value = "";
+              document.getElementById('bulk-tipo').value = "Sweet XV";
+              document.getElementById('bulk-editor').value = "Sin asignar";
+              document.getElementById('bulk-estado').value = "Terminado";
+              document.getElementById('bulk-link-clips').value = "";
+              document.getElementById('bulk-link-editor').value = "";
+              document.getElementById('bulk-chk-permiso').checked = false;
+              
+              const contenedorT = document.getElementById('bulk-contenedor-tareas'); 
+              contenedorT.innerHTML = "";
+              agregarFilaBulk(); 
+              
+              const contenedorC = document.getElementById('bulk-contenedor-camaras'); 
+              contenedorC.innerHTML = "";
+              agregarFilaCamaraBulk();
+              
+              // Forzamos el z-index por si acaso quedó enterrado bajo otra capa
+              modal.style.zIndex = "9999";
+              modal.classList.remove('hidden');
+          } catch(e) {
+              alert("Error al construir la ventana de edición: " + e.message);
+          }
       }
 
       function agregarFilaBulk() { 
